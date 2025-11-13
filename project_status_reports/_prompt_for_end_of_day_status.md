@@ -1,3 +1,5 @@
+this is the project structure that we have now. give a summary of progress and what each file does so that I can save this to prompt tomorrow of where we should start
+
 .
 |-- css
 |   |-- base

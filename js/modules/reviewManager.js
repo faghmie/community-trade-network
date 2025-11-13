@@ -8,14 +8,6 @@ const reviewManager = {
         const allReviews = [];
         this.contractorManager.contractors.forEach(contractor => {
             contractor.reviews.forEach(review => {
-                // DEBUG: Log each review to see what data is available
-                console.log('DEBUG getAllReviews - Individual review:', {
-                    id: review.id,
-                    rating: review.rating,
-                    categoryRatings: review.categoryRatings,
-                    reviewerName: review.reviewerName
-                });
-                
                 allReviews.push({
                     ...review,
                     contractorId: contractor.id,
@@ -24,14 +16,10 @@ const reviewManager = {
                 });
             });
         });
-        
-        console.log('DEBUG getAllReviews - All reviews for admin:', allReviews);
         return allReviews;
     },
 
     addReview(contractorId, reviewData) {
-        console.log('DEBUG addReview - Review data received from form:', reviewData);
-        
         const contractor = this.contractorManager.getById(contractorId);
         if (!contractor) {
             console.error('Contractor not found with ID:', contractorId);
@@ -50,7 +38,6 @@ const reviewManager = {
             
             if (categoryRatings.length > 0) {
                 overallRating = Math.round(categoryRatings.reduce((sum, rating) => sum + rating, 0) / categoryRatings.length);
-                console.log('DEBUG addReview - Calculated overall rating from categories:', overallRating);
             }
         }
 
@@ -71,8 +58,6 @@ const reviewManager = {
             status: 'pending'
         };
 
-        console.log('DEBUG addReview - Final review object to save:', review);
-
         contractor.reviews.push(review);
         
         // Update contractor overall rating
@@ -88,7 +73,6 @@ const reviewManager = {
                 // Fallback if utils is not available
                 alert('Review submitted successfully! It will be visible after approval.');
             }
-            console.log('Review added successfully to contractor:', contractor.name);
         } else {
             console.error('Failed to save review');
             if (typeof utils !== 'undefined' && utils.showNotification) {

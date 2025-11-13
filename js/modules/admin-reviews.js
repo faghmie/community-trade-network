@@ -1,4 +1,4 @@
-// Admin Reviews Management - UPDATED to properly show overall rating
+// Admin Reviews Management
 const adminReviewsModule = {
     init() {
         this.bindEvents();
@@ -74,9 +74,6 @@ const adminReviewsModule = {
             const categoryRatings = review.categoryRatings || {};
             const hasCategoryRatings = categoryRatings.quality || categoryRatings.communication || 
                                      categoryRatings.timeliness || categoryRatings.value;
-            
-            // DEBUG: Log review data to see what's available
-            console.log('Review data:', review);
             
             return `
                 <div class="review-item ${statusClass}">
