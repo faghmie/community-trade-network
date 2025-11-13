@@ -1,0 +1,309 @@
+/* Import all CSS files */
+@import url('base/reset.css');
+@import url('base/variables.css');
+@import url('components/buttons.css');
+@import url('components/cards.css');
+@import url('components/modals.css');
+@import url('components/forms.css');
+@import url('components/tables.css');
+@import url('components/tabs.css'); /* Add this line */
+@import url('layout.css');
+
+/* Main styles */
+header {
+    text-align: center;
+    margin-bottom: var(--space-xl);
+    padding: var(--space-xl);
+    background: var(--bg-white);
+    border-radius: var(--border-radius-lg);
+    box-shadow: var(--shadow);
+}
+
+header h1 {
+    color: var(--primary-color);
+    margin-bottom: var(--space-sm);
+}
+
+.review-item {
+    background: var(--bg-white);
+    padding: var(--space-lg);
+    margin-bottom: var(--space-md);
+    border-radius: var(--border-radius);
+    box-shadow: var(--shadow-sm);
+    border-left: 4px solid var(--secondary-color);
+}
+
+.review-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: var(--space-sm);
+}
+
+.reviewer-name {
+    font-weight: bold;
+    color: var(--primary-color);
+}
+
+.review-date {
+    color: var(--text-light);
+    font-size: 0.875rem;
+}
+
+.review-comment {
+    color: var(--text-color);
+    line-height: 1.5;
+}
+
+.contractor-list h2 {
+    text-align: center;
+    margin-bottom: var(--space-lg);
+    color: var(--primary-color);
+}
+
+.contractor-card {
+    cursor: pointer;
+    transition: transform 0.3s ease;
+}
+
+.contractor-card:hover {
+    transform: translateY(-5px);
+}
+
+.contractor-card .card-body {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-sm);
+}
+
+.rating {
+    color: var(--warning-color);
+    font-weight: bold;
+}
+
+.category {
+    color: var(--text-light);
+}
+
+.review-count {
+    color: var(--text-light);
+    font-size: 0.875rem;
+}
+
+/* Dashboard Styles */
+.dashboard-controls {
+    background: var(--bg-white);
+    padding: var(--space-xl);
+    border-radius: var(--border-radius-lg);
+    box-shadow: var(--shadow);
+    margin-bottom: var(--space-xl);
+}
+
+.search-section {
+    display: flex;
+    gap: var(--space-lg);
+    align-items: end;
+    margin-bottom: var(--space-lg);
+}
+
+.search-box {
+    flex: 1;
+    display: flex;
+    gap: var(--space-md);
+}
+
+.search-box input {
+    flex: 1;
+    padding: var(--space-md);
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius);
+    font-size: 1rem;
+}
+
+.filter-section {
+    display: flex;
+    gap: var(--space-md);
+}
+
+.filter-section select {
+    padding: var(--space-md);
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius);
+    background: white;
+}
+
+.stats-overview {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: var(--space-lg);
+}
+
+.section-header {
+    margin-bottom: var(--space-lg);
+    padding-bottom: var(--space-md);
+    border-bottom: 2px solid var(--border-color);
+}
+
+.sort-options select {
+    padding: var(--space-sm) var(--space-md);
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius);
+    background: white;
+}
+
+/* Make sure the original contractor card styling is preserved */
+.contractor-card {
+    background: var(--bg-white);
+    border-radius: var(--border-radius);
+    box-shadow: var(--shadow);
+    overflow: hidden;
+    transition: var(--transition);
+    cursor: pointer;
+}
+
+.contractor-card:hover {
+    transform: translateY(-5px);
+    box-shadow: var(--shadow-lg);
+}
+
+.contractor-card .card-body {
+    padding: var(--space-lg);
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-sm);
+}
+
+.contractor-card .card-footer {
+    padding: var(--space-lg);
+    border-top: 1px solid var(--border-color);
+    background-color: #f8f9fa;
+}
+
+.contractor-card h3 {
+    color: var(--primary-color);
+    margin: 0;
+}
+
+.contractor-card .category {
+    color: var(--text-light);
+    margin: 0;
+}
+
+.contractor-card .rating {
+    color: var(--warning-color);
+    font-weight: bold;
+    margin: 0;
+}
+
+.contractor-card .review-count {
+    color: var(--text-light);
+    font-size: 0.875rem;
+    margin: 0;
+}
+
+/* Contractor info styles */
+.contractor-info {
+    margin-bottom: var(--space-lg);
+}
+
+.contractor-info p {
+    margin-bottom: var(--space-sm);
+}
+
+.reviews-section h4 {
+    margin-bottom: var(--space-md);
+    color: var(--primary-color);
+}
+
+/* Notification styles */
+.notification {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    padding: var(--space-md) var(--space-lg);
+    background: var(--success-color);
+    color: white;
+    border-radius: var(--border-radius);
+    box-shadow: var(--shadow-lg);
+    z-index: 1001;
+    animation: slideInRight 0.3s ease;
+}
+
+.notification-error {
+    background: var(--accent-color);
+}
+
+@keyframes slideInRight {
+    from {
+        opacity: 0;
+        transform: translateX(100%);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+    .search-section {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    
+    .filter-section {
+        justify-content: space-between;
+    }
+    
+    .section-header {
+        flex-direction: column;
+        gap: var(--space-md);
+        align-items: flex-start;
+    }
+    
+    .stats-overview {
+        grid-template-columns: repeat(3, 1fr);
+    }
+    
+    .grid-3 {
+        grid-template-columns: 1fr;
+    }
+
+    .category-item {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: var(--space-md);
+    }
+
+    .category-actions {
+        align-self: flex-end;
+    }
+
+    .category-stats {
+        flex-direction: column;
+        gap: var(--space-sm);
+    }
+}
+
+@media (max-width: 480px) {
+    .stats-overview {
+        grid-template-columns: 1fr;
+    }
+    
+    .filter-section {
+        flex-direction: column;
+    }
+
+    .table-actions {
+        flex-direction: column;
+    }
+
+    .category-actions {
+        flex-direction: column;
+        width: 100%;
+    }
+
+    .category-actions .btn {
+        width: 100%;
+    }
+}

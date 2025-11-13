@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin - Contractor Reviews</title>
+    <link rel="stylesheet" href="css/main.css">
+</head>
+<body>
+    <div class="container">
+        <header class="flex-between">
+            <div>
+                <h1>Contractor Reviews Admin</h1>
+                <p>Manage contractors and reviews</p>
+            </div>
+            <nav>
+                <a href="index.html" class="btn btn-secondary">Back to Main Site</a>
+            </nav>
+        </header>
+
+        <!-- Admin Dashboard -->
+        <section class="admin-dashboard">
+            <!-- Statistics -->
+            <div class="admin-stats">
+                <div class="stat-card">
+                    <span class="stat-number" id="totalContractors">0</span>
+                    <span class="stat-label">Total Contractors</span>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-number" id="totalReviews">0</span>
+                    <span class="stat-label">Total Reviews</span>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-number" id="averageRating">0.0</span>
+                    <span class="stat-label">Average Rating</span>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-number" id="totalCategories">0</span>
+                    <span class="stat-label">Total Categories</span>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-number" id="pendingReviews">0</span>
+                    <span class="stat-label">Pending Reviews</span>
+                </div>
+            </div>
+
+            <!-- Tabs Navigation -->
+            <div class="tabs-navigation">
+                <button class="tab-button active" data-tab="contractors-tab">Contractors</button>
+                <button class="tab-button" data-tab="categories-tab">Categories</button>
+                <button class="tab-button" data-tab="reviews-tab">Reviews</button>
+            </div>
+
+            <!-- Contractors Tab -->
+            <div id="contractors-tab" class="tab-content active">
+                <div class="section-header flex-between">
+                    <h2>Contractors Management</h2>
+                    <div class="search-filter-container">
+                        <div class="search-box">
+                            <input type="text" id="searchInput" placeholder="Search contractors..." 
+                                   class="input search-input" style="margin: 0;">
+                        </div>
+                        <button class="btn btn-primary" id="addContractorBtn">Add Contractor</button>
+                    </div>
+                </div>
+
+                <!-- Contractors Table -->
+                <div class="table-container">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Category</th>
+                                <th>Email</th>
+                                <th>Phone</th>
+                                <th>Rating</th>
+                                <th>Reviews</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="contractorsTableBody">
+                            <!-- Contractors will be loaded here -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Categories Tab -->
+            <div id="categories-tab" class="tab-content">
+                <div class="section-header flex-between">
+                    <h2>Categories Management</h2>
+                    <div class="search-filter-container">
+                        <div class="search-box">
+                            <input type="text" id="categorySearch" placeholder="Search categories..." 
+                                   class="input search-input" style="margin: 0;">
+                        </div>
+                        <button class="btn btn-primary" id="addCategoryBtn">Add Category</button>
+                    </div>
+                </div>
+
+                <!-- Categories Stats -->
+                <div class="admin-stats">
+                    <div class="stat-card">
+                        <span class="stat-number" id="totalCategoriesCount">0</span>
+                        <span class="stat-label">Total Categories</span>
+                    </div>
+                    <div class="stat-card">
+                        <span class="stat-number" id="totalCategorizedContractors">0</span>
+                        <span class="stat-label">Categorized Contractors</span>
+                    </div>
+                </div>
+
+                <!-- Categories List -->
+                <div class="categories-list" id="categoriesList">
+                    <!-- Categories will be loaded here -->
+                </div>
+            </div>
+
+            <!-- Reviews Tab -->
+            <div id="reviews-tab" class="tab-content">
+                <div class="section-header flex-between">
+                    <h2>Reviews Management</h2>
+                    <div class="search-filter-container">
+                        <div class="search-box">
+                            <input type="text" id="reviewSearch" placeholder="Search reviews..." 
+                                   class="input search-input" style="margin: 0;">
+                        </div>
+                        <div class="filter-group">
+                            <div class="form-group" style="margin: 0;">
+                                <select id="reviewContractorFilter" class="input">
+                                    <option value="all">All Contractors</option>
+                                    <!-- Contractors will be populated dynamically -->
+                                </select>
+                            </div>
+                            <div class="form-group" style="margin: 0;">
+                                <select id="reviewStatusFilter" class="input">
+                                    <option value="all">All Status</option>
+                                    <option value="approved">Approved</option>
+                                    <option value="pending">Pending</option>
+                                    <option value="rejected">Rejected</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Reviews Stats -->
+                <div class="admin-stats">
+                    <div class="stat-card">
+                        <span class="stat-number" id="totalReviewsCount">0</span>
+                        <span class="stat-label">Total Reviews</span>
+                    </div>
+                    <div class="stat-card">
+                        <span class="stat-number" id="approvedReviewsCount">0</span>
+                        <span class="stat-label">Approved</span>
+                    </div>
+                    <div class="stat-card">
+                        <span class="stat-number" id="pendingReviewsCount">0</span>
+                        <span class="stat-label">Pending</span>
+                    </div>
+                    <div class="stat-card">
+                        <span class="stat-number" id="rejectedReviewsCount">0</span>
+                        <span class="stat-label">Rejected</span>
+                    </div>
+                </div>
+
+                <!-- Reviews List -->
+                <div class="reviews-list" id="reviewsList">
+                    <!-- Reviews will be loaded here -->
+                </div>
+            </div>
+        </section>
+
+        <!-- Contractor Form Modal -->
+        <div class="modal" id="contractorFormModal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2 id="formTitle">Add Contractor</h2>
+                    <span class="close" id="closeContractorFormModal">&times;</span>
+                </div>
+                <div class="modal-body">
+                    <form id="contractorForm">
+                        <input type="hidden" id="contractorId">
+                        
+                        <div class="form-group">
+                            <label for="contractorName">Contractor Name:</label>
+                            <input type="text" id="contractorName" name="name" class="input" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="contractorCategory">Category:</label>
+                            <select id="contractorCategory" name="category" class="input" required>
+                                <option value="">Select Category</option>
+                                <!-- Categories will be populated dynamically -->
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="contractorEmail">Email:</label>
+                            <input type="email" id="contractorEmail" name="email" class="input" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="contractorPhone">Phone:</label>
+                            <input type="tel" id="contractorPhone" name="phone" class="input" required>
+                            <small class="form-help">South African format: +27 or 0 followed by 9 digits</small>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="contractorWebsite">Website (optional):</label>
+                            <input type="url" id="contractorWebsite" name="website" class="input" placeholder="https://example.com">
+                            <small class="form-help">Please enter a valid URL including http:// or https://</small>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="contractorLocation">Service Area:</label>
+                            <select id="contractorLocation" name="location" class="input" required>
+                                <option value="">Select Service Area</option>
+                                <!-- South African regions will be populated dynamically -->
+                            </select>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary">Save Contractor</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Contractor Details Modal -->
+        <div class="modal" id="contractorDetailsModal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2>Contractor Details</h2>
+                    <span class="close" id="closeContractorDetailsModal">&times;</span>
+                </div>
+                <div class="modal-body" id="contractorDetailsContent">
+                    <!-- Contractor details will be loaded here -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Category Form Modal -->
+        <div class="modal" id="categoryFormModal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2 id="formCategoryTitle">Add Category</h2>
+                    <span class="close" id="closeCategoryFormModal">&times;</span>
+                </div>
+                <div class="modal-body">
+                    <form id="categoryForm">
+                        <input type="hidden" id="categoryId">
+                        
+                        <div class="form-group">
+                            <label for="categoryName">Category Name:</label>
+                            <input type="text" id="categoryName" name="name" class="input" required>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary">Save Category</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Review Details Modal -->
+        <div class="modal" id="reviewDetailsModal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2>Review Details</h2>
+                    <span class="close" id="closeReviewDetailsModal">&times;</span>
+                </div>
+                <div class="modal-body" id="reviewDetailsContent">
+                    <!-- Review details will be loaded here -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/modules/storage.js"></script>
+    <script src="js/data/defaultData.js"></script>
+    <script src="js/modules/utils.js"></script>
+    <script src="js/modules/data.js"></script>
+    <script src="js/modules/categories.js"></script>
+    <script src="js/admin.js"></script>
+    <script src="js/modules/admin-categories.js"></script>
+    <script src="js/modules/admin-reviews.js"></script>
+    <script src="js/modules/tabs.js"></script>
+</body>
+</html>
