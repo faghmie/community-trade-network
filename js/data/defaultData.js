@@ -271,3 +271,14 @@ const southAfricanProvinces = {
         'Barkly West'
     ]
 };
+
+const defaultCategories = [
+    "Plumbing",
+    "Electrical",
+    "Construction",
+    "Roofing",
+    "Painting",
+    "Landscaping",
+    "HVAC",
+    "Carpentry"
+];

@@ -123,7 +123,20 @@ const adminModule = {
         
         if (contractor) {
             // Edit mode - parse existing location
-            const [area, province] = contractor.location ? contractor.location.split(', ').reverse() : ['', ''];
+            let area = '';
+            let province = '';
+            
+            if (contractor.location) {
+                // Location format is "Area, Province" - split and extract
+                const locationParts = contractor.location.split(', ');
+                if (locationParts.length === 2) {
+                    area = locationParts[0]; // First part is area
+                    province = locationParts[1]; // Second part is province
+                } else if (locationParts.length === 1) {
+                    // Handle case where only area or province is provided
+                    area = locationParts[0];
+                }
+            }
             
             document.getElementById('contractorId').value = contractor.id;
             document.getElementById('contractorName').value = contractor.name;
@@ -133,9 +146,12 @@ const adminModule = {
             document.getElementById('contractorWebsite').value = contractor.website || '';
             
             // Set province and area if location exists
-            if (province && area) {
+            if (province) {
                 provinceSelect.value = province;
                 this.updateAreaDropdown(province, area);
+            } else if (area) {
+                // If only area is provided, try to find which province it belongs to
+                this.findProvinceForArea(area);
             }
             
             document.getElementById('formTitle').textContent = 'Edit Contractor';
@@ -147,6 +163,24 @@ const adminModule = {
         }
         
         modal.style.display = 'block';
+    },
+
+    // Helper function to find province for a given area
+    findProvinceForArea(area) {
+        const provinceSelect = document.getElementById('contractorProvince');
+        const areaSelect = document.getElementById('contractorArea');
+        
+        // Search through all provinces to find which one contains this area
+        for (const [province, areas] of Object.entries(southAfricanProvinces)) {
+            if (areas.includes(area)) {
+                provinceSelect.value = province;
+                this.updateAreaDropdown(province, area);
+                return;
+            }
+        }
+        
+        // If area not found in any province, just enable area dropdown
+        areaSelect.disabled = false;
     },
 
     updateAreaDropdown(province, selectedArea = '') {
@@ -197,8 +231,9 @@ const adminModule = {
             return;
         }
 
+        // FIXED: Updated phone validation to accept numbers like "0123456789"
         if (!utils.isValidSouthAfricanPhone(contractorData.phone)) {
-            utils.showNotification('Please enter a valid South African phone number', 'error');
+            utils.showNotification('Please enter a valid South African phone number (e.g., +27821234567, 0821234567, or 0123456789)', 'error');
             return;
         }
 

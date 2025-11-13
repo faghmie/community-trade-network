@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Contractor Reviews</title>
     <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body>
     <div class="container">
@@ -30,6 +31,12 @@
                         <select id="categoryFilter" class="input" onchange="app.filterContractors()">
                             <option value="">All Categories</option>
                             <!-- Categories will be populated dynamically -->
+                        </select>
+                    </div>
+                    <div class="form-group" style="margin: 0;">
+                        <select id="locationFilter" class="input" onchange="app.filterContractors()">
+                            <option value="">All Locations</option>
+                            <!-- Locations will be populated dynamically -->
                         </select>
                     </div>
                     <div class="form-group" style="margin: 0;">
@@ -69,6 +76,7 @@
                             <option value="name">Sort by Name</option>
                             <option value="rating">Sort by Rating</option>
                             <option value="reviews">Sort by Reviews</option>
+                            <option value="location">Sort by Location</option>
                         </select>
                     </div>
                 </div>
@@ -94,9 +102,27 @@
                             <input type="text" id="reviewerName" class="input" required>
                         </div>
 
+                        <!-- Project Type Only -->
                         <div class="form-group">
-                            <label for="rating">Rating:</label>
-                            <div class="star-rating">
+                            <label for="projectType">Project Type:</label>
+                            <select id="projectType" class="input" required>
+                                <option value="">Select Project Type</option>
+                                <option value="bathroom-renovation">Bathroom Renovation</option>
+                                <option value="kitchen-remodel">Kitchen Remodel</option>
+                                <option value="plumbing">Plumbing Work</option>
+                                <option value="electrical">Electrical Work</option>
+                                <option value="painting">Painting</option>
+                                <option value="flooring">Flooring</option>
+                                <option value="roofing">Roofing</option>
+                                <option value="general-construction">General Construction</option>
+                                <option value="other">Other</option>
+                            </select>
+                        </div>
+
+                        <!-- Overall Rating - Separate container -->
+                        <div class="form-group">
+                            <label>Overall Rating:</label>
+                            <div class="star-rating overall-rating">
                                 <span class="star" data-rating="1">★</span>
                                 <span class="star" data-rating="2">★</span>
                                 <span class="star" data-rating="3">★</span>
@@ -106,9 +132,62 @@
                             <input type="hidden" id="rating" required>
                         </div>
 
+                        <!-- Category Ratings - Each with unique class -->
+                        <div class="rating-categories">
+                            <h4>Rate by Category:</h4>
+                            
+                            <div class="rating-category">
+                                <label>Quality of Work</label>
+                                <div class="star-rating quality-rating">
+                                    <span class="star" data-rating="1">★</span>
+                                    <span class="star" data-rating="2">★</span>
+                                    <span class="star" data-rating="3">★</span>
+                                    <span class="star" data-rating="4">★</span>
+                                    <span class="star" data-rating="5">★</span>
+                                </div>
+                                <input type="hidden" id="qualityRating" required>
+                            </div>
+
+                            <div class="rating-category">
+                                <label>Communication</label>
+                                <div class="star-rating communication-rating">
+                                    <span class="star" data-rating="1">★</span>
+                                    <span class="star" data-rating="2">★</span>
+                                    <span class="star" data-rating="3">★</span>
+                                    <span class="star" data-rating="4">★</span>
+                                    <span class="star" data-rating="5">★</span>
+                                </div>
+                                <input type="hidden" id="communicationRating" required>
+                            </div>
+
+                            <div class="rating-category">
+                                <label>Timeliness</label>
+                                <div class="star-rating timeliness-rating">
+                                    <span class="star" data-rating="1">★</span>
+                                    <span class="star" data-rating="2">★</span>
+                                    <span class="star" data-rating="3">★</span>
+                                    <span class="star" data-rating="4">★</span>
+                                    <span class="star" data-rating="5">★</span>
+                                </div>
+                                <input type="hidden" id="timelinessRating" required>
+                            </div>
+
+                            <div class="rating-category">
+                                <label>Value for Money</label>
+                                <div class="star-rating value-rating">
+                                    <span class="star" data-rating="1">★</span>
+                                    <span class="star" data-rating="2">★</span>
+                                    <span class="star" data-rating="3">★</span>
+                                    <span class="star" data-rating="4">★</span>
+                                    <span class="star" data-rating="5">★</span>
+                                </div>
+                                <input type="hidden" id="valueRating" required>
+                            </div>
+                        </div>
+
                         <div class="form-group">
-                            <label for="comment">Review:</label>
-                            <textarea id="comment" rows="4" class="input" required></textarea>
+                            <label for="comment">Review Comment:</label>
+                            <textarea id="comment" rows="4" class="input" placeholder="Tell us about your experience..." required></textarea>
                         </div>
 
                         <button type="submit" class="btn btn-primary">Submit Review</button>
@@ -131,11 +210,22 @@
         </div>
     </div>
 
+    <!-- Scripts -->
+    <script src="js/modules/utils.js"></script>
     <script src="js/modules/storage.js"></script>
     <script src="js/data/defaultData.js"></script>
-    <script src="js/modules/utils.js"></script>
-    <script src="js/modules/data.js"></script>
     <script src="js/modules/categories.js"></script>
+    <script src="js/modules/contractorManager.js"></script>
+    <script src="js/modules/reviewManager.js"></script>
+    <script src="js/modules/statsManager.js"></script>
+    <script src="js/modules/data.js"></script>
+    
+    <!-- App Modules -->
+    <script src="js/app/main.js"></script>
+    <script src="js/app/uiManager.js"></script>
+    <script src="js/app/modalManager.js"></script>
+    <script src="js/app/filterManager.js"></script>
+    <script src="js/app/formManager.js"></script>
     <script src="js/script.js"></script>
 </body>
 </html>

@@ -1,11 +1,13 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin - Contractor Reviews</title>
     <link rel="stylesheet" href="css/main.css">
 </head>
+
 <body>
     <div class="container">
         <header class="flex-between">
@@ -57,8 +59,8 @@
                     <h2>Contractors Management</h2>
                     <div class="search-filter-container">
                         <div class="search-box">
-                            <input type="text" id="searchInput" placeholder="Search contractors..." 
-                                   class="input search-input" style="margin: 0;">
+                            <input type="text" id="searchInput" placeholder="Search contractors..."
+                                class="input search-input" style="margin: 0;">
                         </div>
                         <button class="btn btn-primary" id="addContractorBtn">Add Contractor</button>
                     </div>
@@ -91,8 +93,8 @@
                     <h2>Categories Management</h2>
                     <div class="search-filter-container">
                         <div class="search-box">
-                            <input type="text" id="categorySearch" placeholder="Search categories..." 
-                                   class="input search-input" style="margin: 0;">
+                            <input type="text" id="categorySearch" placeholder="Search categories..."
+                                class="input search-input" style="margin: 0;">
                         </div>
                         <button class="btn btn-primary" id="addCategoryBtn">Add Category</button>
                     </div>
@@ -122,8 +124,8 @@
                     <h2>Reviews Management</h2>
                     <div class="search-filter-container">
                         <div class="search-box">
-                            <input type="text" id="reviewSearch" placeholder="Search reviews..." 
-                                   class="input search-input" style="margin: 0;">
+                            <input type="text" id="reviewSearch" placeholder="Search reviews..."
+                                class="input search-input" style="margin: 0;">
                         </div>
                         <div class="filter-group">
                             <div class="form-group" style="margin: 0;">
@@ -181,7 +183,8 @@
                 <div class="modal-body">
                     <form id="contractorForm">
                         <input type="hidden" id="contractorId">
-                        
+                        <input type="hidden" id="contractorLocation">
+
                         <div class="form-group">
                             <label for="contractorName">Contractor Name:</label>
                             <input type="text" id="contractorName" name="name" class="input" required>
@@ -203,21 +206,31 @@
                         <div class="form-group">
                             <label for="contractorPhone">Phone:</label>
                             <input type="tel" id="contractorPhone" name="phone" class="input" required>
-                            <small class="form-help">South African format: +27 or 0 followed by 9 digits</small>
+                            <small class="form-help">South African format: +27 or 0 followed by 9 digits (e.g., +27821234567, 0821234567, 0123456789)</small>
                         </div>
 
                         <div class="form-group">
                             <label for="contractorWebsite">Website (optional):</label>
-                            <input type="url" id="contractorWebsite" name="website" class="input" placeholder="https://example.com">
+                            <input type="url" id="contractorWebsite" name="website" class="input"
+                                placeholder="https://example.com">
                             <small class="form-help">Please enter a valid URL including http:// or https://</small>
                         </div>
 
                         <div class="form-group">
-                            <label for="contractorLocation">Service Area:</label>
-                            <select id="contractorLocation" name="location" class="input" required>
-                                <option value="">Select Service Area</option>
-                                <!-- South African regions will be populated dynamically -->
+                            <label for="contractorProvince">Province:</label>
+                            <select id="contractorProvince" name="province" class="input" required>
+                                <option value="">Select Province</option>
+                                <!-- Provinces will be populated dynamically -->
                             </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="contractorArea">Area:</label>
+                            <select id="contractorArea" name="area" class="input" required disabled>
+                                <option value="">Select Area</option>
+                                <!-- Areas will be populated based on province selection -->
+                            </select>
+                            <small class="form-help">Please select a province first</small>
                         </div>
 
                         <button type="submit" class="btn btn-primary">Save Contractor</button>
@@ -249,7 +262,7 @@
                 <div class="modal-body">
                     <form id="categoryForm">
                         <input type="hidden" id="categoryId">
-                        
+
                         <div class="form-group">
                             <label for="categoryName">Category Name:</label>
                             <input type="text" id="categoryName" name="name" class="input" required>
@@ -278,6 +291,10 @@
     <script src="js/modules/storage.js"></script>
     <script src="js/data/defaultData.js"></script>
     <script src="js/modules/utils.js"></script>
+    <script src="js/modules/contractorManager.js"></script>
+    <script src="js/modules/reviewManager.js"></script>
+    <script src="js/modules/categoryManager.js"></script>
+    <script src="js/modules/statsManager.js"></script>
     <script src="js/modules/data.js"></script>
     <script src="js/modules/categories.js"></script>
     <script src="js/admin.js"></script>
@@ -285,4 +302,5 @@
     <script src="js/modules/admin-reviews.js"></script>
     <script src="js/modules/tabs.js"></script>
 </body>
+
 </html>

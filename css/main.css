@@ -6,7 +6,7 @@
 @import url('components/modals.css');
 @import url('components/forms.css');
 @import url('components/tables.css');
-@import url('components/tabs.css'); /* Add this line */
+@import url('components/tabs.css');
 @import url('layout.css');
 
 /* Main styles */
@@ -201,6 +201,20 @@ header h1 {
     margin: 0;
 }
 
+/* NEW: Service area location styling */
+.contractor-card .location {
+    color: var(--text-light);
+    font-size: 0.9rem;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: var(--space-xs);
+}
+
+.contractor-card .location i {
+    color: var(--accent-color);
+}
+
 /* Contractor info styles */
 .contractor-info {
     margin-bottom: var(--space-lg);
@@ -213,6 +227,97 @@ header h1 {
 .reviews-section h4 {
     margin-bottom: var(--space-md);
     color: var(--primary-color);
+}
+
+/* NEW: Category Ratings Styles */
+.rating-categories {
+    margin: var(--space-lg) 0;
+    padding: var(--space-lg);
+    background: var(--light-color);
+    border-radius: var(--border-radius-lg);
+    border: 1px solid var(--border-color);
+}
+
+.rating-categories h4 {
+    margin-bottom: var(--space-lg);
+    color: var(--primary-color);
+    font-size: 1.1rem;
+    text-align: center;
+}
+
+.rating-category {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: var(--space-md);
+    padding: var(--space-sm) var(--space-md);
+    background: var(--bg-white);
+    border-radius: var(--border-radius);
+    border: 1px solid var(--border-color);
+    transition: var(--transition);
+}
+
+.rating-category:hover {
+    border-color: var(--primary-color);
+    box-shadow: var(--shadow-sm);
+}
+
+.rating-category label {
+    flex: 1;
+    font-weight: 600;
+    color: var(--dark-color);
+    font-size: 0.95rem;
+}
+
+.rating-category .star-rating {
+    flex: 0 0 auto;
+    display: flex;
+    gap: var(--space-xs);
+}
+
+/* Overall rating stars */
+.overall-rating .star {
+    font-size: 1.8rem;
+    cursor: pointer;
+    color: #ddd;
+    transition: all 0.2s ease;
+    padding: var(--space-xs);
+}
+
+.overall-rating .star:hover {
+    transform: scale(1.3);
+}
+
+.overall-rating .star.active {
+    color: #ffc107;
+    text-shadow: 0 0 15px rgba(255, 193, 7, 0.5);
+}
+
+/* Category-specific star ratings */
+.quality-rating .star,
+.communication-rating .star,
+.timeliness-rating .star,
+.value-rating .star {
+    font-size: 1.4rem;
+    cursor: pointer;
+    color: #ddd;
+    transition: all 0.2s ease;
+    padding: 2px;
+}
+
+.quality-rating .star:hover,
+.communication-rating .star:hover,
+.timeliness-rating .star:hover,
+.value-rating .star:hover {
+    transform: scale(1.2);
+}
+
+.quality-rating .star.active,
+.communication-rating .star.active,
+.timeliness-rating .star.active,
+.value-rating .star.active {
+    color: #ffc107;
+    text-shadow: 0 0 10px rgba(255, 193, 7, 0.3);
 }
 
 /* Notification styles */
@@ -242,6 +347,232 @@ header h1 {
         opacity: 1;
         transform: translateX(0);
     }
+}
+
+/* NEW: Animation for rating interactions */
+@keyframes starPulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.3); }
+    100% { transform: scale(1.2); }
+}
+
+.star-rating .star.active.pulse {
+    animation: starPulse 0.3s ease;
+}
+
+/* NEW: Focus states for accessibility */
+.star-rating .star:focus {
+    outline: 2px solid var(--primary-color);
+    outline-offset: 2px;
+    border-radius: 2px;
+}
+
+.rating-category:focus-within {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 2px rgba(67, 97, 238, 0.1);
+}
+
+/* NEW: Contractor Details Modal Styles for Main Page */
+.contractor-details-main {
+    max-height: 70vh;
+    overflow-y: auto;
+    padding: 1rem;
+}
+
+.contractor-header {
+    margin-bottom: 1.5rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.contractor-header h3 {
+    margin: 0 0 0.5rem 0;
+    color: var(--primary-color);
+    font-size: 1.5rem;
+}
+
+.contractor-category {
+    margin: 0;
+    color: var(--text-light);
+    font-style: italic;
+    font-size: 1.1rem;
+}
+
+.contractor-info-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.contractor-info-grid .info-item {
+    padding: 0.75rem;
+    background: #f8f9fa;
+    border-radius: 8px;
+    border-left: 3px solid var(--primary-color);
+}
+
+.category-ratings-section {
+    margin-bottom: 1.5rem;
+    padding: 1.5rem;
+    background: #f8f9fa;
+    border-radius: var(--border-radius);
+    border: 1px solid var(--border-color);
+}
+
+.category-ratings-section h4 {
+    margin: 0 0 1rem 0;
+    color: var(--primary-color);
+    font-size: 1.2rem;
+}
+
+.category-ratings-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1rem;
+}
+
+.category-rating-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem;
+    background: white;
+    border-radius: 8px;
+    box-shadow: var(--shadow-sm);
+}
+
+.category-rating-item strong {
+    color: var(--text-color);
+    font-weight: 600;
+}
+
+.category-rating-display {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.category-rating-display .stars {
+    color: #FFD700;
+    font-size: 1.1rem;
+}
+
+.category-rating-display .value {
+    font-weight: bold;
+    color: var(--primary-color);
+    font-size: 1.1rem;
+}
+
+.reviews-section {
+    margin-top: 2rem;
+}
+
+.reviews-section h4 {
+    margin: 0 0 1.5rem 0;
+    color: var(--primary-color);
+    font-size: 1.2rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 2px solid var(--border-color);
+}
+
+.review-item {
+    background: white;
+    padding: 1.5rem;
+    margin-bottom: 1rem;
+    border-radius: var(--border-radius);
+    box-shadow: var(--shadow-sm);
+    border-left: 4px solid var(--primary-color);
+}
+
+.review-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 1rem;
+}
+
+.reviewer-info {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.reviewer-name {
+    font-weight: 600;
+    color: var(--text-color);
+    font-size: 1.1rem;
+}
+
+.review-meta {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 0.5rem;
+    text-align: right;
+}
+
+.review-date {
+    font-size: 0.9rem;
+    color: var(--text-muted);
+}
+
+.project-type {
+    background: var(--primary-color-light);
+    color: var(--primary-color);
+    padding: 0.25rem 0.75rem;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 500;
+}
+
+.category-ratings-preview {
+    font-size: 0.9em;
+    color: #666;
+    margin: 0.75rem 0;
+    padding: 0.75rem;
+    background: #f8f9fa;
+    border-radius: 6px;
+    border-left: 3px solid var(--accent-color);
+}
+
+.review-comment {
+    line-height: 1.6;
+    color: var(--text-color);
+    margin: 0;
+}
+
+/* NEW: Status badges for reviews */
+.review-status {
+    padding: 0.25rem 0.75rem;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.review-status.status-approved {
+    background: #E8F5E8;
+    color: #4CAF50;
+}
+
+.review-status.status-pending {
+    background: #FFF3E0;
+    color: #FF9800;
+}
+
+.review-status.status-rejected {
+    background: #FFEBEE;
+    color: #f44336;
+}
+
+/* NEW: Review actions */
+.review-actions {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+    margin-top: 1rem;
 }
 
 /* Responsive design */
@@ -283,6 +614,76 @@ header h1 {
         flex-direction: column;
         gap: var(--space-sm);
     }
+
+    /* NEW: Responsive category ratings */
+    .rating-categories {
+        padding: var(--space-md);
+        margin: var(--space-md) 0;
+    }
+
+    .rating-category {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: var(--space-sm);
+        padding: var(--space-md);
+    }
+
+    .rating-category label {
+        margin-bottom: var(--space-sm);
+    }
+
+    .rating-category .star-rating {
+        align-self: center;
+    }
+
+    .quality-rating .star,
+    .communication-rating .star,
+    .timeliness-rating .star,
+    .value-rating .star {
+        font-size: 1.2rem;
+    }
+
+    .overall-rating .star {
+        font-size: 1.6rem;
+    }
+
+    /* NEW: Responsive contractor details */
+    .contractor-details-main {
+        padding: 0.5rem;
+    }
+
+    .contractor-info-grid {
+        grid-template-columns: 1fr;
+        gap: 0.75rem;
+    }
+
+    .category-ratings-grid {
+        grid-template-columns: 1fr;
+        gap: 0.75rem;
+    }
+
+    .category-rating-item {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.75rem;
+        padding: 0.75rem;
+    }
+
+    .category-rating-display {
+        align-self: stretch;
+        justify-content: space-between;
+    }
+
+    .review-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.75rem;
+    }
+
+    .review-meta {
+        align-items: flex-start;
+        text-align: left;
+    }
 }
 
 @media (max-width: 480px) {
@@ -305,5 +706,77 @@ header h1 {
 
     .category-actions .btn {
         width: 100%;
+    }
+
+    /* NEW: Mobile category ratings */
+    .rating-category .star-rating {
+        gap: 2px;
+    }
+
+    .quality-rating .star,
+    .communication-rating .star,
+    .timeliness-rating .star,
+    .value-rating .star {
+        font-size: 1.1rem;
+        padding: 2px;
+    }
+
+    .overall-rating .star {
+        font-size: 1.4rem;
+        padding: 2px;
+    }
+
+    .rating-categories {
+        padding: var(--space-sm);
+    }
+
+    /* NEW: Mobile contractor details */
+    .contractor-header h3 {
+        font-size: 1.3rem;
+    }
+
+    .contractor-category {
+        font-size: 1rem;
+    }
+
+    .category-ratings-section h4,
+    .reviews-section h4 {
+        font-size: 1.1rem;
+    }
+
+    .review-item {
+        padding: 1rem;
+    }
+
+    .review-actions {
+        justify-content: center;
+    }
+
+    .review-actions .btn {
+        flex: 1;
+        min-width: 120px;
+    }
+}
+
+/* NEW: Print styles for contractor details */
+@media print {
+    .contractor-details-main {
+        max-height: none;
+        overflow: visible;
+    }
+    
+    .review-actions,
+    .card-footer,
+    .btn {
+        display: none !important;
+    }
+    
+    .contractor-card {
+        break-inside: avoid;
+    }
+    
+    .review-item {
+        break-inside: avoid;
+        border: 1px solid #000;
     }
 }

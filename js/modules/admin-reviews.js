@@ -1,4 +1,4 @@
-// Admin Reviews Management
+// Admin Reviews Management - UPDATED to properly show overall rating
 const adminReviewsModule = {
     init() {
         this.bindEvents();
@@ -70,12 +70,20 @@ const adminReviewsModule = {
             const statusClass = this.getStatusClass(review.status);
             const statusLabel = this.getStatusLabel(review.status);
             
+            // Get category ratings if they exist
+            const categoryRatings = review.categoryRatings || {};
+            const hasCategoryRatings = categoryRatings.quality || categoryRatings.communication || 
+                                     categoryRatings.timeliness || categoryRatings.value;
+            
+            // DEBUG: Log review data to see what's available
+            console.log('Review data:', review);
+            
             return `
                 <div class="review-item ${statusClass}">
                     <div class="review-header">
                         <div class="reviewer-info">
                             <span class="reviewer-name">${review.reviewerName}</span>
-                            <span class="rating">${'⭐'.repeat(review.rating)}</span>
+                            <span class="rating">${'⭐'.repeat(review.rating)} (${review.rating}/5)</span>
                         </div>
                         <div class="review-meta">
                             <span class="review-date">${dataModule.formatDate(review.date)}</span>
@@ -84,7 +92,17 @@ const adminReviewsModule = {
                     </div>
                     <div class="review-contractor">
                         <strong>Contractor:</strong> ${review.contractorName} (${review.contractorCategory})
+                        <br><strong>Project Type:</strong> ${review.projectType || 'Not specified'}
                     </div>
+                    ${hasCategoryRatings ? `
+                    <div class="category-ratings-preview">
+                        <strong>Category Ratings:</strong>
+                        ${categoryRatings.quality ? `Quality: ${'⭐'.repeat(categoryRatings.quality)}` : ''}
+                        ${categoryRatings.communication ? ` | Communication: ${'⭐'.repeat(categoryRatings.communication)}` : ''}
+                        ${categoryRatings.timeliness ? ` | Timeliness: ${'⭐'.repeat(categoryRatings.timeliness)}` : ''}
+                        ${categoryRatings.value ? ` | Value: ${'⭐'.repeat(categoryRatings.value)}` : ''}
+                    </div>
+                    ` : ''}
                     <p class="review-comment">${review.comment}</p>
                     <div class="review-actions">
                         ${review.status === 'pending' ? `
@@ -210,6 +228,11 @@ const adminReviewsModule = {
                 const statusClass = this.getStatusClass(review.status);
                 const statusLabel = this.getStatusLabel(review.status);
                 
+                // Get category ratings if they exist
+                const categoryRatings = review.categoryRatings || {};
+                const hasCategoryRatings = categoryRatings.quality || categoryRatings.communication || 
+                                         categoryRatings.timeliness || categoryRatings.value;
+                
                 content.innerHTML = `
                     <div class="review-details">
                         <div class="detail-section">
@@ -219,7 +242,10 @@ const adminReviewsModule = {
                                     <strong>Reviewer:</strong> ${review.reviewerName}
                                 </div>
                                 <div class="detail-item">
-                                    <strong>Rating:</strong> ${'⭐'.repeat(review.rating)} (${review.rating}/5)
+                                    <strong>Overall Rating:</strong> ${'⭐'.repeat(review.rating)} (${review.rating}/5)
+                                </div>
+                                <div class="detail-item">
+                                    <strong>Project Type:</strong> ${review.projectType || 'Not specified'}
                                 </div>
                                 <div class="detail-item">
                                     <strong>Date:</strong> ${dataModule.formatDate(review.date)}
@@ -229,6 +255,38 @@ const adminReviewsModule = {
                                 </div>
                             </div>
                         </div>
+                        
+                        ${hasCategoryRatings ? `
+                        <div class="detail-section">
+                            <h3>Category Ratings</h3>
+                            <div class="category-ratings-detail">
+                                ${categoryRatings.quality ? `
+                                <div class="category-rating-item">
+                                    <strong>Quality of Work:</strong> 
+                                    <span>${'⭐'.repeat(categoryRatings.quality)} (${categoryRatings.quality}/5)</span>
+                                </div>
+                                ` : ''}
+                                ${categoryRatings.communication ? `
+                                <div class="category-rating-item">
+                                    <strong>Communication:</strong> 
+                                    <span>${'⭐'.repeat(categoryRatings.communication)} (${categoryRatings.communication}/5)</span>
+                                </div>
+                                ` : ''}
+                                ${categoryRatings.timeliness ? `
+                                <div class="category-rating-item">
+                                    <strong>Timeliness:</strong> 
+                                    <span>${'⭐'.repeat(categoryRatings.timeliness)} (${categoryRatings.timeliness}/5)</span>
+                                </div>
+                                ` : ''}
+                                ${categoryRatings.value ? `
+                                <div class="category-rating-item">
+                                    <strong>Value for Money:</strong> 
+                                    <span>${'⭐'.repeat(categoryRatings.value)} (${categoryRatings.value}/5)</span>
+                                </div>
+                                ` : ''}
+                            </div>
+                        </div>
+                        ` : ''}
                         
                         <div class="detail-section">
                             <h3>Contractor Information</h3>
@@ -240,10 +298,10 @@ const adminReviewsModule = {
                                     <strong>Category:</strong> ${contractor.category}
                                 </div>
                                 <div class="detail-item">
-                                    <strong>Email:</strong> ${contractor.email}
+                                    <strong>Email:</strong> ${contractor.email || 'Not provided'}
                                 </div>
                                 <div class="detail-item">
-                                    <strong>Phone:</strong> ${contractor.phone}
+                                    <strong>Phone:</strong> ${contractor.phone || 'Not provided'}
                                 </div>
                             </div>
                         </div>

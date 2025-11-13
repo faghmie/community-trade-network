@@ -1,0 +1,51 @@
+.
+|-- css
+|   |-- base
+|   |   |-- reset.css
+|   |   `-- variables.css
+|   |-- components
+|   |   |-- buttons.css
+|   |   |-- cards.css
+|   |   |-- forms.css
+|   |   |-- layout.css
+|   |   |-- modals.css
+|   |   |-- tables.css
+|   |   `-- tabs.css
+|   |-- admin.css
+|   |-- layout.css
+|   `-- main.css
+|-- js
+|   |-- app
+|   |   |-- filterManager.js
+|   |   |-- formManager.js
+|   |   |-- main.js
+|   |   |-- modalManager.js
+|   |   `-- uiManager.js
+|   |-- data
+|   |   `-- defaultData.js
+|   |-- modules
+|   |   |-- admin-categories.js
+|   |   |-- admin.js
+|   |   |-- admin-reviews.js
+|   |   |-- categories.js
+|   |   |-- categoryManager.js
+|   |   |-- contractorManager.js
+|   |   |-- contractors.js
+|   |   |-- data.js
+|   |   |-- reviewManager.js
+|   |   |-- statsManager.js
+|   |   |-- storage.js
+|   |   |-- tabs.js
+|   |   `-- utils.js
+|   |-- admin.js
+|   |-- app.js
+|   |-- main.js
+|   `-- script.js
+|-- admin.html
+|-- index.html
+|-- manifest.json
+|-- rate-my-contractor-product-requirements.md
+|-- repo_structure.txt
+`-- sw.js
+
+8 directories, 41 files

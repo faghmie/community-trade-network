@@ -52,10 +52,10 @@ const utils = {
         }
     },
 
-    // Phone validation for South Africa
+    // Phone validation for South Africa - FIXED VERSION
     isValidSouthAfricanPhone(phone) {
-        // South African phone number regex - accepts various formats
-        const saPhoneRegex = /^(\+27|0)[6-8][0-9]{8}$/;
+        // South African phone number regex - accepts all valid formats including landlines
+        const saPhoneRegex = /^(\+27|0)[0-9]{9}$/;
         // Remove spaces, dashes, and parentheses for validation
         const cleanPhone = phone.replace(/[\s\-()]/g, '');
         return saPhoneRegex.test(cleanPhone);
