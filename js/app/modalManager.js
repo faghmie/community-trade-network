@@ -1,4 +1,4 @@
-// js/app/modalManager.js - UPDATED with category ratings
+// js/app/modalManager.js - UPDATED with proper CSS classes and variables
 class ModalManager {
     constructor() {
         this.elements = {};
@@ -124,73 +124,79 @@ class ModalManager {
                                  categoryAverages.timeliness > 0 || categoryAverages.value > 0;
 
         return `
-            <div class="contractor-details-main">
+            <div class="contractor-details">
                 <div class="contractor-header">
-                    <h3>${contractor.name}</h3>
+                    <h3 class="contractor-name">${contractor.name}</h3>
                     <p class="contractor-category">${contractor.category}</p>
                 </div>
 
                 <div class="contractor-info-grid">
                     <div class="info-item">
-                        <strong>Email:</strong> ${contractor.email || 'Not provided'}
+                        <strong class="info-label">Email:</strong> 
+                        <span class="info-value">${contractor.email || 'Not provided'}</span>
                     </div>
                     <div class="info-item">
-                        <strong>Phone:</strong> ${contractor.phone || 'Not provided'}
+                        <strong class="info-label">Phone:</strong> 
+                        <span class="info-value">${contractor.phone || 'Not provided'}</span>
                     </div>
                     <div class="info-item">
-                        <strong>Service Area:</strong> ${contractor.location || 'Not specified'}
+                        <strong class="info-label">Service Area:</strong> 
+                        <span class="info-value">${contractor.location || 'Not specified'}</span>
                     </div>
                     <div class="info-item">
-                        <strong>Website:</strong> ${contractor.website ? `<a href="${contractor.website}" target="_blank">${contractor.website}</a>` : 'Not provided'}
+                        <strong class="info-label">Website:</strong> 
+                        <span class="info-value">${contractor.website ? `<a href="${contractor.website}" target="_blank" class="website-link">${contractor.website}</a>` : 'Not provided'}</span>
                     </div>
                     <div class="info-item">
-                        <strong>Overall Rating:</strong> ${ratingFormatted} ⭐
+                        <strong class="info-label">Overall Rating:</strong> 
+                        <span class="info-value rating-value">${ratingFormatted} ⭐</span>
                     </div>
                     <div class="info-item">
-                        <strong>Total Reviews:</strong> ${approvedReviews.length}
+                        <strong class="info-label">Total Reviews:</strong> 
+                        <span class="info-value">${approvedReviews.length}</span>
                     </div>
                 </div>
 
                 ${hasCategoryRatings ? `
                 <div class="category-ratings-section">
-                    <h4>Rating Breakdown</h4>
+                    <h4 class="section-title">Rating Breakdown</h4>
                     <div class="category-ratings-grid">
                         ${categoryAverages.quality > 0 ? `
                         <div class="category-rating-item">
-                            <strong>Quality of Work:</strong>
+                            <strong class="category-label">Quality of Work:</strong>
                             <div class="category-rating-display">
                                 <span class="stars">${'⭐'.repeat(Math.floor(categoryAverages.quality))}${categoryAverages.quality % 1 >= 0.5 ? '⭐' : ''}</span>
-                                <span class="value">${categoryAverages.quality.toFixed(1)}</span>
+                                <span class="rating-value">${categoryAverages.quality.toFixed(1)}</span>
                             </div>
                         </div>
                         ` : ''}
                         
                         ${categoryAverages.communication > 0 ? `
                         <div class="category-rating-item">
-                            <strong>Communication:</strong>
+                            <strong class="category-label">Communication:</strong>
                             <div class="category-rating-display">
                                 <span class="stars">${'⭐'.repeat(Math.floor(categoryAverages.communication))}${categoryAverages.communication % 1 >= 0.5 ? '⭐' : ''}</span>
-                                <span class="value">${categoryAverages.communication.toFixed(1)}</span>
+                                <span class="rating-value">${categoryAverages.communication.toFixed(1)}</span>
                             </div>
                         </div>
                         ` : ''}
                         
                         ${categoryAverages.timeliness > 0 ? `
                         <div class="category-rating-item">
-                            <strong>Timeliness:</strong>
+                            <strong class="category-label">Timeliness:</strong>
                             <div class="category-rating-display">
                                 <span class="stars">${'⭐'.repeat(Math.floor(categoryAverages.timeliness))}${categoryAverages.timeliness % 1 >= 0.5 ? '⭐' : ''}</span>
-                                <span class="value">${categoryAverages.timeliness.toFixed(1)}</span>
+                                <span class="rating-value">${categoryAverages.timeliness.toFixed(1)}</span>
                             </div>
                         </div>
                         ` : ''}
                         
                         ${categoryAverages.value > 0 ? `
                         <div class="category-rating-item">
-                            <strong>Value for Money:</strong>
+                            <strong class="category-label">Value for Money:</strong>
                             <div class="category-rating-display">
                                 <span class="stars">${'⭐'.repeat(Math.floor(categoryAverages.value))}${categoryAverages.value % 1 >= 0.5 ? '⭐' : ''}</span>
-                                <span class="value">${categoryAverages.value.toFixed(1)}</span>
+                                <span class="rating-value">${categoryAverages.value.toFixed(1)}</span>
                             </div>
                         </div>
                         ` : ''}
@@ -199,42 +205,44 @@ class ModalManager {
                 ` : ''}
 
                 <div class="reviews-section">
-                    <h4>Customer Reviews (${approvedReviews.length})</h4>
-                    ${approvedReviews.length > 0 ? 
-                        approvedReviews.map(review => {
-                            const categoryRatings = review.categoryRatings || {};
-                            const hasCategoryRatings = categoryRatings.quality || categoryRatings.communication || 
-                                                     categoryRatings.timeliness || categoryRatings.value;
-                            
-                            return `
-                            <div class="review-item">
-                                <div class="review-header">
-                                    <div class="reviewer-info">
-                                        <span class="reviewer-name">${review.reviewerName}</span>
-                                        <span class="rating">${'⭐'.repeat(review.rating)} (${review.rating}/5)</span>
+                    <h4 class="section-title">Customer Reviews (${approvedReviews.length})</h4>
+                    <div class="reviews-list">
+                        ${approvedReviews.length > 0 ? 
+                            approvedReviews.map(review => {
+                                const categoryRatings = review.categoryRatings || {};
+                                const hasCategoryRatings = categoryRatings.quality || categoryRatings.communication || 
+                                                         categoryRatings.timeliness || categoryRatings.value;
+                                
+                                return `
+                                <div class="review-item">
+                                    <div class="review-header">
+                                        <div class="reviewer-info">
+                                            <span class="reviewer-name">${review.reviewerName}</span>
+                                            <span class="review-rating">${'⭐'.repeat(review.rating)} (${review.rating}/5)</span>
+                                        </div>
+                                        <div class="review-meta">
+                                            <span class="review-date">${dataModule.formatDate(review.date)}</span>
+                                            ${review.projectType ? `<span class="project-type">${review.projectType}</span>` : ''}
+                                        </div>
                                     </div>
-                                    <div class="review-meta">
-                                        <span class="review-date">${dataModule.formatDate(review.date)}</span>
-                                        ${review.projectType ? `<span class="project-type">${review.projectType}</span>` : ''}
+                                    ${hasCategoryRatings ? `
+                                    <div class="category-ratings-preview">
+                                        <strong>Category Ratings:</strong>
+                                        ${categoryRatings.quality ? `Quality: ${'⭐'.repeat(categoryRatings.quality)}` : ''}
+                                        ${categoryRatings.communication ? ` | Communication: ${'⭐'.repeat(categoryRatings.communication)}` : ''}
+                                        ${categoryRatings.timeliness ? ` | Timeliness: ${'⭐'.repeat(categoryRatings.timeliness)}` : ''}
+                                        ${categoryRatings.value ? ` | Value: ${'⭐'.repeat(categoryRatings.value)}` : ''}
                                     </div>
+                                    ` : ''}
+                                    <p class="review-comment">${review.comment}</p>
                                 </div>
-                                ${hasCategoryRatings ? `
-                                <div class="category-ratings-preview">
-                                    <strong>Category Ratings:</strong>
-                                    ${categoryRatings.quality ? `Quality: ${'⭐'.repeat(categoryRatings.quality)}` : ''}
-                                    ${categoryRatings.communication ? ` | Communication: ${'⭐'.repeat(categoryRatings.communication)}` : ''}
-                                    ${categoryRatings.timeliness ? ` | Timeliness: ${'⭐'.repeat(categoryRatings.timeliness)}` : ''}
-                                    ${categoryRatings.value ? ` | Value: ${'⭐'.repeat(categoryRatings.value)}` : ''}
-                                </div>
-                                ` : ''}
-                                <p class="review-comment">${review.comment}</p>
-                            </div>
-                            `;
-                        }).join('') : 
-                        '<p>No reviews yet. Be the first to review!</p>'
-                    }
+                                `;
+                            }).join('') : 
+                            '<p class="no-reviews">No reviews yet. Be the first to review!</p>'
+                        }
+                    </div>
                 </div>
-                <div class="text-center" style="margin-top: var(--space-lg);">
+                <div class="modal-actions">
                     <button class="btn btn-primary" onclick="app.closeModal('contractorModal'); app.showReviewForm('${contractor.id}')">
                         Leave a Review
                     </button>

@@ -1,4 +1,4 @@
-// js/modules/favoritesManager.js
+// js/modules/favoritesManager.js - UPDATED with correct element selectors
 const favoritesManager = {
     favorites: [],
 
@@ -12,7 +12,75 @@ const favoritesManager = {
             this.favorites = [];
             this.save();
         }
+        
+        // Set up event listeners for UI updates
+        this.setupEventListeners();
+        
+        // Initial UI update
+        this.updateFavoritesUI();
+        
         console.log('Favorites manager initialized with', this.favorites.length, 'favorites');
+    },
+
+    setupEventListeners() {
+        // Listen for favorites updates and refresh the UI
+        document.addEventListener('favoritesUpdated', () => {
+            this.updateFavoritesUI();
+        });
+
+        // Also update UI when contractors are loaded
+        document.addEventListener('contractorsUpdated', () => {
+            this.updateFavoritesUI();
+        });
+    },
+
+    updateFavoritesUI() {
+        const favoritesCount = this.getFavoritesCount();
+        
+        // Update favorites counter in stats (using class selector)
+        const favoritesCountElements = document.querySelectorAll('.favorites-count');
+        favoritesCountElements.forEach(element => {
+            element.textContent = favoritesCount;
+            element.style.display = favoritesCount > 0 ? 'inline' : 'none';
+        });
+
+        // Update favorites badge in favorites section
+        const favoritesBadge = document.querySelector('.favorites-badge');
+        if (favoritesBadge) {
+            favoritesBadge.textContent = favoritesCount;
+            favoritesBadge.style.display = favoritesCount > 0 ? 'inline-block' : 'none';
+        }
+
+        // Update favorite buttons state
+        this.updateFavoriteButtons();
+
+        // Show/hide favorites section based on count
+        const favoritesSection = document.getElementById('favoritesSection');
+        if (favoritesSection) {
+            if (favoritesCount > 0) {
+                favoritesSection.classList.remove('hidden');
+                // Trigger favorites display update
+                this.showFavoritesSection();
+            } else {
+                favoritesSection.classList.add('hidden');
+            }
+        }
+
+        console.log('Favorites UI updated:', favoritesCount, 'favorites');
+    },
+
+    updateFavoriteButtons() {
+        const favoriteButtons = document.querySelectorAll('.favorite-btn');
+        favoriteButtons.forEach(button => {
+            const contractorId = button.getAttribute('data-contractor-id');
+            if (contractorId) {
+                if (this.isFavorite(contractorId)) {
+                    button.classList.add('favorited');
+                } else {
+                    button.classList.remove('favorited');
+                }
+            }
+        });
     },
 
     save() {
@@ -36,6 +104,13 @@ const favoritesManager = {
         const success = this.save();
         if (success) {
             this.dispatchFavoritesUpdate();
+            // Show notification
+            if (typeof utils !== 'undefined' && utils.showNotification) {
+                const action = isNowFavorite ? 'added to' : 'removed from';
+                utils.showNotification(`Contractor ${action} favorites!`, 'success');
+            }
+        } else {
+            this.showStorageWarning();
         }
         
         return isNowFavorite;
@@ -46,7 +121,8 @@ const favoritesManager = {
     },
 
     getFavoriteContractors() {
-        const allContractors = contractorManager.getAll();
+        // Use dataModule instead of contractorManager for consistency
+        const allContractors = dataModule.getContractors();
         return allContractors.filter(contractor => 
             this.favorites.includes(contractor.id)
         );
@@ -59,9 +135,50 @@ const favoritesManager = {
     // Event system for UI updates
     dispatchFavoritesUpdate() {
         const event = new CustomEvent('favoritesUpdated', {
-            detail: { favorites: this.favorites }
+            detail: { 
+                favorites: this.favorites,
+                count: this.favorites.length 
+            }
         });
         document.dispatchEvent(event);
+    },
+
+    // Show favorites section with actual favorites
+    showFavoritesSection() {
+        const favoritesSection = document.getElementById('favoritesSection');
+        const favoritesGrid = document.getElementById('favoritesGrid');
+        const favoritesNotice = document.getElementById('favoritesNotice');
+        
+        if (!favoritesSection || !favoritesGrid) return;
+
+        const favoriteContractors = this.getFavoriteContractors();
+        
+        if (favoriteContractors.length > 0) {
+            // Hide notice, show grid
+            if (favoritesNotice) {
+                favoritesNotice.style.display = 'none';
+            }
+            favoritesGrid.style.display = 'grid';
+            
+            // Render favorite contractors (you might need to call your UI manager here)
+            if (typeof uiManager !== 'undefined') {
+                uiManager.renderContractors(favoriteContractors, favoritesGrid);
+            }
+        } else {
+            // Show notice, hide grid
+            if (favoritesNotice) {
+                favoritesNotice.style.display = 'block';
+                favoritesNotice.innerHTML = `
+                    <div class="no-favorites">
+                        <p>⭐ You haven't added any contractors to favorites yet!</p>
+                        <p>Click the heart icon on any contractor card to add them to your favorites.</p>
+                    </div>
+                `;
+            }
+            favoritesGrid.style.display = 'none';
+        }
+        
+        favoritesSection.classList.remove('hidden');
     },
 
     // Export functionality for user backup
@@ -90,11 +207,17 @@ const favoritesManager = {
                 const success = this.save();
                 if (success) {
                     this.dispatchFavoritesUpdate();
+                    if (typeof utils !== 'undefined' && utils.showNotification) {
+                        utils.showNotification('Favorites imported successfully!', 'success');
+                    }
                     return true;
                 }
             }
         } catch (e) {
             console.error('Invalid favorites data');
+            if (typeof utils !== 'undefined' && utils.showNotification) {
+                utils.showNotification('Invalid favorites file format', 'error');
+            }
         }
         return false;
     },
@@ -109,9 +232,27 @@ const favoritesManager = {
         a.download = `contractor-favorites-${new Date().toISOString().split('T')[0]}.json`;
         a.click();
         URL.revokeObjectURL(url);
+        
+        if (typeof utils !== 'undefined' && utils.showNotification) {
+            utils.showNotification('Favorites exported successfully!', 'success');
+        }
     },
 
-    // Show storage warning (similar to contractorManager error handling)
+    // Handle file import
+    handleFavoritesImport(file) {
+        if (!file) return;
+        
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            const success = this.importFavorites(e.target.result);
+            if (!success && typeof utils !== 'undefined' && utils.showNotification) {
+                utils.showNotification('Failed to import favorites', 'error');
+            }
+        };
+        reader.readAsText(file);
+    },
+
+    // Show storage warning
     showStorageWarning() {
         if (typeof utils !== 'undefined' && utils.showNotification) {
             utils.showNotification('Unable to save favorites. Your browser storage might be full.', 'error');

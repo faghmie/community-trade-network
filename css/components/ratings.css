@@ -1,0 +1,193 @@
+/* Rating Categories Styles */
+.rating-categories {
+    margin: var(--space-lg) 0;
+    padding: var(--space-lg);
+    background: var(--bg-color);
+    border-radius: var(--border-radius-lg);
+    border: 1px solid var(--border-color);
+}
+
+.rating-categories h4 {
+    margin-bottom: var(--space-lg);
+    color: var(--primary-color);
+    font-size: 1.1rem;
+    text-align: center;
+}
+
+.rating-category {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: var(--space-md);
+    padding: var(--space-sm) var(--space-md);
+    background: var(--bg-white);
+    border-radius: var(--border-radius);
+    border: 1px solid var(--border-color);
+    transition: var(--transition);
+}
+
+.rating-category:hover {
+    border-color: var(--primary-color);
+    box-shadow: var(--shadow-sm);
+}
+
+.rating-category label {
+    flex: 1;
+    font-weight: 600;
+    color: var(--text-color);
+    font-size: 0.95rem;
+}
+
+.rating-category .star-rating {
+    flex: 0 0 auto;
+    display: flex;
+    gap: var(--space-xs);
+}
+
+/* Overall rating stars */
+.overall-rating .star {
+    font-size: 1.8rem;
+    cursor: pointer;
+    color: #ddd;
+    transition: all 0.2s ease;
+    padding: var(--space-xs);
+}
+
+.overall-rating .star:hover {
+    transform: scale(1.3);
+}
+
+.overall-rating .star.active {
+    color: #ffc107;
+    text-shadow: 0 0 15px rgba(255, 193, 7, 0.5);
+}
+
+/* Category-specific star ratings */
+.quality-rating .star,
+.communication-rating .star,
+.timeliness-rating .star,
+.value-rating .star {
+    font-size: 1.4rem;
+    cursor: pointer;
+    color: #ddd;
+    transition: all 0.2s ease;
+    padding: 2px;
+}
+
+.quality-rating .star:hover,
+.communication-rating .star:hover,
+.timeliness-rating .star:hover,
+.value-rating .star:hover {
+    transform: scale(1.2);
+}
+
+.quality-rating .star.active,
+.communication-rating .star.active,
+.timeliness-rating .star.active,
+.value-rating .star.active {
+    color: #ffc107;
+    text-shadow: 0 0 10px rgba(255, 193, 7, 0.3);
+}
+
+/* Animation for rating interactions */
+@keyframes starPulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.3); }
+    100% { transform: scale(1.2); }
+}
+
+.star-rating .star.active.pulse {
+    animation: starPulse 0.3s ease;
+}
+
+/* Focus states for accessibility */
+.star-rating .star:focus {
+    outline: 2px solid var(--primary-color);
+    outline-offset: 2px;
+    border-radius: 2px;
+}
+
+.rating-category:focus-within {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 2px rgba(67, 97, 238, 0.1);
+}
+
+/* Responsive rating categories */
+@media (max-width: 768px) {
+    .rating-categories {
+        padding: var(--space-md);
+        margin: var(--space-md) 0;
+    }
+
+    .rating-category {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: var(--space-sm);
+        padding: var(--space-md);
+    }
+
+    .rating-category label {
+        margin-bottom: var(--space-sm);
+    }
+
+    .rating-category .star-rating {
+        align-self: center;
+    }
+
+    .quality-rating .star,
+    .communication-rating .star,
+    .timeliness-rating .star,
+    .value-rating .star {
+        font-size: 1.2rem;
+    }
+
+    .overall-rating .star {
+        font-size: 1.6rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .rating-category .star-rating {
+        gap: 2px;
+    }
+
+    .quality-rating .star,
+    .communication-rating .star,
+    .timeliness-rating .star,
+    .value-rating .star {
+        font-size: 1.1rem;
+        padding: 2px;
+    }
+
+    .overall-rating .star {
+        font-size: 1.4rem;
+        padding: 2px;
+    }
+
+    .rating-categories {
+        padding: var(--space-sm);
+    }
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+    .overall-rating .star,
+    .quality-rating .star,
+    .communication-rating .star,
+    .timeliness-rating .star,
+    .value-rating .star {
+        transition: none;
+    }
+    
+    .overall-rating .star:hover,
+    .quality-rating .star:hover,
+    .communication-rating .star:hover,
+    .timeliness-rating .star:hover,
+    .value-rating .star:hover {
+        transform: none;
+    }
+    
+    .star-rating .star.active.pulse {
+        animation: none;
+    }
+}

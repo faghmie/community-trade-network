@@ -26,7 +26,7 @@
 .card-footer {
     padding: var(--space-lg);
     border-top: 1px solid var(--border-color);
-    background-color: #f8f9fa;
+    background-color: var(--bg-color);
 }
 
 .contractor-card {
@@ -45,13 +45,13 @@
     font-weight: bold;
 }
 
-/* NEW: Favorite button styles */
+/* FIXED: Favorite button styles with proper heart icons */
 .favorite-btn {
     position: absolute;
     top: var(--space-sm);
     right: var(--space-sm);
     background: rgba(255, 255, 255, 0.95);
-    border: 2px solid #e9ecef;
+    border: 2px solid var(--border-color);
     border-radius: 50%;
     width: 44px;
     height: 44px;
@@ -59,33 +59,45 @@
     align-items: center;
     justify-content: center;
     cursor: pointer;
-    transition: all 0.3s ease;
+    transition: var(--transition);
     font-size: 1.3rem;
-    color: #dee2e6;
+    color: var(--border-color);
     z-index: 10;
     backdrop-filter: blur(10px);
 }
 
+/* Show outline heart when not favorited */
+.favorite-btn::before {
+    content: "♡";
+    font-family: Arial, sans-serif;
+}
+
 .favorite-btn:hover {
-    background: white;
+    background: var(--bg-white);
     transform: scale(1.15);
-    border-color: #ff6b6b;
-    color: #ff6b6b;
-    box-shadow: 0 4px 12px rgba(255, 107, 107, 0.3);
+    border-color: var(--accent-color);
+    color: var(--accent-color);
+    box-shadow: 0 4px 12px rgba(231, 76, 60, 0.3);
+}
+
+/* Show filled heart when favorited */
+.favorite-btn.favorited::before {
+    content: "♥";
+    color: var(--bg-white);
 }
 
 .favorite-btn.favorited {
-    background: linear-gradient(135deg, #ff6b6b, #ff8e8e);
-    border-color: #ff6b6b;
-    color: white;
+    background: linear-gradient(135deg, var(--accent-color), #ff8e8e);
+    border-color: var(--accent-color);
+    color: var(--bg-white);
     animation: favoritePulse 0.6s ease;
 }
 
 .favorite-btn.favorited:hover {
-    background: linear-gradient(135deg, #ff4757, #ff6b6b);
-    border-color: #ff4757;
+    background: linear-gradient(135deg, #c0392b, var(--accent-color));
+    border-color: #c0392b;
     transform: scale(1.1);
-    box-shadow: 0 4px 16px rgba(255, 107, 107, 0.4);
+    box-shadow: 0 4px 16px rgba(231, 76, 60, 0.4);
 }
 
 @keyframes favoritePulse {
@@ -94,13 +106,13 @@
     100% { transform: scale(1); }
 }
 
-/* NEW: Favorites section styles */
+/* Favorites section styles */
 .favorites-section {
     margin: var(--space-xl) 0;
     padding: var(--space-lg);
-    background: linear-gradient(135deg, #fff9f9, #fff);
+    background: linear-gradient(135deg, var(--bg-white), var(--bg-color));
     border-radius: var(--border-radius-lg);
-    border: 2px dashed #ff6b6b;
+    border: 2px dashed var(--accent-color);
 }
 
 .favorites-section .section-header {
@@ -111,21 +123,21 @@
 }
 
 .favorites-section .section-header h2 {
-    color: #ff6b6b;
+    color: var(--accent-color);
     margin: 0;
 }
 
 .favorites-badge {
-    background: linear-gradient(135deg, #ff6b6b, #ff8e8e);
-    color: white;
+    background: linear-gradient(135deg, var(--accent-color), #ff8e8e);
+    color: var(--bg-white);
     padding: var(--space-xs) var(--space-sm);
     border-radius: 20px;
     font-size: 0.8rem;
     font-weight: bold;
-    box-shadow: 0 2px 8px rgba(255, 107, 107, 0.3);
+    box-shadow: var(--shadow-sm);
 }
 
-/* NEW: Favorites notice styles */
+/* Favorites notice styles */
 .favorites-notice {
     background: linear-gradient(135deg, #fff3cd, #ffeaa7);
     border: 1px solid #ffeaa7;
@@ -158,9 +170,9 @@
 }
 
 .favorites-actions .btn-danger {
-    background: linear-gradient(135deg, #dc3545, #e74c3c);
+    background: linear-gradient(135deg, #dc3545, var(--accent-color));
     border: none;
-    color: white;
+    color: var(--bg-white);
 }
 
 .favorites-actions .btn-danger:hover {
@@ -168,12 +180,12 @@
     transform: translateY(-1px);
 }
 
-/* NEW: No favorites state */
+/* No favorites state */
 .no-favorites {
     text-align: center;
     padding: var(--space-xl);
-    color: var(--text-muted);
-    background: var(--light-color);
+    color: var(--text-light);
+    background: var(--bg-color);
     border-radius: var(--border-radius);
     border: 2px dashed var(--border-color);
 }
@@ -189,28 +201,28 @@
     color: var(--text-light);
 }
 
-/* NEW: Enhanced contractor card with favorites */
+/* Enhanced contractor card with favorites */
 .contractor-card.favorited {
-    border: 2px solid rgba(255, 107, 107, 0.2);
-    background: linear-gradient(135deg, #fff, #fff9f9);
+    border: 2px solid rgba(231, 76, 60, 0.2);
+    background: linear-gradient(135deg, var(--bg-white), var(--bg-color));
 }
 
 .contractor-card.favorited:hover {
-    border-color: rgba(255, 107, 107, 0.4);
-    box-shadow: 0 8px 25px rgba(255, 107, 107, 0.15);
+    border-color: rgba(231, 76, 60, 0.4);
+    box-shadow: 0 8px 25px rgba(231, 76, 60, 0.15);
 }
 
-/* NEW: Favorite filter styles */
+/* Favorite filter styles */
 .favorites-filter {
-    background: var(--light-color);
+    background: var(--bg-color);
     padding: var(--space-md);
     border-radius: var(--border-radius);
     margin-bottom: var(--space-lg);
 }
 
 .favorites-filter select {
-    background: white;
-    border: 2px solid #e9ecef;
+    background: var(--bg-white);
+    border: 2px solid var(--border-color);
     border-radius: var(--border-radius);
     padding: var(--space-sm) var(--space-md);
     font-size: 0.9rem;
@@ -218,16 +230,16 @@
 }
 
 .favorites-filter select:focus {
-    border-color: #ff6b6b;
-    box-shadow: 0 0 0 3px rgba(255, 107, 107, 0.1);
+    border-color: var(--accent-color);
+    box-shadow: 0 0 0 3px rgba(231, 76, 60, 0.1);
     outline: none;
 }
 
-/* NEW: Empty states */
+/* Empty states */
 .no-results, .no-favorites {
     text-align: center;
     padding: var(--space-xl);
-    color: var(--text-muted);
+    color: var(--text-light);
 }
 
 .no-results p, .no-favorites p {
@@ -235,7 +247,7 @@
     line-height: 1.6;
 }
 
-/* NEW: Responsive design for favorites */
+/* Responsive design for favorites */
 @media (max-width: 768px) {
     .favorite-btn {
         width: 40px;
@@ -286,7 +298,7 @@
     }
 }
 
-/* NEW: Animation for favorite actions */
+/* Animation for favorite actions */
 @keyframes slideInFavorites {
     from {
         opacity: 0;
@@ -302,7 +314,7 @@
     animation: slideInFavorites 0.5s ease;
 }
 
-/* NEW: Print styles for favorites */
+/* Print styles for favorites */
 @media print {
     .favorite-btn {
         display: none;
@@ -318,15 +330,15 @@
     }
 }
 
-/* NEW: High contrast mode support */
+/* High contrast mode support */
 @media (prefers-contrast: high) {
     .favorite-btn {
         border-width: 3px;
     }
     
     .favorite-btn.favorited {
-        background: #ff6b6b;
-        border-color: #ff6b6b;
+        background: var(--accent-color);
+        border-color: var(--accent-color);
     }
     
     .favorites-section {
@@ -335,7 +347,7 @@
     }
 }
 
-/* NEW: Reduced motion support */
+/* Reduced motion support */
 @media (prefers-reduced-motion: reduce) {
     .favorite-btn {
         transition: none;

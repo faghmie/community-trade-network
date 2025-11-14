@@ -1,0 +1,276 @@
+/* Contractor Details Modal Styles */
+.contractor-details {
+    max-height: 70vh;
+    overflow-y: auto;
+    padding: var(--space-md);
+}
+
+.contractor-header {
+    margin-bottom: var(--space-lg);
+    padding-bottom: var(--space-md);
+    border-bottom: 1px solid var(--border-color);
+}
+
+.contractor-header .contractor-name {
+    margin: 0 0 var(--space-sm) 0;
+    color: var(--primary-color);
+    font-size: 1.5rem;
+}
+
+.contractor-category {
+    margin: 0;
+    color: var(--text-light);
+    font-style: italic;
+    font-size: 1.1rem;
+}
+
+.contractor-info-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: var(--space-md);
+    margin-bottom: var(--space-lg);
+}
+
+.contractor-info-grid .info-item {
+    padding: var(--space-md);
+    background: var(--bg-color);
+    border-radius: var(--border-radius);
+    border-left: 3px solid var(--primary-color);
+}
+
+.info-label {
+    color: var(--text-color);
+    font-weight: 600;
+}
+
+.info-value {
+    color: var(--text-light);
+}
+
+.website-link {
+    color: var(--secondary-color);
+    text-decoration: none;
+}
+
+.website-link:hover {
+    text-decoration: underline;
+}
+
+.rating-value {
+    color: var(--warning-color);
+    font-weight: bold;
+}
+
+.category-ratings-section {
+    margin-bottom: var(--space-lg);
+    padding: var(--space-lg);
+    background: var(--bg-color);
+    border-radius: var(--border-radius);
+    border: 1px solid var(--border-color);
+}
+
+.section-title {
+    margin: 0 0 var(--space-md) 0;
+    color: var(--primary-color);
+    font-size: 1.2rem;
+}
+
+.category-ratings-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: var(--space-md);
+}
+
+.category-rating-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: var(--space-md);
+    background: var(--bg-white);
+    border-radius: var(--border-radius);
+    box-shadow: var(--shadow-sm);
+}
+
+.category-label {
+    color: var(--text-color);
+    font-weight: 600;
+}
+
+.category-rating-display {
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+}
+
+.category-rating-display .stars {
+    color: var(--warning-color);
+    font-size: 1.1rem;
+}
+
+.category-rating-display .rating-value {
+    font-weight: bold;
+    color: var(--primary-color);
+    font-size: 1.1rem;
+}
+
+.reviews-section {
+    margin-top: var(--space-xl);
+}
+
+.reviews-list {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-md);
+}
+
+.review-item {
+    background: var(--bg-white);
+    padding: var(--space-lg);
+    border-radius: var(--border-radius);
+    box-shadow: var(--shadow-sm);
+    border-left: 4px solid var(--primary-color);
+}
+
+.review-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: var(--space-md);
+}
+
+.reviewer-info {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-xs);
+}
+
+.reviewer-name {
+    font-weight: 600;
+    color: var(--text-color);
+    font-size: 1.1rem;
+}
+
+.review-rating {
+    color: var(--warning-color);
+    font-weight: bold;
+}
+
+.review-meta {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: var(--space-xs);
+    text-align: right;
+}
+
+.review-date {
+    font-size: 0.9rem;
+    color: var(--text-light);
+}
+
+.project-type {
+    background: var(--bg-color);
+    color: var(--primary-color);
+    padding: var(--space-xs) var(--space-sm);
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 500;
+}
+
+.category-ratings-preview {
+    font-size: 0.9em;
+    color: var(--text-light);
+    margin: var(--space-sm) 0;
+    padding: var(--space-sm);
+    background: var(--bg-color);
+    border-radius: var(--border-radius-sm);
+    border-left: 3px solid var(--accent-color);
+}
+
+.review-comment {
+    line-height: 1.6;
+    color: var(--text-color);
+    margin: 0;
+}
+
+.no-reviews {
+    text-align: center;
+    color: var(--text-light);
+    font-style: italic;
+    padding: var(--space-xl);
+}
+
+.modal-actions {
+    display: flex;
+    justify-content: center;
+    margin-top: var(--space-lg);
+    padding-top: var(--space-md);
+    border-top: 1px solid var(--border-color);
+}
+
+/* Responsive contractor details */
+@media (max-width: 768px) {
+    .contractor-details {
+        padding: var(--space-sm);
+    }
+
+    .contractor-info-grid {
+        grid-template-columns: 1fr;
+        gap: var(--space-sm);
+    }
+
+    .category-ratings-grid {
+        grid-template-columns: 1fr;
+        gap: var(--space-sm);
+    }
+
+    .category-rating-item {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: var(--space-sm);
+        padding: var(--space-md);
+    }
+
+    .category-rating-display {
+        align-self: stretch;
+        justify-content: space-between;
+    }
+
+    .review-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: var(--space-sm);
+    }
+
+    .review-meta {
+        align-items: flex-start;
+        text-align: left;
+    }
+}
+
+@media (max-width: 480px) {
+    .contractor-header .contractor-name {
+        font-size: 1.3rem;
+    }
+
+    .contractor-category {
+        font-size: 1rem;
+    }
+
+    .section-title {
+        font-size: 1.1rem;
+    }
+
+    .review-item {
+        padding: var(--space-md);
+    }
+
+    .modal-actions {
+        justify-content: center;
+    }
+
+    .modal-actions .btn {
+        flex: 1;
+        min-width: 120px;
+    }
+}

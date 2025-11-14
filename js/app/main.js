@@ -1,13 +1,15 @@
 // js/app/main.js
 class ContractorReviewApp {
-    constructor(uiManager, modalManager, filterManager, formManager) {
+    constructor(uiManager, modalManager, filterManager, formManager, mapManager) {
         this.uiManager = uiManager;
         this.modalManager = modalManager;
         this.filterManager = filterManager;
         this.formManager = formManager;
+        this.mapManager = mapManager;
         
         this.currentContractor = null;
         this.filteredContractors = [];
+        this.currentView = 'list'; // 'list' or 'map'
     }
 
     async init() {
@@ -20,9 +22,13 @@ class ContractorReviewApp {
             await this.modalManager.init();
             await this.filterManager.init();
             await this.formManager.init();
+            await this.mapManager.init();
             
             // Set up cross-manager communication
             this.setupManagers();
+            
+            // Set up view toggle
+            this.setupViewToggle();
             
             // Render initial state
             this.renderDashboard();
@@ -38,6 +44,11 @@ class ContractorReviewApp {
             this.filteredContractors = this.filterManager.applyFilters(filters);
             this.uiManager.renderContractors(this.filteredContractors);
             this.uiManager.updateStats(this.filteredContractors);
+            
+            // Update map markers if in map view
+            if (this.currentView === 'map') {
+                this.mapManager.updateContractors(this.filteredContractors);
+            }
         });
 
         // When modal actions occur
@@ -50,12 +61,124 @@ class ContractorReviewApp {
         this.formManager.onReviewSubmit((reviewData) => {
             this.handleReviewSubmit(reviewData);
         });
+
+        // When view changes
+        document.addEventListener('viewToggle', (event) => {
+            this.currentView = event.detail.view;
+            this.handleViewChange();
+        });
+
+        // Handle map marker clicks
+        document.addEventListener('mapMarkerClick', (event) => {
+            this.handleMapMarkerClick(event.detail.contractorId);
+        });
+    }
+
+    setupViewToggle() {
+        const viewToggle = document.getElementById('view-toggle');
+        if (!viewToggle) {
+            console.warn('View toggle element not found');
+            return;
+        }
+
+        const listBtn = viewToggle.querySelector('[data-view="list"]');
+        const mapBtn = viewToggle.querySelector('[data-view="map"]');
+
+        if (!listBtn || !mapBtn) {
+            console.warn('View toggle buttons not found');
+            return;
+        }
+
+        [listBtn, mapBtn].forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const view = e.target.dataset.view;
+                this.currentView = view;
+                
+                // Update active state
+                listBtn.classList.toggle('active', view === 'list');
+                mapBtn.classList.toggle('active', view === 'map');
+                
+                // Handle the view change immediately
+                this.handleViewChange();
+                
+                // Also dispatch event for other components
+                document.dispatchEvent(new CustomEvent('viewToggle', {
+                    detail: { view }
+                }));
+            });
+        });
+
+        // Set initial active state
+        listBtn.classList.add('active');
+    }
+
+    handleViewChange() {
+        const mapContainer = document.getElementById('map-container');
+        const contractorGrid = document.getElementById('contractorsGrid'); // FIXED: changed to contractorsGrid
+        const favoritesSection = document.getElementById('favoritesSection');
+        
+        if (!mapContainer || !contractorGrid) {
+            console.warn('Map container or contractor grid not found', {
+                mapContainer: !!mapContainer,
+                contractorGrid: !!contractorGrid
+            });
+            return;
+        }
+
+        console.log('Switching to view:', this.currentView);
+
+        if (this.currentView === 'map') {
+            // Show map, hide list and favorites
+            mapContainer.classList.remove('hidden');
+            contractorGrid.classList.add('hidden');
+            if (favoritesSection) {
+                favoritesSection.style.display = 'none';
+            }
+            
+            // Ensure map is properly initialized
+            if (!this.mapManager.isReady()) {
+                console.log('Map not ready, initializing...');
+                this.mapManager.initializeMap();
+            }
+            
+            // Update map with current filtered contractors
+            const contractorsToShow = this.filteredContractors.length > 0 ? this.filteredContractors : dataModule.getContractors();
+            this.mapManager.updateContractors(contractorsToShow);
+            
+            // Ensure map is properly sized after showing
+            setTimeout(() => {
+                if (this.mapManager.map) {
+                    this.mapManager.map.invalidateSize();
+                    console.log('Map resized and updated');
+                }
+            }, 150);
+        } else {
+            // Show list, hide map
+            mapContainer.classList.add('hidden');
+            contractorGrid.classList.remove('hidden');
+            if (favoritesSection && dataModule.getFavoritesCount() > 0) {
+                favoritesSection.style.display = 'block';
+            }
+            
+            console.log('Switched to list view');
+        }
+    }
+
+    handleMapMarkerClick(contractorId) {
+        this.modalManager.openContractorModal(contractorId);
     }
 
     renderDashboard() {
         this.uiManager.refreshFilters();
         this.uiManager.renderStats();
         this.uiManager.renderContractors();
+        
+        // Initialize map data but don't show it unless in map view
+        const contractors = dataModule.getContractors();
+        this.mapManager.updateContractors(contractors);
+        
+        // Ensure correct view is displayed
+        this.handleViewChange();
     }
 
     handleReviewSubmit(reviewData) {
@@ -86,6 +209,11 @@ class ContractorReviewApp {
     sortContractors() {
         const sortedContractors = this.filterManager.applySorting();
         this.uiManager.renderContractors(sortedContractors);
+        
+        // Update map if in map view
+        if (this.currentView === 'map') {
+            this.mapManager.updateContractors(sortedContractors);
+        }
     }
 
     // NEW: Clear all filters method
@@ -173,6 +301,16 @@ class ContractorReviewApp {
         this.uiManager.renderContractors();
         this.uiManager.renderStats();
         
+        // Reset to list view
+        const listBtn = document.querySelector('[data-view="list"]');
+        const mapBtn = document.querySelector('[data-view="map"]');
+        if (listBtn && mapBtn) {
+            listBtn.classList.add('active');
+            mapBtn.classList.remove('active');
+            this.currentView = 'list';
+            this.handleViewChange();
+        }
+        
         if (typeof utils !== 'undefined' && utils.showNotification) {
             utils.showNotification('View reset to default', 'success');
         }
@@ -222,8 +360,33 @@ class ContractorReviewApp {
             reviews: dataModule.getAllReviews().length,
             favorites: dataModule.getFavoritesCount(),
             filteredContractors: this.filteredContractors.length,
-            currentContractor: this.currentContractor
+            currentContractor: this.currentContractor,
+            currentView: this.currentView,
+            mapInitialized: !!this.mapManager.map,
+            mapReady: this.mapManager.isReady ? this.mapManager.isReady() : false
         };
+    }
+
+    // NEW: Toggle view programmatically
+    toggleView(view) {
+        const listBtn = document.querySelector('[data-view="list"]');
+        const mapBtn = document.querySelector('[data-view="map"]');
+        
+        this.currentView = view;
+        
+        if (view === 'map') {
+            listBtn?.classList.remove('active');
+            mapBtn?.classList.add('active');
+        } else {
+            listBtn?.classList.add('active');
+            mapBtn?.classList.remove('active');
+        }
+        
+        this.handleViewChange();
+        
+        document.dispatchEvent(new CustomEvent('viewToggle', {
+            detail: { view }
+        }));
     }
 }
 
@@ -235,9 +398,10 @@ document.addEventListener('DOMContentLoaded', async () => {
         const modalManager = new ModalManager();
         const filterManager = new FilterManager();
         const formManager = new FormManager();
+        const mapManager = new MapManager();
         
         // Create and initialize app
-        window.app = new ContractorReviewApp(uiManager, modalManager, filterManager, formManager);
+        window.app = new ContractorReviewApp(uiManager, modalManager, filterManager, formManager, mapManager);
         await window.app.init();
         
         console.log('Contractor Review App initialized successfully!');
