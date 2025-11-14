@@ -112,6 +112,8 @@ const adminModule = {
         // Populate provinces dropdown
         const provinceSelect = document.getElementById('contractorProvince');
         provinceSelect.innerHTML = '<option value="">Select Province</option>';
+        
+        // Use the southAfricanProvinces from defaultData
         Object.keys(southAfricanProvinces).forEach(province => {
             provinceSelect.innerHTML += `<option value="${province}">${province}</option>`;
         });
@@ -171,8 +173,8 @@ const adminModule = {
         const areaSelect = document.getElementById('contractorArea');
         
         // Search through all provinces to find which one contains this area
-        for (const [province, areas] of Object.entries(southAfricanProvinces)) {
-            if (areas.includes(area)) {
+        for (const [province, provinceData] of Object.entries(southAfricanProvinces)) {
+            if (provinceData.cities.includes(area)) {
                 provinceSelect.value = province;
                 this.updateAreaDropdown(province, area);
                 return;
@@ -192,7 +194,10 @@ const adminModule = {
             return;
         }
         
-        const areas = southAfricanProvinces[province] || [];
+        // Get the cities array from the province data
+        const provinceData = southAfricanProvinces[province];
+        const areas = provinceData ? provinceData.cities : [];
+        
         areaSelect.innerHTML = '<option value="">Select Area</option>';
         areas.forEach(area => {
             areaSelect.innerHTML += `<option value="${area}">${area}</option>`;

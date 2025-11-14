@@ -1,0 +1,551 @@
+/* css/components/compact-filters.css - UPDATED: Cleaner advanced filters with integrated quick presets */
+/* Force visibility - ensure compact filters are always visible */
+.compact-filter-bar {
+    background: var(--card-bg, #ffffff) !important;
+    border: 1px solid var(--border-color, #e1e5e9) !important;
+    border-radius: var(--border-radius-lg, 12px) !important;
+    padding: var(--spacing-md, 1rem) !important;
+    margin-bottom: var(--spacing-md, 1rem) !important;
+    box-shadow: var(--shadow-sm, 0 1px 3px rgba(0,0,0,0.1)) !important;
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+}
+
+/* UPDATED: Single line layout for desktop with proper alignment */
+.compact-filters {
+    display: flex !important;
+    align-items: center !important; /* This ensures vertical alignment */
+    gap: var(--spacing-sm, 0.75rem) !important;
+    flex-wrap: nowrap !important;
+    justify-content: space-between !important;
+}
+
+.filter-group.compact {
+    margin-bottom: 0 !important;
+    flex: 0 1 auto !important;
+    min-width: 0 !important;
+    display: flex !important;
+    align-items: center !important; /* Ensure inner content aligns */
+}
+
+.filter-select.compact {
+    min-width: 140px !important;
+    max-width: 160px !important;
+    font-size: 0.9rem !important;
+    padding: var(--spacing-sm, 0.5rem) var(--spacing-md, 1rem) !important;
+    border: 1px solid var(--border-color, #e1e5e9) !important;
+    border-radius: var(--border-radius-md, 8px) !important;
+    background: var(--bg-white, #ffffff) !important;
+    color: var(--text-color, #333333) !important;
+    transition: all 0.2s ease !important;
+    height: 40px !important; /* Fixed height for consistent alignment */
+    box-sizing: border-box !important;
+}
+
+.filter-select.compact:focus {
+    outline: none !important;
+    border-color: var(--primary-color, #007bff) !important;
+    box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1) !important;
+}
+
+/* UPDATED: Integrated Search Styles with consistent height */
+.search-integrated .search-box.compact {
+    display: flex !important;
+    gap: var(--spacing-xs, 0.5rem) !important;
+    min-width: 200px !important;
+    max-width: 250px !important;
+    flex: 1 !important;
+    align-items: center !important; /* Ensure search aligns properly */
+}
+
+.search-integrated .search-input.compact {
+    flex: 1 !important;
+    min-width: 150px !important;
+    padding: var(--spacing-sm, 0.5rem) var(--spacing-md, 1rem) !important;
+    font-size: 0.9rem !important;
+    border: 1px solid var(--border-color, #e1e5e9) !important;
+    border-radius: var(--border-radius-md, 8px) !important;
+    background: var(--bg-white, #ffffff) !important;
+    color: var(--text-color, #333333) !important;
+    transition: all 0.2s ease !important;
+    height: 40px !important; /* Fixed height */
+    box-sizing: border-box !important;
+}
+
+.search-integrated .search-input.compact:focus {
+    outline: none !important;
+    border-color: var(--primary-color, #007bff) !important;
+    box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1) !important;
+}
+
+.search-integrated .btn-small {
+    padding: var(--spacing-sm, 0.5rem) var(--spacing-md, 1rem) !important;
+    min-width: auto !important;
+    font-size: 0.9rem !important;
+    white-space: nowrap !important;
+    height: 40px !important; /* Fixed height */
+    box-sizing: border-box !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+}
+
+/* UPDATED: Action buttons group with consistent height */
+.filter-actions.compact {
+    display: flex !important;
+    gap: var(--spacing-xs, 0.5rem) !important;
+    align-items: center !important;
+    flex-shrink: 0 !important;
+}
+
+/* UPDATED: View Toggle with consistent height and alignment */
+.view-toggle-integrated {
+    margin-left: auto !important;
+    flex-shrink: 0 !important;
+    display: flex !important;
+    align-items: center !important; /* Ensure vertical alignment */
+    height: 40px !important; /* Match other elements */
+}
+
+.view-toggle-integrated .view-toggle.compact {
+    display: flex !important;
+    gap: var(--spacing-xs, 0.25rem) !important;
+    background: var(--bg-light, #f8f9fa) !important;
+    border-radius: var(--border-radius-md, 8px) !important;
+    padding: 3px !important;
+    border: 1px solid var(--border-color, #e1e5e9) !important;
+    height: 100% !important; /* Take full height of container */
+    box-sizing: border-box !important;
+    align-items: center !important; /* Center buttons vertically */
+}
+
+.view-toggle-integrated .view-toggle-btn {
+    padding: var(--spacing-xs, 0.5rem) var(--spacing-sm, 0.75rem) !important;
+    background: transparent !important;
+    border: none !important;
+    border-radius: var(--border-radius-sm, 6px) !important;
+    cursor: pointer !important;
+    transition: all 0.2s ease !important;
+    color: var(--text-light, #6c757d) !important;
+    min-width: auto !important;
+    font-size: 0.9rem !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    white-space: nowrap !important;
+    gap: var(--spacing-xs, 0.25rem) !important;
+    height: 100% !important; /* Full height of toggle container */
+    box-sizing: border-box !important;
+    flex: 1 !important; /* Equal width buttons */
+}
+
+.view-toggle-integrated .view-toggle-btn:hover {
+    background: var(--bg-white, #ffffff) !important;
+    color: var(--primary-color, #007bff) !important;
+}
+
+.view-toggle-integrated .view-toggle-btn.active {
+    background: var(--primary-color, #007bff) !important;
+    color: white !important;
+    box-shadow: var(--shadow-sm, 0 1px 3px rgba(0,0,0,0.1)) !important;
+}
+
+/* UPDATED: All buttons with consistent height */
+#toggleFiltersBtn {
+    position: relative !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: var(--spacing-xs, 0.5rem) !important;
+    min-width: 100px !important;
+    background: var(--bg-white, #ffffff) !important;
+    border: 1px solid var(--border-color, #e1e5e9) !important;
+    color: var(--text-color, #333333) !important;
+    padding: var(--spacing-sm, 0.5rem) var(--spacing-md, 1rem) !important;
+    border-radius: var(--border-radius-md, 8px) !important;
+    transition: all 0.2s ease !important;
+    cursor: pointer !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    white-space: nowrap !important;
+    height: 40px !important; /* Fixed height */
+    box-sizing: border-box !important;
+}
+
+#toggleFiltersBtn:hover {
+    background: var(--bg-secondary, #f8f9fa) !important;
+    border-color: var(--primary-color, #007bff) !important;
+    transform: translateY(-1px) !important;
+}
+
+#toggleFiltersBtn.active {
+    background: var(--primary-color, #007bff) !important;
+    border-color: var(--primary-color, #007bff) !important;
+    color: white !important;
+}
+
+.filter-badge {
+    background: var(--accent-color, #dc3545) !important;
+    color: white !important;
+    border-radius: 50% !important;
+    width: 18px !important;
+    height: 18px !important;
+    font-size: 0.7rem !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    position: absolute !important;
+    top: -6px !important;
+    right: -6px !important;
+    font-weight: bold !important;
+}
+
+/* Clear button with consistent height */
+.clear-filters-btn {
+    background: var(--bg-white, #ffffff) !important;
+    border: 1px solid var(--border-color, #e1e5e9) !important;
+    color: var(--text-color, #333333) !important;
+    padding: var(--spacing-sm, 0.5rem) var(--spacing-md, 1rem) !important;
+    border-radius: var(--border-radius-md, 8px) !important;
+    transition: all 0.2s ease !important;
+    font-size: 0.9rem !important;
+    cursor: pointer !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: var(--spacing-xs, 0.5rem) !important;
+    min-width: auto !important;
+    white-space: nowrap !important;
+    height: 40px !important; /* Fixed height */
+    box-sizing: border-box !important;
+}
+
+.clear-filters-btn:hover {
+    background: var(--bg-secondary, #f8f9fa) !important;
+    border-color: var(--accent-color, #dc3545) !important;
+    color: var(--accent-color, #dc3545) !important;
+}
+
+/* Advanced Filters - UPDATED: Cleaner layout with integrated quick presets */
+.advanced-filters {
+    background: var(--card-bg, #ffffff) !important;
+    border: 1px solid var(--border-color, #e1e5e9) !important;
+    border-radius: var(--border-radius-lg, 12px) !important;
+    padding: var(--spacing-lg, 1.5rem) !important;
+    margin-bottom: var(--spacing-md, 1rem) !important;
+    box-shadow: var(--shadow-sm, 0 1px 3px rgba(0,0,0,0.1)) !important;
+    animation: slideDown 0.3s ease-out !important;
+    display: block !important;
+}
+
+.advanced-filters.hidden {
+    display: none !important;
+}
+
+/* UPDATED: Quick Presets Section - integrated with advanced filters */
+.quick-presets {
+    margin-bottom: var(--spacing-lg, 1.5rem) !important;
+    padding-top: 0 !important;
+    padding-bottom: 0 !important;
+    border-top: none !important;
+}
+
+.quick-presets h5 {
+    display: none !important; /* Hide the heading completely */
+}
+
+.preset-buttons {
+    display: flex !important;
+    gap: var(--spacing-sm, 0.75rem) !important;
+    flex-wrap: wrap !important;
+}
+
+.preset-buttons .btn {
+    background: var(--bg-white, #ffffff) !important;
+    border: 1px solid var(--border-color, #e1e5e9) !important;
+    color: var(--text-color, #333333) !important;
+    padding: var(--spacing-sm, 0.5rem) var(--spacing-md, 1rem) !important;
+    border-radius: var(--border-radius-md, 8px) !important;
+    transition: all 0.2s ease !important;
+    font-size: 0.9rem !important;
+    cursor: pointer !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: var(--spacing-xs, 0.5rem) !important;
+    white-space: nowrap !important;
+    height: 40px !important; /* Consistent height */
+    box-sizing: border-box !important;
+}
+
+.preset-buttons .btn:hover {
+    background: var(--bg-secondary, #f8f9fa) !important;
+    border-color: var(--primary-color, #007bff) !important;
+    color: var(--primary-color, #007bff) !important;
+    transform: translateY(-1px) !important;
+}
+
+/* UPDATED: Advanced filters header - cleaner without borders */
+.advanced-filters-header {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    margin-bottom: var(--spacing-md, 1rem) !important;
+    padding-bottom: 0 !important;
+    border-bottom: none !important;
+}
+
+.advanced-filters-header h4 {
+    margin: 0 !important;
+    color: var(--text-color, #333333) !important;
+    font-size: 1.1rem !important;
+    font-weight: 600 !important;
+}
+
+.filter-count {
+    display: none !important; /* Hide the filter count completely */
+}
+
+/* UPDATED: Advanced filter grid for cleaner layout with 4 essential filters */
+.advanced-filter-grid {
+    display: grid !important;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)) !important;
+    gap: var(--spacing-lg, 1.5rem) !important;
+}
+
+.advanced-filters .filter-group {
+    margin-bottom: 0 !important;
+}
+
+.advanced-filters .filter-label {
+    display: block !important;
+    margin-bottom: var(--spacing-xs, 0.5rem) !important;
+    font-weight: 500 !important;
+    color: var(--text-color, #333333) !important;
+    font-size: 0.9rem !important;
+}
+
+.advanced-filters .filter-select {
+    width: 100% !important;
+    padding: var(--spacing-sm, 0.5rem) var(--spacing-md, 1rem) !important;
+    border: 1px solid var(--border-color, #e1e5e9) !important;
+    border-radius: var(--border-radius-md, 8px) !important;
+    background: var(--bg-white, #ffffff) !important;
+    color: var(--text-color, #333333) !important;
+    font-size: 0.9rem !important;
+    transition: all 0.2s ease !important;
+    height: 40px !important; /* Consistent height */
+    box-sizing: border-box !important;
+}
+
+.advanced-filters .filter-select:focus {
+    outline: none !important;
+    border-color: var(--primary-color, #007bff) !important;
+    box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1) !important;
+}
+
+/* Animations */
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Hide utility - ensure it works */
+.hidden {
+    display: none !important;
+}
+
+/* Hide the old sections */
+.filter-section-enhanced {
+    display: none !important;
+}
+.quick-actions {
+    display: none !important;
+}
+.contractor-list .sort-options {
+    display: none !important;
+}
+.search-section {
+    display: none !important;
+}
+.view-toggle-section {
+    display: none !important;
+}
+
+/* UPDATED: Responsive Design for cleaner filter layout */
+@media (max-width: 1200px) {
+    .filter-select.compact {
+        min-width: 130px !important;
+        max-width: 140px !important;
+    }
+    
+    .search-integrated .search-box.compact {
+        min-width: 180px !important;
+        max-width: 220px !important;
+    }
+    
+    #toggleFiltersBtn {
+        min-width: 90px !important;
+    }
+}
+
+@media (max-width: 1024px) {
+    .compact-filters {
+        flex-wrap: wrap !important;
+        gap: var(--spacing-sm, 0.75rem) !important;
+    }
+    
+    .view-toggle-integrated {
+        margin-left: 0 !important;
+        order: 1;
+        width: 100%;
+        justify-content: center;
+        height: auto !important; /* Reset height on mobile */
+    }
+    
+    .view-toggle-integrated .view-toggle.compact {
+        width: fit-content;
+        margin: 0 auto;
+        height: 40px !important; /* Maintain height */
+    }
+
+    /* UPDATED: Advanced filter grid for tablets */
+    .advanced-filter-grid {
+        grid-template-columns: repeat(2, 1fr) !important;
+        gap: var(--spacing-md, 1rem) !important;
+    }
+}
+
+@media (max-width: 768px) {
+    .compact-filters {
+        flex-direction: column !important;
+        align-items: stretch !important;
+        gap: var(--spacing-sm, 0.75rem) !important;
+    }
+    
+    .filter-group.compact {
+        flex: 1 !important;
+    }
+    
+    .filter-select.compact {
+        min-width: auto !important;
+        max-width: none !important;
+        width: 100% !important;
+    }
+    
+    .search-integrated .search-box.compact {
+        min-width: auto !important;
+        max-width: none !important;
+        width: 100% !important;
+    }
+    
+    .filter-actions.compact {
+        width: 100%;
+        justify-content: center;
+        gap: var(--spacing-sm, 0.75rem) !important;
+    }
+    
+    .view-toggle-integrated {
+        order: 0;
+        width: 100%;
+        height: auto !important;
+    }
+    
+    .view-toggle-integrated .view-toggle.compact {
+        width: 100% !important;
+        justify-content: center !important;
+    }
+    
+    .view-toggle-integrated .view-toggle-btn {
+        flex: 1 !important;
+        justify-content: center !important;
+    }
+    
+    #toggleFiltersBtn {
+        min-width: auto !important;
+        width: 100% !important;
+        justify-content: center !important;
+    }
+    
+    .clear-filters-btn {
+        width: 100% !important;
+        justify-content: center !important;
+    }
+    
+    /* UPDATED: Advanced filter grid for mobile */
+    .advanced-filter-grid {
+        grid-template-columns: 1fr !important;
+        gap: var(--spacing-md, 1rem) !important;
+    }
+    
+    .preset-buttons {
+        flex-direction: column !important;
+    }
+    
+    .preset-buttons .btn {
+        width: 100% !important;
+        justify-content: center !important;
+    }
+    
+    .compact-filter-bar {
+        padding: var(--spacing-sm, 0.75rem) !important;
+    }
+    
+    .advanced-filters {
+        padding: var(--spacing-md, 1rem) !important;
+    }
+}
+
+@media (max-width: 480px) {
+    .compact-filters {
+        gap: var(--spacing-xs, 0.5rem) !important;
+    }
+    
+    .filter-select.compact {
+        font-size: 0.85rem !important;
+        padding: var(--spacing-xs, 0.5rem) var(--spacing-sm, 0.75rem) !important;
+    }
+    
+    .search-integrated .search-input.compact {
+        font-size: 0.85rem !important;
+        padding: var(--spacing-xs, 0.5rem) var(--spacing-sm, 0.75rem) !important;
+    }
+    
+    .search-integrated .btn-small {
+        font-size: 0.85rem !important;
+        padding: var(--spacing-xs, 0.5rem) var(--spacing-sm, 0.75rem) !important;
+    }
+    
+    .view-toggle-integrated .view-toggle-btn {
+        font-size: 0.85rem !important;
+        padding: var(--spacing-xs, 0.5rem) var(--spacing-sm, 0.75rem) !important;
+    }
+    
+    #toggleFiltersBtn {
+        font-size: 0.85rem !important;
+        padding: var(--spacing-xs, 0.5rem) var(--spacing-sm, 0.75rem) !important;
+    }
+    
+    .clear-filters-btn {
+        font-size: 0.85rem !important;
+        padding: var(--spacing-xs, 0.5rem) var(--spacing-sm, 0.75rem) !important;
+    }
+    
+    .preset-buttons .btn {
+        font-size: 0.85rem !important;
+        padding: var(--spacing-xs, 0.5rem) var(--spacing-sm, 0.75rem) !important;
+    }
+    
+    .advanced-filters-header {
+        flex-direction: column !important;
+        align-items: flex-start !important;
+        gap: var(--spacing-sm, 0.75rem) !important;
+    }
+}

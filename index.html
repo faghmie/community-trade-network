@@ -1,13 +1,16 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Contractor Reviews</title>
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⭐</text></svg>">
+    <link rel="icon"
+        href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⭐</text></svg>">
     <link rel="stylesheet" href="css/main.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
+
 <body>
     <div class="container">
         <header class="flex-between">
@@ -22,114 +25,143 @@
             </nav>
         </header>
 
-        <!-- Search and Filter Section -->
+        <!-- Search and Filter Section - UPDATED: Cleaned up compact filters -->
         <section class="dashboard-controls">
-            <div class="search-section">
-                <div class="search-box">
-                    <input type="text" id="searchInput" placeholder="Search contractors by name, category, or service..." 
-                           class="input search-input" onkeypress="app.handleSearchKeyPress(event)">
-                    <button class="btn btn-primary" onclick="app.searchContractors()">
-                        <i class="fas fa-search"></i> Search
-                    </button>
+            <!-- Compact Filter Bar - UPDATED: Removed ratings and sort to advanced section -->
+            <div class="compact-filter-bar">
+                <div class="compact-filters">
+                    <!-- Integrated Search Box -->
+                    <div class="filter-group compact search-integrated">
+                        <div class="search-box compact">
+                            <input type="text" id="searchInput" placeholder="Search contractors..."
+                                class="input search-input compact" data-action="search-keypress">
+                            <button class="btn btn-primary btn-small" data-action="search">
+                                <i class="fas fa-search"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="filter-group compact">
+                        <select id="locationFilter" class="input filter-select compact" data-action="filter">
+                            <option value="">📍 All Locations</option>
+                            <!-- Locations will be populated dynamically -->
+                        </select>
+                    </div>
+
+                    <!-- Action Buttons Group -->
+                    <div class="filter-actions compact">
+                        <button class="btn btn-outline btn-small" id="toggleFiltersBtn" data-action="toggle-filters">
+                            <i class="fas fa-sliders-h"></i> Filters
+                            <span class="filter-badge hidden" id="activeFilterCount">0</span>
+                        </button>
+
+                        <button class="btn btn-secondary btn-small clear-filters-btn" data-action="clear-filters"
+                            title="Clear all filters">
+                            <i class="fas fa-times"></i> Clear
+                        </button>
+                    </div>
+
+                    <!-- View Toggle on right side -->
+                    <div class="filter-group compact view-toggle-integrated">
+                        <div class="view-toggle compact" id="view-toggle">
+                            <button class="view-toggle-btn active" data-view="list" title="List View">
+                                <i class="fas fa-list"></i> List
+                            </button>
+                            <button class="view-toggle-btn" data-view="map" title="Map View">
+                                <i class="fas fa-map"></i> Map
+                            </button>
+                        </div>
+                    </div>
                 </div>
             </div>
 
-            <!-- Enhanced Filter Section -->
-            <div class="filter-section-enhanced">
-                <div class="filter-group">
-                    <label for="categoryFilter" class="filter-label">
-                        <i class="fas fa-tags"></i> Category
-                    </label>
-                    <select id="categoryFilter" class="input filter-select" onchange="app.filterContractors()">
-                        <option value="">All Categories</option>
-                        <!-- Categories will be populated dynamically -->
-                    </select>
+            <!-- Advanced Filters (Collapsible) - UPDATED: Cleaned up header -->
+            <div class="advanced-filters hidden" id="advancedFilters">
+                <!-- Quick Preset Buttons - No heading -->
+                <div class="quick-presets">
+                    <div class="preset-buttons">
+                        <button class="btn btn-outline btn-small" data-action="show-favorites">
+                            <i class="fas fa-heart"></i> Show Favorites
+                        </button>
+                        <button class="btn btn-outline btn-small" data-action="show-high-rated">
+                            <i class="fas fa-star"></i> Show Top Rated
+                        </button>
+                    </div>
                 </div>
 
-                <div class="filter-group">
-                    <label for="locationFilter" class="filter-label">
-                        <i class="fas fa-map-marker-alt"></i> Location
-                    </label>
-                    <select id="locationFilter" class="input filter-select" onchange="app.filterContractors()">
-                        <option value="">All Locations</option>
-                        <!-- Locations will be populated dynamically -->
-                    </select>
+                <div class="advanced-filters-header">
+                    <h4>Advanced Filters</h4>
                 </div>
 
-                <div class="filter-group">
-                    <label for="ratingFilter" class="filter-label">
-                        <i class="fas fa-star"></i> Min Rating
-                    </label>
-                    <select id="ratingFilter" class="input filter-select" onchange="app.filterContractors()">
-                        <option value="">All Ratings</option>
-                        <option value="4.5">4.5+ Stars</option>
-                        <option value="4.0">4.0+ Stars</option>
-                        <option value="3.5">3.5+ Stars</option>
-                        <option value="3.0">3.0+ Stars</option>
-                    </select>
-                </div>
+                <div class="advanced-filter-grid">
+                    <div class="filter-group">
+                        <label for="categoryFilter" class="filter-label">
+                            <i class="fas fa-tags"></i> Category
+                        </label>
+                        <select id="categoryFilter" class="input filter-select" data-action="filter">
+                            <option value="">All Categories</option>
+                            <!-- Categories will be populated dynamically -->
+                        </select>
+                    </div>
 
-                <div class="filter-group">
-                    <label for="favoritesFilter" class="filter-label">
-                        <i class="fas fa-heart"></i> Favorites
-                    </label>
-                    <select id="favoritesFilter" class="input filter-select" onchange="app.filterContractors()">
-                        <option value="">All Contractors</option>
-                        <option value="favorites">⭐ Favorites Only</option>
-                        <option value="non-favorites">Not in Favorites</option>
-                    </select>
-                </div>
+                    <!-- MOVED: Ratings filter to advanced section -->
+                    <div class="filter-group">
+                        <label for="ratingFilter" class="filter-label">
+                            <i class="fas fa-star"></i> Minimum Rating
+                        </label>
+                        <select id="ratingFilter" class="input filter-select" data-action="filter">
+                            <option value="">All Ratings</option>
+                            <option value="4.5">4.5+ Stars ⭐⭐⭐⭐⭐</option>
+                            <option value="4.0">4.0+ Stars ⭐⭐⭐⭐</option>
+                            <option value="3.5">3.5+ Stars ⭐⭐⭐</option>
+                            <option value="3.0">3.0+ Stars ⭐⭐</option>
+                        </select>
+                    </div>
 
-                <div class="filter-actions">
-                    <button class="btn btn-secondary btn-small" onclick="app.clearFilters()">
-                        <i class="fas fa-times"></i> Clear Filters
-                    </button>
+                    <!-- MOVED: Sort filter to advanced section -->
+                    <div class="filter-group">
+                        <label for="sortBy" class="filter-label">
+                            <i class="fas fa-sort"></i> Sort By
+                        </label>
+                        <select id="sortBy" class="input filter-select" data-action="sort">
+                            <option value="name">Name (A-Z)</option>
+                            <option value="rating">Highest Rated</option>
+                            <option value="reviews">Most Reviews</option>
+                            <option value="location">Location</option>
+                            <option value="favorites">Favorites First</option>
+                        </select>
+                    </div>
+
+                    <div class="filter-group">
+                        <label for="favoritesFilter" class="filter-label">
+                            <i class="fas fa-heart"></i> Favorites
+                        </label>
+                        <select id="favoritesFilter" class="input filter-select" data-action="filter">
+                            <option value="">All Contractors</option>
+                            <option value="favorites">⭐ Favorites Only</option>
+                            <option value="non-favorites">Not in Favorites</option>
+                        </select>
+                    </div>
                 </div>
             </div>
-
-            <!-- Quick Actions -->
-            <div class="quick-actions">
-                <button class="btn btn-outline btn-small" onclick="app.showFavoritesOnly()">
-                    <i class="fas fa-heart"></i> Show Favorites
-                </button>
-                <button class="btn btn-outline btn-small" onclick="app.showHighRated()">
-                    <i class="fas fa-star"></i> Top Rated
-                </button>
-                <button class="btn btn-outline btn-small" onclick="app.resetToDefault()">
-                    <i class="fas fa-sync"></i> Reset View
-                </button>
-            </div>
-
             <div class="stats-overview">
                 <div class="stat-card">
                     <span class="stat-number" id="totalContractorsCount">0</span>
-                    <span class="stat-label">Total Contractors</span>
+                    <span class="stat-label">Contractors</span>
                 </div>
                 <div class="stat-card">
                     <span class="stat-number" id="totalReviewsCount">0</span>
-                    <span class="stat-label">Total Reviews</span>
+                    <span class="stat-label">Reviews</span>
                 </div>
                 <div class="stat-card">
                     <span class="stat-number" id="averageRatingCount">0.0</span>
                     <span class="stat-label">Avg Rating</span>
                 </div>
-                <!-- Favorites Count - FIXED: Remove hardcoded colors -->
+                <!-- Favorites Count -->
                 <div class="stat-card favorites-stat">
                     <span class="stat-number favorites-count">0</span>
                     <span class="stat-label">Favorites</span>
                 </div>
-            </div>
-        </section>
-
-        <!-- View Toggle -->
-        <section class="view-toggle-section">
-            <div class="view-toggle" id="view-toggle">
-                <button class="view-toggle-btn active" data-view="list">
-                    <i class="fas fa-list"></i> List View
-                </button>
-                <button class="view-toggle-btn" data-view="map">
-                    <i class="fas fa-map"></i> Map View
-                </button>
             </div>
         </section>
 
@@ -138,7 +170,7 @@
             <div id="map-container" class="map-container hidden"></div>
         </section>
 
-        <!-- Favorites Section - FIXED: Remove hardcoded colors -->
+        <!-- Favorites Section -->
         <section id="favoritesSection" class="favorites-section hidden">
             <div class="section-header">
                 <h2><i class="fas fa-heart favorites-icon"></i> Your Favorite Contractors</h2>
@@ -154,20 +186,8 @@
 
         <!-- Contractor List -->
         <section class="contractor-list" id="contractorList">
-            <div class="section-header flex-between">
+            <div class="section-header">
                 <h2>Available Contractors</h2>
-                <div class="sort-options">
-                    <div class="form-group">
-                        <select id="sortBy" class="input" onchange="app.sortContractors()">
-                            <option value="name">Sort by Name</option>
-                            <option value="rating">Sort by Rating</option>
-                            <option value="reviews">Sort by Reviews</option>
-                            <option value="location">Sort by Location</option>
-                            <!-- Sort by favorites -->
-                            <option value="favorites">Favorites First</option>
-                        </select>
-                    </div>
-                </div>
             </div>
             <div class="grid grid-3" id="contractorsGrid">
                 <!-- Contractors will be loaded here -->
@@ -184,7 +204,7 @@
                 <div class="modal-body">
                     <form id="reviewForm">
                         <input type="hidden" id="contractorId">
-                        
+
                         <div class="form-group">
                             <label for="reviewerName">Your Name:</label>
                             <input type="text" id="reviewerName" class="input" required>
@@ -223,7 +243,7 @@
                         <!-- Category Ratings - Each with unique class -->
                         <div class="rating-categories">
                             <h4>Rate by Category:</h4>
-                            
+
                             <div class="rating-category">
                                 <label>Quality of Work</label>
                                 <div class="star-rating quality-rating">
@@ -275,7 +295,8 @@
 
                         <div class="form-group">
                             <label for="comment">Review Comment:</label>
-                            <textarea id="comment" rows="4" class="input" placeholder="Tell us about your experience..." required></textarea>
+                            <textarea id="comment" rows="4" class="input" placeholder="Tell us about your experience..."
+                                required></textarea>
                         </div>
 
                         <button type="submit" class="btn btn-primary">Submit Review</button>
@@ -297,22 +318,22 @@
             </div>
         </div>
 
-        <!-- Quick Actions Footer - FIXED: Remove hardcoded colors and spacing -->
+        <!-- Quick Actions Footer -->
         <footer class="app-footer">
             <div class="footer-actions">
-                <button class="btn btn-secondary" onclick="dataModule.showFavoritesSection()">
+                <button class="btn btn-secondary" data-action="view-favorites">
                     <i class="fas fa-heart"></i> View Favorites
                 </button>
-                <button class="btn btn-secondary" onclick="dataModule.downloadFavorites()">
+                <button class="btn btn-secondary" data-action="export-favorites">
                     <i class="fas fa-download"></i> Export Favorites
                 </button>
-                <button class="btn btn-secondary" onclick="document.getElementById('importFavorites').click()">
+                <button class="btn btn-secondary" data-action="import-favorites">
                     <i class="fas fa-upload"></i> Import Favorites
                 </button>
-                <button class="btn btn-secondary" onclick="app.exportData()">
+                <button class="btn btn-secondary" data-action="export-data">
                     <i class="fas fa-file-export"></i> Export All Data
                 </button>
-                <input type="file" id="importFavorites" accept=".json" class="hidden" onchange="dataModule.handleFavoritesImport(this.files[0])">
+                <input type="file" id="importFavorites" accept=".json" class="hidden">
             </div>
             <p class="footer-note">
                 Your favorites are stored locally in this browser. Export to backup your data.
@@ -321,9 +342,8 @@
     </div>
 
     <!-- Leaflet JS -->
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" 
-            integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" 
-            crossorigin=""></script>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+        integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
 
     <!-- Core Modules -->
     <script src="js/modules/utils.js"></script>
@@ -336,7 +356,7 @@
     <script src="js/modules/favoritesManager.js"></script>
     <script src="js/modules/mapManager.js"></script>
     <script src="js/modules/data.js"></script>
-    
+
     <!-- App Modules (LOAD BEFORE script.js) -->
     <script src="js/app/main.js"></script>
     <script src="js/app/uiManager.js"></script>
@@ -347,4 +367,5 @@
     <!-- Main Script (LOAD LAST) -->
     <script src="js/script.js"></script>
 </body>
+
 </html>

@@ -67,13 +67,14 @@ function startApp() {
     
     // Wait a bit for all scripts to load, then initialize
     setTimeout(() => {
+        // FIXED: Changed === 'undefined' to !== 'undefined' for ContractorReviewApp
         if (typeof dataModule !== 'undefined' && 
             typeof UIManager !== 'undefined' && 
             typeof ModalManager !== 'undefined' && 
             typeof FilterManager !== 'undefined' && 
             typeof FormManager !== 'undefined' && 
             typeof MapManager !== 'undefined' && 
-            typeof ContractorReviewApp !== 'undefined') {
+            typeof ContractorReviewApp !== 'undefined') { // FIXED THIS LINE
             
             console.log('All dependencies loaded, initializing app...');
             initializeApp();
@@ -122,3 +123,212 @@ window.addEventListener('unhandledrejection', (event) => {
 window.getApp = function() {
     return window.app;
 };
+
+// NEW: Event delegation system for data-action attributes
+function setupEventDelegation() {
+    console.log('Setting up event delegation...');
+    
+    // Handle click events
+    document.addEventListener('click', function(event) {
+        const target = event.target.closest('[data-action]');
+        if (!target || !window.app) return;
+        
+        const action = target.getAttribute('data-action');
+        console.log('Action triggered:', action);
+        
+        switch(action) {
+            case 'search':
+                event.preventDefault();
+                window.app.searchContractors();
+                break;
+                
+            case 'toggle-filters':
+                event.preventDefault();
+                handleToggleFilters();
+                break;
+                
+            case 'clear-filters':
+                event.preventDefault();
+                window.app.clearFilters();
+                break;
+                
+            case 'show-favorites':
+                event.preventDefault();
+                window.app.showFavoritesOnly();
+                break;
+                
+            case 'show-high-rated':
+                event.preventDefault();
+                window.app.showHighRated();
+                break;
+                
+            case 'reset-default':
+                event.preventDefault();
+                window.app.resetToDefault();
+                break;
+                
+            case 'view-favorites':
+                event.preventDefault();
+                if (typeof dataModule !== 'undefined') {
+                    dataModule.showFavoritesSection();
+                }
+                break;
+                
+            case 'export-favorites':
+                event.preventDefault();
+                if (typeof dataModule !== 'undefined') {
+                    dataModule.downloadFavorites();
+                }
+                break;
+                
+            case 'import-favorites':
+                event.preventDefault();
+                document.getElementById('importFavorites').click();
+                break;
+                
+            case 'export-data':
+                event.preventDefault();
+                window.app.exportData();
+                break;
+        }
+    });
+    
+    // Handle change events for filters and sort
+    document.addEventListener('change', function(event) {
+        const target = event.target;
+        if (!target.hasAttribute('data-action') || !window.app) return;
+        
+        const action = target.getAttribute('data-action');
+        console.log('Change action triggered:', action);
+        
+        switch(action) {
+            case 'filter':
+                window.app.filterContractors();
+                break;
+                
+            case 'sort':
+                window.app.sortContractors();
+                break;
+        }
+    });
+    
+    // Handle keypress events for search
+    document.addEventListener('keypress', function(event) {
+        const target = event.target;
+        if (!target.hasAttribute('data-action') || !window.app) return;
+        
+        const action = target.getAttribute('data-action');
+        
+        if (action === 'search-keypress' && event.key === 'Enter') {
+            event.preventDefault();
+            window.app.searchContractors();
+        }
+    });
+    
+    console.log('Event delegation setup complete');
+}
+
+// NEW: Single, reliable toggle function
+function handleToggleFilters() {
+    const toggleBtn = document.getElementById('toggleFiltersBtn');
+    const advancedFilters = document.getElementById('advancedFilters');
+    
+    if (!toggleBtn || !advancedFilters) {
+        console.error('Toggle elements not found');
+        return;
+    }
+    
+    const isHidden = advancedFilters.classList.contains('hidden');
+    console.log('Toggling filters. Currently hidden:', isHidden);
+    
+    if (isHidden) {
+        // Show advanced filters
+        advancedFilters.classList.remove('hidden');
+        toggleBtn.innerHTML = '<i class="fas fa-sliders-h"></i> Less Filters';
+        toggleBtn.classList.add('active');
+        console.log('Advanced filters shown');
+    } else {
+        // Hide advanced filters
+        advancedFilters.classList.add('hidden');
+        toggleBtn.innerHTML = '<i class="fas fa-sliders-h"></i> More Filters';
+        toggleBtn.classList.remove('active');
+        console.log('Advanced filters hidden');
+    }
+}
+
+// Compact filters debug and initialization
+function initializeCompactFilters() {
+    console.log('Initializing compact filters...');
+    
+    const toggleBtn = document.getElementById('toggleFiltersBtn');
+    const advancedFilters = document.getElementById('advancedFilters');
+    
+    if (!toggleBtn) {
+        console.error('Toggle button not found!');
+        return;
+    }
+    
+    if (!advancedFilters) {
+        console.error('Advanced filters container not found!');
+        return;
+    }
+    
+    console.log('Compact filter elements found successfully');
+    
+    // Remove any existing event listeners to prevent duplicates
+    const newToggleBtn = toggleBtn.cloneNode(true);
+    toggleBtn.parentNode.replaceChild(newToggleBtn, toggleBtn);
+    
+    console.log('Toggle button reset to prevent duplicate listeners');
+}
+
+// Initialize compact filters after app loads
+setTimeout(() => {
+    if (document.readyState === 'complete') {
+        initializeCompactFilters();
+        setupEventDelegation();
+    } else {
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeCompactFilters();
+            setupEventDelegation();
+        });
+    }
+}, 1000);
+
+// Debug function to check current state
+window.debugFilters = function() {
+    console.log('=== FILTERS DEBUG ===');
+    
+    const elements = {
+        toggleBtn: document.getElementById('toggleFiltersBtn'),
+        advancedFilters: document.getElementById('advancedFilters'),
+        compactBar: document.querySelector('.compact-filter-bar'),
+        searchInput: document.getElementById('searchInput'),
+        clearBtn: document.querySelector('[data-action="clear-filters"]')
+    };
+    
+    Object.entries(elements).forEach(([name, element]) => {
+        console.log(`${name}:`, element ? 'FOUND' : 'NOT FOUND');
+        if (element) {
+            console.log(`  - classes:`, element.className);
+            console.log(`  - hidden:`, element.classList.contains('hidden'));
+            console.log(`  - styles:`, {
+                display: window.getComputedStyle(element).display,
+                visibility: window.getComputedStyle(element).visibility
+            });
+        }
+    });
+    
+    // Check if app methods are available
+    console.log('App methods:', {
+        toggleAdvancedFilters: typeof app?.toggleAdvancedFilters,
+        clearFilters: typeof app?.clearFilters,
+        filterManager: typeof app?.filterManager
+    });
+};
+
+// Run debug after page loads
+setTimeout(() => {
+    debugFilters();
+    console.log('Compact filters debug completed');
+}, 2000);

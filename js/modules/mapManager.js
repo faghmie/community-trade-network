@@ -10,6 +10,9 @@ class MapManager {
         this.isMapView = false;
         this.contractors = [];
         this.initialized = false;
+        this.allContractors = []; // Store all contractors separately
+        this.mapLoadAttempts = 0;
+        this.maxMapLoadAttempts = 5;
         this.init();
     }
 
@@ -42,10 +45,8 @@ class MapManager {
             this.createMapContainer();
         }
 
-        // Initialize map only once
-        if (!this.initialized) {
-            this.initializeMap();
-        }
+        // Initialize map immediately but don't show it yet
+        this.initializeMap();
         
         // Set up event listeners
         this.setupEventListeners();
@@ -66,19 +67,19 @@ class MapManager {
         const mapContainer = document.getElementById('map-container');
         if (!mapContainer) {
             console.warn('Map container not found');
-            return;
+            return false;
         }
 
         // Check if map is already initialized
         if (this.map) {
             console.log('Map already initialized');
-            return;
+            return true;
         }
 
         // Check if container already has a map instance
         if (mapContainer._leaflet_id) {
             console.log('Map container already has a Leaflet instance');
-            return;
+            return true;
         }
 
         // Default to center of South Africa if no contractors
@@ -89,11 +90,23 @@ class MapManager {
             // Check if Leaflet is available
             if (typeof L === 'undefined') {
                 console.warn('Leaflet not loaded yet, retrying...');
-                setTimeout(() => this.initializeMap(), 500);
-                return;
+                this.mapLoadAttempts++;
+                if (this.mapLoadAttempts < this.maxMapLoadAttempts) {
+                    setTimeout(() => this.initializeMap(), 500);
+                }
+                return false;
             }
 
-            this.map = L.map('map-container').setView(defaultCenter, defaultZoom);
+            this.map = L.map('map-container', {
+                // Important: set these options for better initialization
+                zoomControl: false,
+                attributionControl: true
+            }).setView(defaultCenter, defaultZoom);
+
+            // Add zoom control to bottom right
+            L.control.zoom({
+                position: 'bottomright'
+            }).addTo(this.map);
 
             // Add tile layer
             L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -103,19 +116,20 @@ class MapManager {
 
             this.initialized = true;
             console.log('Map initialized successfully');
+            
+            // Load all contractors immediately after map initialization
+            this.loadAllContractors();
+            return true;
         } catch (error) {
             console.error('Failed to initialize map:', error);
             
-            // Don't retry indefinitely - mark as failed after 3 attempts
-            if (!this.retryCount) {
-                this.retryCount = 1;
-                setTimeout(() => this.initializeMap(), 1000);
-            } else if (this.retryCount < 3) {
-                this.retryCount++;
+            this.mapLoadAttempts++;
+            if (this.mapLoadAttempts < this.maxMapLoadAttempts) {
                 setTimeout(() => this.initializeMap(), 1000);
             } else {
                 console.error('Failed to initialize map after multiple attempts');
             }
+            return false;
         }
     }
 
@@ -128,14 +142,22 @@ class MapManager {
 
         // Listen for contractor data updates
         document.addEventListener('contractorsUpdated', (event) => {
-            this.contractors = event.detail.contractors;
-            this.updateMapMarkers();
+            this.allContractors = event.detail.contractors || this.allContractors;
+            // Only update markers if we're in map view
+            if (this.isMapView) {
+                this.updateMapMarkers();
+            }
         });
 
         // Listen for filter changes to update visible markers
         document.addEventListener('filtersApplied', (event) => {
-            this.contractors = event.detail.contractors || this.contractors;
+            this.contractors = event.detail.contractors || this.allContractors;
             this.updateMapMarkers();
+        });
+
+        // Listen for data module initialization
+        document.addEventListener('dataModuleInitialized', () => {
+            this.loadAllContractors();
         });
 
         // Handle popup button clicks
@@ -147,6 +169,29 @@ class MapManager {
                 }
             }
         });
+
+        // NEW: Listen for window resize events
+        window.addEventListener('resize', () => {
+            if (this.isMapView && this.map) {
+                setTimeout(() => {
+                    this.map.invalidateSize();
+                }, 100);
+            }
+        });
+    }
+
+    // Load all contractors from data module
+    loadAllContractors() {
+        if (typeof dataModule !== 'undefined') {
+            this.allContractors = dataModule.getContractors();
+            this.contractors = this.allContractors; // Default to showing all
+            if (this.isMapView) {
+                this.updateMapMarkers();
+            }
+        } else {
+            // Retry after a short delay if dataModule isn't available yet
+            setTimeout(() => this.loadAllContractors(), 100);
+        }
     }
 
     handlePopupButtonClick(contractorId) {
@@ -166,19 +211,36 @@ class MapManager {
             mapContainer.classList.remove('hidden');
             contractorGrid.classList.add('hidden');
             
-            // Ensure map is properly initialized and sized
+            // Ensure map is properly initialized
             if (!this.initialized) {
-                this.initializeMap();
+                const initialized = this.initializeMap();
+                if (!initialized) {
+                    console.warn('Map initialization failed, retrying...');
+                    return;
+                }
             }
             
-            this.updateMapMarkers();
+            // Use all contractors when switching to map view
+            this.contractors = this.allContractors;
             
-            // Trigger map resize after a brief delay to ensure container is visible
+            // CRITICAL FIX: Invalidate map size and update markers with proper timing
             setTimeout(() => {
                 if (this.map) {
+                    // Invalidate size first to ensure map container dimensions are correct
                     this.map.invalidateSize();
+                    
+                    // Small delay to let the DOM update complete
+                    setTimeout(() => {
+                        this.updateMapMarkers();
+                        
+                        // One more invalidation after markers are added
+                        setTimeout(() => {
+                            this.map.invalidateSize();
+                        }, 50);
+                    }, 50);
                 }
             }, 100);
+            
         } else {
             mapContainer.classList.add('hidden');
             contractorGrid.classList.remove('hidden');
@@ -190,11 +252,19 @@ class MapManager {
         this.clearMarkers();
 
         if (!this.map || !this.contractors || this.contractors.length === 0) {
+            console.log('No contractors to display on map:', {
+                map: !!this.map,
+                contractors: this.contractors ? this.contractors.length : 0,
+                allContractors: this.allContractors ? this.allContractors.length : 0
+            });
             return;
         }
 
         const bounds = L.latLngBounds ? new L.latLngBounds() : null;
         let hasValidLocations = false;
+        let validContractors = 0;
+
+        console.log(`Updating map with ${this.contractors.length} contractors`);
 
         this.contractors.forEach(contractor => {
             const location = this.extractLocation(contractor);
@@ -204,16 +274,44 @@ class MapManager {
                     bounds.extend([location.lat, location.lng]);
                 }
                 hasValidLocations = true;
+                validContractors++;
+            } else {
+                console.warn(`No location found for contractor: ${contractor.name}`, contractor);
             }
         });
 
+        console.log(`Added ${validContractors} markers to map`);
+
         // Fit map to show all markers if we have valid locations
         if (hasValidLocations && bounds && bounds.isValid()) {
-            this.map.fitBounds(bounds, { padding: [20, 20] });
+            // Small delay to ensure map is fully rendered before fitting bounds
+            setTimeout(() => {
+                if (this.map) {
+                    this.map.fitBounds(bounds, { 
+                        padding: [20, 20],
+                        maxZoom: 15 // Prevent zooming in too far
+                    });
+                }
+            }, 150);
         } else if (hasValidLocations && !bounds) {
             // Fallback for older Leaflet versions
             const group = new L.featureGroup(this.markers);
-            this.map.fitBounds(group.getBounds(), { padding: [20, 20] });
+            setTimeout(() => {
+                if (this.map) {
+                    this.map.fitBounds(group.getBounds(), { 
+                        padding: [20, 20],
+                        maxZoom: 15
+                    });
+                }
+            }, 150);
+        } else {
+            console.warn('No valid locations found for any contractors');
+            // Ensure map is still visible even with no markers
+            setTimeout(() => {
+                if (this.map) {
+                    this.map.invalidateSize();
+                }
+            }, 100);
         }
     }
 
@@ -351,7 +449,7 @@ class MapManager {
 
     // Public method to update contractors from external calls
     updateContractors(contractors) {
-        this.contractors = contractors || [];
+        this.contractors = contractors || this.allContractors;
         this.updateMapMarkers();
     }
 
@@ -361,6 +459,18 @@ class MapManager {
             setTimeout(() => {
                 this.map.invalidateSize();
             }, 100);
+        }
+    }
+
+    // NEW: Force refresh map - useful for when map doesn't show initially
+    forceRefresh() {
+        if (this.map) {
+            setTimeout(() => {
+                this.map.invalidateSize(true); // Force redraw
+                if (this.contractors.length > 0) {
+                    this.updateMapMarkers();
+                }
+            }, 200);
         }
     }
 

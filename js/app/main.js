@@ -27,7 +27,7 @@ class ContractorReviewApp {
             // Set up cross-manager communication
             this.setupManagers();
             
-            // Set up view toggle
+            // Set up view toggle - MUST be called after UI manager init
             this.setupViewToggle();
             
             // Render initial state
@@ -75,65 +75,88 @@ class ContractorReviewApp {
     }
 
     setupViewToggle() {
-        const viewToggle = document.getElementById('view-toggle');
-        if (!viewToggle) {
-            console.warn('View toggle element not found');
-            return;
-        }
+        // Wait a bit for DOM to be fully ready
+        setTimeout(() => {
+            const viewToggle = document.getElementById('view-toggle');
+            if (!viewToggle) {
+                console.warn('View toggle element not found');
+                return;
+            }
 
-        const listBtn = viewToggle.querySelector('[data-view="list"]');
-        const mapBtn = viewToggle.querySelector('[data-view="map"]');
+            const listBtn = viewToggle.querySelector('[data-view="list"]');
+            const mapBtn = viewToggle.querySelector('[data-view="map"]');
 
-        if (!listBtn || !mapBtn) {
-            console.warn('View toggle buttons not found');
-            return;
-        }
+            if (!listBtn || !mapBtn) {
+                console.warn('View toggle buttons not found');
+                return;
+            }
 
-        [listBtn, mapBtn].forEach(btn => {
-            btn.addEventListener('click', (e) => {
-                const view = e.target.dataset.view;
-                this.currentView = view;
-                
-                // Update active state
-                listBtn.classList.toggle('active', view === 'list');
-                mapBtn.classList.toggle('active', view === 'map');
-                
-                // Handle the view change immediately
-                this.handleViewChange();
-                
-                // Also dispatch event for other components
-                document.dispatchEvent(new CustomEvent('viewToggle', {
-                    detail: { view }
-                }));
+            console.log('Setting up view toggle buttons:', { listBtn: !!listBtn, mapBtn: !!mapBtn });
+
+            // Remove any existing event listeners to prevent duplicates
+            const newListBtn = listBtn.cloneNode(true);
+            const newMapBtn = mapBtn.cloneNode(true);
+            listBtn.parentNode.replaceChild(newListBtn, listBtn);
+            mapBtn.parentNode.replaceChild(newMapBtn, mapBtn);
+
+            // Add event listeners to the new buttons
+            [newListBtn, newMapBtn].forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    
+                    const view = btn.dataset.view;
+                    console.log('View toggle clicked:', view);
+                    
+                    this.toggleView(view);
+                });
             });
-        });
 
-        // Set initial active state
-        listBtn.classList.add('active');
+            // Set initial active state
+            this.updateViewToggleState();
+
+        }, 100);
+    }
+
+    updateViewToggleState() {
+        const listBtn = document.querySelector('[data-view="list"]');
+        const mapBtn = document.querySelector('[data-view="map"]');
+        
+        if (listBtn && mapBtn) {
+            listBtn.classList.toggle('active', this.currentView === 'list');
+            mapBtn.classList.toggle('active', this.currentView === 'map');
+        }
     }
 
     handleViewChange() {
         const mapContainer = document.getElementById('map-container');
-        const contractorGrid = document.getElementById('contractorsGrid'); // FIXED: changed to contractorsGrid
+        const contractorList = document.getElementById('contractorList');
         const favoritesSection = document.getElementById('favoritesSection');
         
-        if (!mapContainer || !contractorGrid) {
-            console.warn('Map container or contractor grid not found', {
+        console.log('handleViewChange called:', {
+            currentView: this.currentView,
+            mapContainer: !!mapContainer,
+            contractorList: !!contractorList,
+            favoritesSection: !!favoritesSection
+        });
+
+        if (!mapContainer || !contractorList) {
+            console.warn('Required elements not found', {
                 mapContainer: !!mapContainer,
-                contractorGrid: !!contractorGrid
+                contractorList: !!contractorList
             });
             return;
         }
 
-        console.log('Switching to view:', this.currentView);
-
         if (this.currentView === 'map') {
             // Show map, hide list and favorites
             mapContainer.classList.remove('hidden');
-            contractorGrid.classList.add('hidden');
+            contractorList.classList.add('hidden');
             if (favoritesSection) {
-                favoritesSection.style.display = 'none';
+                favoritesSection.classList.add('hidden');
             }
+            
+            console.log('Switching to map view');
             
             // Ensure map is properly initialized
             if (!this.mapManager.isReady()) {
@@ -142,7 +165,10 @@ class ContractorReviewApp {
             }
             
             // Update map with current filtered contractors
-            const contractorsToShow = this.filteredContractors.length > 0 ? this.filteredContractors : dataModule.getContractors();
+            const contractorsToShow = this.filteredContractors.length > 0 ? 
+                this.filteredContractors : 
+                dataModule.getContractors();
+                
             this.mapManager.updateContractors(contractorsToShow);
             
             // Ensure map is properly sized after showing
@@ -151,17 +177,24 @@ class ContractorReviewApp {
                     this.mapManager.map.invalidateSize();
                     console.log('Map resized and updated');
                 }
-            }, 150);
+            }, 300);
+            
         } else {
             // Show list, hide map
             mapContainer.classList.add('hidden');
-            contractorGrid.classList.remove('hidden');
-            if (favoritesSection && dataModule.getFavoritesCount() > 0) {
-                favoritesSection.style.display = 'block';
+            contractorList.classList.remove('hidden');
+            
+            // Show favorites section only if there are favorites
+            if (favoritesSection) {
+                const hasFavorites = dataModule.getFavoritesCount() > 0;
+                favoritesSection.classList.toggle('hidden', !hasFavorites);
             }
             
             console.log('Switched to list view');
         }
+
+        // Update the toggle button states
+        this.updateViewToggleState();
     }
 
     handleMapMarkerClick(contractorId) {
@@ -216,45 +249,34 @@ class ContractorReviewApp {
         }
     }
 
-    // NEW: Clear all filters method
+    // NEW COMPACT FILTER METHODS
+    toggleAdvancedFilters() {
+        if (this.filterManager) {
+            this.filterManager.toggleAdvancedFilters();
+        }
+    }
+
     clearFilters() {
-        try {
-            // Clear all filter inputs
-            const filters = [
-                'searchInput',
-                'categoryFilter', 
-                'locationFilter',
-                'ratingFilter',
-                'favoritesFilter',
-                'sortBy'
-            ];
-            
-            filters.forEach(filterId => {
-                const element = document.getElementById(filterId);
-                if (element) {
-                    if (element.type === 'text') {
-                        element.value = '';
-                    } else if (element.tagName === 'SELECT') {
-                        element.value = filterId === 'sortBy' ? 'name' : '';
-                    }
-                }
-            });
-            
-            // Refresh the UI
-            this.renderDashboard();
-            
-            // Show success notification
-            if (typeof utils !== 'undefined' && utils.showNotification) {
-                utils.showNotification('All filters have been cleared!', 'success');
-            }
-            
-            console.log('All filters cleared successfully');
-            
-        } catch (error) {
-            console.error('Error clearing filters:', error);
-            if (typeof utils !== 'undefined' && utils.showNotification) {
-                utils.showNotification('Error clearing filters', 'error');
-            }
+        if (this.filterManager) {
+            this.filterManager.clearFilters();
+        }
+    }
+
+    showFavoritesOnly() {
+        if (this.filterManager) {
+            this.filterManager.showFavoritesOnly();
+        }
+    }
+
+    showHighRated() {
+        if (this.filterManager) {
+            this.filterManager.showHighRated();
+        }
+    }
+
+    resetToDefault() {
+        if (this.filterManager) {
+            this.filterManager.resetToDefault();
         }
     }
 
@@ -275,44 +297,6 @@ class ContractorReviewApp {
     handleSearchKeyPress(event) {
         if (event.key === 'Enter') {
             this.searchContractors();
-        }
-    }
-
-    // NEW: Quick filter methods for common use cases
-    showFavoritesOnly() {
-        const favoritesFilter = document.getElementById('favoritesFilter');
-        if (favoritesFilter) {
-            favoritesFilter.value = 'favorites';
-            this.filterContractors();
-        }
-    }
-
-    showHighRated() {
-        const ratingFilter = document.getElementById('ratingFilter');
-        if (ratingFilter) {
-            ratingFilter.value = '4.5';
-            this.filterContractors();
-        }
-    }
-
-    // NEW: Reset to default view
-    resetToDefault() {
-        this.clearFilters();
-        this.uiManager.renderContractors();
-        this.uiManager.renderStats();
-        
-        // Reset to list view
-        const listBtn = document.querySelector('[data-view="list"]');
-        const mapBtn = document.querySelector('[data-view="map"]');
-        if (listBtn && mapBtn) {
-            listBtn.classList.add('active');
-            mapBtn.classList.remove('active');
-            this.currentView = 'list';
-            this.handleViewChange();
-        }
-        
-        if (typeof utils !== 'undefined' && utils.showNotification) {
-            utils.showNotification('View reset to default', 'success');
         }
     }
 
@@ -367,26 +351,26 @@ class ContractorReviewApp {
         };
     }
 
-    // NEW: Toggle view programmatically
+    // UPDATED: Toggle view programmatically - FIXED VERSION
     toggleView(view) {
-        const listBtn = document.querySelector('[data-view="list"]');
-        const mapBtn = document.querySelector('[data-view="map"]');
+        console.log('toggleView called with:', view);
+        
+        if (view !== 'list' && view !== 'map') {
+            console.warn('Invalid view:', view);
+            return;
+        }
         
         this.currentView = view;
         
-        if (view === 'map') {
-            listBtn?.classList.remove('active');
-            mapBtn?.classList.add('active');
-        } else {
-            listBtn?.classList.add('active');
-            mapBtn?.classList.remove('active');
-        }
-        
+        // Update the UI immediately
         this.handleViewChange();
         
+        // Dispatch event for other components
         document.dispatchEvent(new CustomEvent('viewToggle', {
             detail: { view }
         }));
+        
+        console.log('View toggled to:', view, 'Status:', this.getAppStatus());
     }
 }
 

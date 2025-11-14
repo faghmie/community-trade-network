@@ -28,9 +28,14 @@ const contractorManager = {
     },
 
     create(contractorData) {
+        // Generate coordinates and service areas based on location
+        const { coordinates, serviceAreas } = this.generateMapData(contractorData.location);
+        
         const contractor = {
             id: this.generateId(),
             ...contractorData,
+            coordinates: coordinates,
+            serviceAreas: serviceAreas,
             rating: 0,
             reviews: [],
             createdAt: new Date().toISOString()
@@ -43,6 +48,13 @@ const contractorManager = {
     update(id, updates) {
         const contractor = this.getById(id);
         if (contractor) {
+            // If location is being updated, regenerate map data
+            if (updates.location && updates.location !== contractor.location) {
+                const { coordinates, serviceAreas } = this.generateMapData(updates.location);
+                updates.coordinates = coordinates;
+                updates.serviceAreas = serviceAreas;
+            }
+            
             Object.assign(contractor, updates);
             this.save();
             return contractor;
@@ -95,11 +107,67 @@ const contractorManager = {
                 contractor.location = '';
                 migrated = true;
             }
+            // Migrate missing map data
+            if (!contractor.hasOwnProperty('coordinates') && contractor.location) {
+                const { coordinates } = this.generateMapData(contractor.location);
+                contractor.coordinates = coordinates;
+                migrated = true;
+            }
+            if (!contractor.hasOwnProperty('serviceAreas') && contractor.location) {
+                const { serviceAreas } = this.generateMapData(contractor.location);
+                contractor.serviceAreas = serviceAreas;
+                migrated = true;
+            }
         });
         if (migrated) this.save();
     },
 
     generateId() {
         return Date.now().toString(36) + Math.random().toString(36).substr(2);
+    },
+
+    // NEW: Generate coordinates and service areas based on location
+    generateMapData(location) {
+        if (!location) {
+            return {
+                coordinates: null,
+                serviceAreas: []
+            };
+        }
+
+        // Extract area and province from location (format: "Area, Province")
+        const [area, province] = location.split(', ').map(part => part.trim());
+        
+        let coordinates = null;
+        let serviceAreas = [];
+
+        // Try to find coordinates for the area
+        if (area && southAfricanCityCoordinates) {
+            const areaKey = area.toLowerCase();
+            coordinates = southAfricanCityCoordinates[areaKey] || null;
+        }
+
+        // If no coordinates found for area, try province
+        if (!coordinates && province && southAfricanProvinces) {
+            const provinceData = southAfricanProvinces[province];
+            if (provinceData && provinceData.coordinates) {
+                coordinates = provinceData.coordinates;
+            }
+        }
+
+        // Generate service areas based on province
+        if (province && southAfricanProvinces && southAfricanProvinces[province]) {
+            const provinceData = southAfricanProvinces[province];
+            // Use the first 3-4 cities from the province as service areas
+            serviceAreas = provinceData.cities.slice(0, 4);
+        } else if (area) {
+            // Fallback: just use the area itself
+            serviceAreas = [area];
+        }
+
+        return {
+            coordinates: coordinates,
+            serviceAreas: serviceAreas
+        };
     }
 };
