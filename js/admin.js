@@ -1,32 +1,243 @@
-// Admin functionality
+// Modern Admin Dashboard with Authentication
 const adminModule = {
+    authManager: null,
+    sessionInterval: null,
+    modulesInitialized: false,
+
     init() {
+        this.initializeAuthentication();
+    },
+
+    async initializeAuthentication() {
+        try {
+            // Import auth manager
+            const authModule = await import('./modules/auth.js');
+            this.authManager = authModule.default;
+            
+            // Check authentication status
+            if (this.authManager.isLoggedIn()) {
+                await this.showAdminContent();
+                this.startSessionMonitoring();
+            } else {
+                this.showLoginForm();
+                this.bindAuthEvents();
+            }
+        } catch (error) {
+            console.error('Error loading authentication module:', error);
+            this.showLoginForm();
+            this.bindAuthEvents();
+        }
+    },
+
+    showLoginForm() {
+        const loginSection = document.getElementById('loginSection');
+        const adminContent = document.getElementById('adminContent');
+        if (loginSection) loginSection.style.display = 'flex';
+        if (adminContent) adminContent.style.display = 'none';
+    },
+
+    async showAdminContent() {
+        const loginSection = document.getElementById('loginSection');
+        const adminContent = document.getElementById('adminContent');
+        if (loginSection) loginSection.style.display = 'none';
+        if (adminContent) adminContent.style.display = 'block';
+        
+        this.updateUserInfo();
+        
+        // Initialize admin modules after authentication
+        if (!this.modulesInitialized) {
+            await this.initializeAdminModules();
+            this.modulesInitialized = true;
+        }
+        
         this.bindEvents();
         this.renderDashboard();
     },
 
+    async initializeAdminModules() {
+        // Initialize all admin modules
+        dataModule.init();
+        categoriesModule.init();
+        adminContractorsModule.init();
+        adminCategoriesModule.init();
+        adminReviewsModule.init();
+        tabsModule.init();
+        
+        console.log('✅ All admin modules initialized successfully');
+    },
+
+    updateUserInfo() {
+        const user = this.authManager.getCurrentUser();
+        if (user) {
+            const usernameDisplay = document.getElementById('usernameDisplay');
+            const userAvatar = document.getElementById('userAvatar');
+            
+            if (usernameDisplay) {
+                usernameDisplay.textContent = user.username;
+            }
+            if (userAvatar) {
+                userAvatar.textContent = user.username.charAt(0).toUpperCase();
+            }
+            this.updateSessionInfo();
+        }
+    },
+
+    updateSessionInfo() {
+        const expiry = this.authManager.getSessionExpiry();
+        if (expiry) {
+            const now = new Date().getTime();
+            const timeLeft = expiry - now;
+            
+            if (timeLeft <= 0) {
+                this.handleSessionExpired();
+                return;
+            }
+            
+            const hoursLeft = Math.floor(timeLeft / (1000 * 60 * 60));
+            const minutesLeft = Math.floor((timeLeft % (1000 * 60 * 60)) / (1000 * 60));
+            const secondsLeft = Math.floor((timeLeft % (1000 * 60)) / 1000);
+            
+            const sessionInfo = document.getElementById('sessionInfo');
+            if (sessionInfo) {
+                if (hoursLeft > 0) {
+                    sessionInfo.textContent = `Session: ${hoursLeft}h ${minutesLeft}m ${secondsLeft}s`;
+                } else if (minutesLeft > 0) {
+                    sessionInfo.textContent = `Session: ${minutesLeft}m ${secondsLeft}s`;
+                } else {
+                    sessionInfo.textContent = `Session: ${secondsLeft}s`;
+                }
+            }
+            
+            // Show warning if session expiring soon (less than 5 minutes)
+            const sessionWarning = document.getElementById('sessionWarning');
+            if (sessionWarning) {
+                if (timeLeft < 5 * 60 * 1000) { // 5 minutes in milliseconds
+                    sessionWarning.style.display = 'block';
+                    // Add pulsing animation for last minute
+                    if (timeLeft < 60 * 1000) {
+                        sessionWarning.style.animation = 'pulse 1s infinite';
+                    }
+                } else {
+                    sessionWarning.style.display = 'none';
+                }
+            }
+        }
+    },
+
+    startSessionMonitoring() {
+        // Update session info every second for real-time countdown
+        this.sessionInterval = setInterval(() => {
+            this.updateSessionInfo();
+        }, 1000); // Update every second instead of every minute
+    },
+
+    handleSessionExpired() {
+        clearInterval(this.sessionInterval);
+        this.showLoginForm();
+        this.showMessage('Session expired. Please login again.', 'error');
+    },
+
+    bindAuthEvents() {
+        const loginForm = document.getElementById('loginForm');
+        const logoutButton = document.getElementById('logoutButton');
+        const passwordField = document.getElementById('password');
+
+        if (loginForm) {
+            loginForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                await this.handleLogin();
+            });
+        }
+
+        if (logoutButton) {
+            logoutButton.addEventListener('click', () => {
+                this.handleLogout();
+            });
+        }
+
+        if (passwordField) {
+            passwordField.addEventListener('keypress', async (e) => {
+                if (e.key === 'Enter') {
+                    await this.handleLogin();
+                }
+            });
+        }
+    },
+
+    async handleLogin() {
+        const username = document.getElementById('username');
+        const password = document.getElementById('password');
+        const loginButton = document.getElementById('loginButton');
+        const loginButtonText = document.getElementById('loginButtonText');
+        const loginSpinner = document.getElementById('loginSpinner');
+
+        if (!username || !password || !loginButton || !loginButtonText || !loginSpinner) {
+            console.error('Login elements not found');
+            return;
+        }
+
+        // Show loading state
+        loginButton.disabled = true;
+        loginButtonText.textContent = 'Logging in...';
+        loginSpinner.style.display = 'inline-block';
+
+        try {
+            const result = await this.authManager.login(username.value, password.value);
+            
+            if (result.success) {
+                this.showMessage('Login successful! Redirecting...', 'success');
+                setTimeout(async () => {
+                    await this.showAdminContent();
+                    this.startSessionMonitoring();
+                }, 1000);
+            } else {
+                this.showMessage(result.message, 'error');
+            }
+        } catch (error) {
+            console.error('Login error:', error);
+            this.showMessage('Login failed. Please try again.', 'error');
+        } finally {
+            // Reset loading state
+            loginButton.disabled = false;
+            loginButtonText.textContent = 'Login';
+            loginSpinner.style.display = 'none';
+        }
+    },
+
+    handleLogout() {
+        this.authManager.logout();
+        clearInterval(this.sessionInterval);
+        this.modulesInitialized = false;
+        this.showLoginForm();
+        this.showMessage('You have been logged out.', 'info');
+        
+        // Clear form fields
+        const username = document.getElementById('username');
+        const password = document.getElementById('password');
+        if (username) username.value = '';
+        if (password) password.value = '';
+    },
+
+    showMessage(message, type = 'info') {
+        const messageElement = document.getElementById('loginMessage');
+        if (messageElement) {
+            messageElement.textContent = message;
+            messageElement.className = `auth-message ${type}`;
+            messageElement.style.display = 'block';
+            
+            // Auto-hide success messages
+            if (type === 'success') {
+                setTimeout(() => {
+                    messageElement.style.display = 'none';
+                }, 3000);
+            }
+        }
+    },
+
     bindEvents() {
-        // Contractor form
-        document.getElementById('addContractorBtn')?.addEventListener('click', () => {
-            this.showContractorForm();
-        });
-
-        document.getElementById('contractorForm')?.addEventListener('submit', (e) => {
-            e.preventDefault();
-            this.handleContractorSubmit();
-        });
-
-        // Province change event
-        document.getElementById('contractorProvince')?.addEventListener('change', (e) => {
-            this.updateAreaDropdown(e.target.value);
-        });
-
-        // Search functionality
-        document.getElementById('searchInput')?.addEventListener('input', (e) => {
-            this.filterContractors(e.target.value);
-        });
-
-        // Modal close events - use event delegation
+        console.log('Binding admin events...');
+        
+        // Modal close events
         document.addEventListener('click', (e) => {
             if (e.target.classList.contains('close')) {
                 const modal = e.target.closest('.modal');
@@ -42,11 +253,71 @@ const adminModule = {
                 e.target.style.display = 'none';
             }
         });
+
+        // Add Contractor Button
+        const addContractorBtn = document.getElementById('addContractorBtn');
+        if (addContractorBtn) {
+            addContractorBtn.addEventListener('click', () => {
+                adminContractorsModule.showContractorForm();
+            });
+        }
+
+        // Add Category Button
+        const addCategoryBtn = document.getElementById('addCategoryBtn');
+        if (addCategoryBtn) {
+            addCategoryBtn.addEventListener('click', () => {
+                adminCategoriesModule.showAddCategoryForm();
+            });
+        }
+
+        // Global search functionality for contractors tab
+        const searchInput = document.getElementById('searchInput');
+        if (searchInput) {
+            searchInput.addEventListener('input', (e) => {
+                adminContractorsModule.filterContractors(e.target.value);
+            });
+        }
+
+        // Category search
+        const categorySearch = document.getElementById('categorySearch');
+        if (categorySearch) {
+            categorySearch.addEventListener('input', (e) => {
+                adminCategoriesModule.filterCategories(e.target.value);
+            });
+        }
+
+        // Review search and filters
+        const reviewSearch = document.getElementById('reviewSearch');
+        if (reviewSearch) {
+            reviewSearch.addEventListener('input', () => {
+                adminReviewsModule.filterReviews();
+            });
+        }
+
+        const reviewContractorFilter = document.getElementById('reviewContractorFilter');
+        if (reviewContractorFilter) {
+            reviewContractorFilter.addEventListener('change', () => {
+                adminReviewsModule.filterReviews();
+            });
+        }
+
+        const reviewStatusFilter = document.getElementById('reviewStatusFilter');
+        if (reviewStatusFilter) {
+            reviewStatusFilter.addEventListener('change', () => {
+                adminReviewsModule.filterReviews();
+            });
+        }
+
+        console.log('Admin events bound successfully');
     },
 
     renderDashboard() {
-        this.renderContractorsTable();
         this.renderStats();
+        
+        // Render all modules
+        adminContractorsModule.renderContractorsTable();
+        adminCategoriesModule.renderCategories();
+        adminReviewsModule.renderReviews();
     },
 
     renderStats() {
@@ -60,322 +331,93 @@ const adminModule = {
         const totalCategories = categoriesModule.getCategories().length;
         const reviewStats = dataModule.getReviewStats();
 
-        document.getElementById('totalContractors').textContent = contractors.length;
-        document.getElementById('totalReviews').textContent = totalReviews;
-        document.getElementById('averageRating').textContent = averageRating.toFixed(1);
-        document.getElementById('totalCategories').textContent = totalCategories;
-        document.getElementById('pendingReviews').textContent = reviewStats.pendingReviews;
+        // Update stats elements
+        this.updateElementText('totalContractors', contractors.length);
+        this.updateElementText('totalReviews', totalReviews);
+        this.updateElementText('averageRating', averageRating.toFixed(1));
+        this.updateElementText('totalCategories', totalCategories);
+        this.updateElementText('pendingReviews', reviewStats.pendingReviews);
     },
 
-    renderContractorsTable(filteredContractors = null) {
-        const contractors = filteredContractors || dataModule.getContractors();
-        const tbody = document.getElementById('contractorsTableBody');
-        
-        if (!tbody) return;
-
-        tbody.innerHTML = contractors.map(contractor => `
-            <tr>
-                <td>${contractor.name}</td>
-                <td>${contractor.category}</td>
-                <td>${contractor.email}</td>
-                <td>${contractor.phone}</td>
-                <td>${contractor.rating}</td>
-                <td>${contractor.reviews.length}</td>
-                <td class="table-actions">
-                    <button class="btn btn-small btn-secondary" onclick="adminModule.viewContractor('${contractor.id}')">
-                        View
-                    </button>
-                    <button class="btn btn-small btn-primary" onclick="adminModule.editContractor('${contractor.id}')">
-                        Edit
-                    </button>
-                    <button class="btn btn-small" style="background: var(--accent-color); color: white;" 
-                            onclick="adminModule.deleteContractor('${contractor.id}')">
-                        Delete
-                    </button>
-                </td>
-            </tr>
-        `).join('');
-    },
-
-    showContractorForm(contractor = null) {
-        const form = document.getElementById('contractorForm');
-        const modal = document.getElementById('contractorFormModal');
-        
-        // Populate categories dropdown
-        const categorySelect = document.getElementById('contractorCategory');
-        categorySelect.innerHTML = '<option value="">Select Category</option>';
-        const categories = categoriesModule.getCategories();
-        categories.forEach(category => {
-            categorySelect.innerHTML += `<option value="${category}">${category}</option>`;
-        });
-        
-        // Populate provinces dropdown
-        const provinceSelect = document.getElementById('contractorProvince');
-        provinceSelect.innerHTML = '<option value="">Select Province</option>';
-        
-        // Use the southAfricanProvinces from defaultData
-        Object.keys(southAfricanProvinces).forEach(province => {
-            provinceSelect.innerHTML += `<option value="${province}">${province}</option>`;
-        });
-        
-        // Reset area dropdown
-        const areaSelect = document.getElementById('contractorArea');
-        areaSelect.innerHTML = '<option value="">Select Area</option>';
-        areaSelect.disabled = true;
-        
-        if (contractor) {
-            // Edit mode - parse existing location
-            let area = '';
-            let province = '';
-            
-            if (contractor.location) {
-                // Location format is "Area, Province" - split and extract
-                const locationParts = contractor.location.split(', ');
-                if (locationParts.length === 2) {
-                    area = locationParts[0]; // First part is area
-                    province = locationParts[1]; // Second part is province
-                } else if (locationParts.length === 1) {
-                    // Handle case where only area or province is provided
-                    area = locationParts[0];
-                }
-            }
-            
-            document.getElementById('contractorId').value = contractor.id;
-            document.getElementById('contractorName').value = contractor.name;
-            document.getElementById('contractorCategory').value = contractor.category;
-            document.getElementById('contractorEmail').value = contractor.email;
-            document.getElementById('contractorPhone').value = contractor.phone;
-            document.getElementById('contractorWebsite').value = contractor.website || '';
-            
-            // Set province and area if location exists
-            if (province) {
-                provinceSelect.value = province;
-                this.updateAreaDropdown(province, area);
-            } else if (area) {
-                // If only area is provided, try to find which province it belongs to
-                this.findProvinceForArea(area);
-            }
-            
-            document.getElementById('formTitle').textContent = 'Edit Contractor';
-        } else {
-            // Add mode
-            form.reset();
-            document.getElementById('contractorId').value = '';
-            document.getElementById('formTitle').textContent = 'Add Contractor';
+    updateElementText(elementId, text) {
+        const element = document.getElementById(elementId);
+        if (element) {
+            element.textContent = text;
         }
-        
-        modal.style.display = 'block';
-    },
-
-    // Helper function to find province for a given area
-    findProvinceForArea(area) {
-        const provinceSelect = document.getElementById('contractorProvince');
-        const areaSelect = document.getElementById('contractorArea');
-        
-        // Search through all provinces to find which one contains this area
-        for (const [province, provinceData] of Object.entries(southAfricanProvinces)) {
-            if (provinceData.cities.includes(area)) {
-                provinceSelect.value = province;
-                this.updateAreaDropdown(province, area);
-                return;
-            }
-        }
-        
-        // If area not found in any province, just enable area dropdown
-        areaSelect.disabled = false;
-    },
-
-    updateAreaDropdown(province, selectedArea = '') {
-        const areaSelect = document.getElementById('contractorArea');
-        
-        if (!province) {
-            areaSelect.innerHTML = '<option value="">Select Area</option>';
-            areaSelect.disabled = true;
-            return;
-        }
-        
-        // Get the cities array from the province data
-        const provinceData = southAfricanProvinces[province];
-        const areas = provinceData ? provinceData.cities : [];
-        
-        areaSelect.innerHTML = '<option value="">Select Area</option>';
-        areas.forEach(area => {
-            areaSelect.innerHTML += `<option value="${area}">${area}</option>`;
-        });
-        
-        areaSelect.disabled = false;
-        
-        // Set selected area if provided (for edit mode)
-        if (selectedArea) {
-            areaSelect.value = selectedArea;
-        }
-    },
-
-    handleContractorSubmit() {
-        const province = document.getElementById('contractorProvince').value;
-        const area = document.getElementById('contractorArea').value;
-        
-        if (!province || !area) {
-            utils.showNotification('Please select both province and area', 'error');
-            return;
-        }
-
-        const formData = new FormData(document.getElementById('contractorForm'));
-        const contractorData = {
-            name: formData.get('name'),
-            category: formData.get('category'),
-            email: formData.get('email'),
-            phone: formData.get('phone'),
-            website: formData.get('website'),
-            location: `${area}, ${province}` // Format: "Area, Province"
-        };
-
-        // Validate inputs
-        if (!utils.isValidEmail(contractorData.email)) {
-            utils.showNotification('Please enter a valid email address', 'error');
-            return;
-        }
-
-        // FIXED: Updated phone validation to accept numbers like "0123456789"
-        if (!utils.isValidSouthAfricanPhone(contractorData.phone)) {
-            utils.showNotification('Please enter a valid South African phone number (e.g., +27821234567, 0821234567, or 0123456789)', 'error');
-            return;
-        }
-
-        if (contractorData.website && !utils.isValidUrl(contractorData.website)) {
-            utils.showNotification('Please enter a valid website URL (include http:// or https://)', 'error');
-            return;
-        }
-
-        const contractorId = document.getElementById('contractorId').value;
-        
-        if (contractorId) {
-            // Update existing contractor
-            dataModule.updateContractor(contractorId, contractorData);
-        } else {
-            // Add new contractor
-            dataModule.addContractor(contractorData);
-        }
-
-        this.closeModal('contractorFormModal');
-        this.renderDashboard();
-        
-        // Also update categories tab stats if it's visible
-        if (typeof adminCategoriesModule !== 'undefined') {
-            adminCategoriesModule.renderCategories();
-        }
-    },
-
-    viewContractor(id) {
-        const contractor = dataModule.getContractor(id);
-        if (contractor) {
-            const modal = document.getElementById('contractorDetailsModal');
-            const content = document.getElementById('contractorDetailsContent');
-            
-            content.innerHTML = `
-                <h3>${contractor.name}</h3>
-                <div class="contractor-info">
-                    <p><strong>Category:</strong> ${contractor.category}</p>
-                    <p><strong>Email:</strong> ${contractor.email}</p>
-                    <p><strong>Phone:</strong> ${contractor.phone}</p>
-                    <p><strong>Website:</strong> ${contractor.website ? `<a href="${contractor.website}" target="_blank">${contractor.website}</a>` : 'Not provided'}</p>
-                    <p><strong>Service Area:</strong> ${contractor.location}</p>
-                    <p><strong>Rating:</strong> ${contractor.rating} ⭐</p>
-                    <p><strong>Total Reviews:</strong> ${contractor.reviews.length}</p>
-                    <p><strong>Joined:</strong> ${dataModule.formatDate(contractor.createdAt)}</p>
-                </div>
-                <div class="reviews-section">
-                    <h4>Reviews (${contractor.reviews.length})</h4>
-                    ${contractor.reviews.length > 0 ? 
-                        contractor.reviews.map(review => `
-                            <div class="review-item">
-                                <div class="review-header">
-                                    <span class="reviewer-name">${review.reviewerName}</span>
-                                    <span class="rating">${'⭐'.repeat(review.rating)}</span>
-                                    <span class="review-status">${review.status}</span>
-                                </div>
-                                <div class="review-date">${dataModule.formatDate(review.date)}</div>
-                                <p class="review-comment">${review.comment}</p>
-                            </div>
-                        `).join('') : 
-                        '<p>No reviews yet.</p>'
-                    }
-                </div>
-            `;
-            
-            modal.style.display = 'block';
-        }
-    },
-
-    editContractor(id) {
-        const contractor = dataModule.getContractor(id);
-        if (contractor) {
-            this.showContractorForm(contractor);
-        }
-    },
-
-    deleteContractor(id) {
-        if (confirm('Are you sure you want to delete this contractor?')) {
-            dataModule.deleteContractor(id);
-            this.renderDashboard();
-            
-            // Also update categories tab stats if it's visible
-            if (typeof adminCategoriesModule !== 'undefined') {
-                adminCategoriesModule.renderCategories();
-            }
-        }
-    },
-
-    filterContractors(searchTerm) {
-        const contractors = dataModule.getContractors();
-        const filtered = contractors.filter(contractor =>
-            contractor.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            contractor.category.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            contractor.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            contractor.location.toLowerCase().includes(searchTerm.toLowerCase())
-        );
-        this.renderContractorsTable(filtered);
     },
 
     closeModal(modalId) {
-        document.getElementById(modalId).style.display = 'none';
+        const modal = document.getElementById(modalId);
+        if (modal) {
+            modal.style.display = 'none';
+        }
+    },
+
+    // Global method to refresh dashboard stats
+    refreshDashboard() {
+        this.renderStats();
+    },
+
+    // Global method wrappers for HTML onclick handlers
+    showContractorForm(contractor = null) {
+        adminContractorsModule.showContractorForm(contractor);
+    },
+
+    viewContractor(id) {
+        adminContractorsModule.viewContractor(id);
+    },
+
+    editContractor(id) {
+        adminContractorsModule.editContractor(id);
+    },
+
+    deleteContractor(id) {
+        adminContractorsModule.deleteContractor(id);
+    },
+
+    showCategoryForm(category = null) {
+        adminCategoriesModule.showAddCategoryForm(category);
+    },
+
+    editCategory(categoryName) {
+        adminCategoriesModule.editCategory(categoryName);
+    },
+
+    deleteCategory(categoryName) {
+        adminCategoriesModule.deleteCategory(categoryName);
+    },
+
+    approveReview(contractorId, reviewId) {
+        adminReviewsModule.approveReview(contractorId, reviewId);
+    },
+
+    rejectReview(contractorId, reviewId) {
+        adminReviewsModule.rejectReview(contractorId, reviewId);
+    },
+
+    deleteReview(contractorId, reviewId) {
+        adminReviewsModule.deleteReview(contractorId, reviewId);
+    },
+
+    viewReview(contractorId, reviewId) {
+        adminReviewsModule.viewReview(contractorId, reviewId);
+    },
+
+    filterContractors(searchTerm) {
+        adminContractorsModule.filterContractors(searchTerm);
+    },
+
+    filterCategories(searchTerm) {
+        adminCategoriesModule.filterCategories(searchTerm);
+    },
+
+    filterReviews() {
+        adminReviewsModule.filterReviews();
     }
 };
 
 // Initialize admin when page loads
 document.addEventListener('DOMContentLoaded', function() {
-    // Make sure all modules are initialized first
-    if (typeof dataModule !== 'undefined' && typeof categoriesModule !== 'undefined') {
-        dataModule.init();
-        categoriesModule.init();
-        adminModule.init();
-        if (typeof adminCategoriesModule !== 'undefined') {
-            adminCategoriesModule.init();
-        }
-        if (typeof adminReviewsModule !== 'undefined') {
-            adminReviewsModule.init();
-        }
-        if (typeof tabsModule !== 'undefined') {
-            tabsModule.init();
-        }
-    } else {
-        console.error('Required modules are not available');
-        // Try initializing again after a short delay
-        setTimeout(() => {
-            if (typeof dataModule !== 'undefined' && typeof categoriesModule !== 'undefined') {
-                dataModule.init();
-                categoriesModule.init();
-                adminModule.init();
-                if (typeof adminCategoriesModule !== 'undefined') {
-                    adminCategoriesModule.init();
-                }
-                if (typeof adminReviewsModule !== 'undefined') {
-                    adminReviewsModule.init();
-                }
-                if (typeof tabsModule !== 'undefined') {
-                    tabsModule.init();
-                }
-            }
-        }, 100);
-    }
+    console.log('🚀 Admin page loaded - initializing authentication...');
+    adminModule.init();
 });

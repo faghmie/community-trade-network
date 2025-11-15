@@ -6,6 +6,12 @@
 |   |-- 2025_11_14_03.md
 |   |-- 2025_11_15_01.md
 |   |-- 2025_11_15_02.md
+|   |-- 2025_11_15_03.md
+|   |-- 2025_11_15_04.md
+|   |-- 2025_11_15_05.md
+|   |-- 2025_11_15_06.md
+|   |-- 2025_11_15_07.md
+|   |-- 2025_11_15_08.md
 |   |-- _better_coding_prompt.md
 |   |-- _END_of_day_status_prompt.md
 |   |-- repo_structure.txt
@@ -15,6 +21,7 @@
 |   |   |-- reset.css
 |   |   `-- variables.css
 |   |-- components
+|   |   |-- auth.css
 |   |   |-- buttons.css
 |   |   |-- cards.css
 |   |   |-- compact-filters.css
@@ -43,13 +50,12 @@
 |   |   `-- defaultData.js
 |   |-- modules
 |   |   |-- admin-categories.js
-|   |   |-- admin.js
+|   |   |-- admin-contractors.js
 |   |   |-- admin-reviews.js
+|   |   |-- auth.js
 |   |   |-- cardManager.js
 |   |   |-- categories.js
-|   |   |-- categoryManager.js
 |   |   |-- contractorManager.js
-|   |   |-- contractors.js
 |   |   |-- data.js
 |   |   |-- favoritesManager.js
 |   |   |-- mapManager.js
@@ -61,9 +67,10 @@
 |   |-- admin.js
 |   `-- script.js
 |-- admin.html
+|-- generate_password.html
 |-- index.html
 |-- manifest.json
 |-- rate-my-contractor-product-requirements.md
 `-- sw.js
 
-9 directories, 58 files
+9 directories, 65 files

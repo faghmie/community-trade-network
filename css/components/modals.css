@@ -29,6 +29,8 @@
     flex-direction: column;
     box-shadow: var(--elevation-5);
     border: 1px solid var(--border-light);
+    /* FIXED: Ensure proper overflow handling */
+    overflow: hidden; /* Container should not scroll */
 }
 
 .modal-header {
@@ -38,6 +40,8 @@
     align-items: flex-start;
     flex-shrink: 0;
     position: relative;
+    /* FIXED: Prevent header from contributing to scroll */
+    min-height: min-content;
 }
 
 .modal-header h2 {
@@ -52,15 +56,14 @@
 
 .modal-body {
     padding: var(--space-xl);
+    /* FIXED: Proper scroll handling - only body should scroll */
     overflow-y: auto;
     flex: 1;
     color: var(--text-secondary);
     line-height: var(--line-height-normal);
-}
-
-.modal-body-scrollable {
-    max-height: 60vh;
-    overflow-y: auto;
+    /* FIXED: Ensure body has proper height calculation */
+    min-height: 0; /* Critical for flex child scrolling */
+    max-height: none; /* Remove any max-height that might conflict */
 }
 
 /* Material Design Close Button */
@@ -128,6 +131,7 @@
 
 .modal-content.large {
     max-width: 800px;
+    max-height: 85vh; /* Increased for large modals */
 }
 
 .modal-content.extra-large {
@@ -153,6 +157,8 @@
     flex-shrink: 0;
     background: var(--surface-50);
     border-top: 1px solid var(--border-light);
+    /* FIXED: Prevent footer from contributing to scroll */
+    min-height: min-content;
 }
 
 .modal-footer.stacked {
@@ -276,6 +282,7 @@
     
     .modal-content.large {
         max-width: 95%;
+        max-height: 80vh; /* Adjusted for mobile */
     }
     
     .modal-content.extra-large {

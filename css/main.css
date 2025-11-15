@@ -15,6 +15,7 @@
 @import url('components/contractor-details.css');
 @import url('components/compact-filters.css');
 @import url('components/stats-cards.css');
+@import url('components/auth.css'); /* NEW: Authentication styles */
 @import url('layout.css');
 
 /* Global Material Design Base Styles */

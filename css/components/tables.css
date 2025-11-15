@@ -1,4 +1,4 @@
-/* Material Design Tables and Admin Components */
+/* Material Design Tables and Admin Components - FIXED */
 .table-container {
     background: var(--bg-card);
     border-radius: var(--border-radius-lg);
@@ -11,25 +11,73 @@
     width: 100%;
     border-collapse: collapse;
     font-family: var(--font-family);
+    /* REMOVED: table-layout: fixed - causes overflow issues */
 }
 
 .table th {
     background-color: var(--primary-color);
     color: var(--text-on-primary);
-    padding: var(--space-lg);
+    padding: var(--space-md) var(--space-lg);
     text-align: left;
     font-weight: var(--font-weight-medium);
     font-size: var(--font-size-sm);
     letter-spacing: 0.25px;
-    border-bottom: 1px solid var(--primary-700);
+    border-bottom: 1px solid var(--primary-color-dark);
 }
 
 .table td {
-    padding: var(--space-lg);
+    padding: var(--space-md) var(--space-lg);
     border-bottom: 1px solid var(--border-light);
     font-size: var(--font-size-base);
     color: var(--text-primary);
     line-height: var(--line-height-normal);
+    vertical-align: middle;
+    /* FIX: Prevent text overflow */
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+}
+
+/* FIX: Define specific column widths to prevent overflow */
+.table th:nth-child(1), /* Name */
+.table td:nth-child(1) {
+    width: 20%;
+    min-width: 120px;
+}
+
+.table th:nth-child(2), /* Category */
+.table td:nth-child(2) {
+    width: 15%;
+    min-width: 100px;
+}
+
+.table th:nth-child(3), /* Email */
+.table td:nth-child(3) {
+    width: 20%;
+    min-width: 150px;
+}
+
+.table th:nth-child(4), /* Phone */
+.table td:nth-child(4) {
+    width: 15%;
+    min-width: 120px;
+}
+
+.table th:nth-child(5), /* Rating */
+.table td:nth-child(5) {
+    width: 10%;
+    min-width: 80px;
+}
+
+.table th:nth-child(6), /* Reviews */
+.table td:nth-child(6) {
+    width: 10%;
+    min-width: 80px;
+}
+
+.table th:nth-child(7), /* Actions */
+.table td:nth-child(7) {
+    width: 10%;
+    min-width: 140px; /* Enough space for buttons */
 }
 
 .table tr {
@@ -44,374 +92,97 @@
     border-bottom: none;
 }
 
+/* FIXED: Compact table actions */
 .table-actions {
     display: flex;
-    gap: var(--space-sm);
-    align-items: center;
-}
-
-/* Material Design Admin Stats */
-.admin-stats {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: var(--space-lg);
-    margin-bottom: var(--space-xl);
-}
-
-.stat-card {
-    background: var(--bg-card);
-    padding: var(--space-xl);
-    border-radius: var(--border-radius-lg);
-    box-shadow: var(--elevation-1);
-    text-align: center;
-    border-left: 4px solid var(--primary-color);
-    transition: var(--material-transition);
-    position: relative;
-    overflow: hidden;
-}
-
-.stat-card::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 4px;
-    background: linear-gradient(90deg, var(--primary-color), var(--primary-400));
-}
-
-.stat-card:hover {
-    box-shadow: var(--elevation-3);
-    transform: translateY(-2px);
-}
-
-.stat-card.success {
-    border-left-color: var(--success-color);
-}
-
-.stat-card.success::before {
-    background: linear-gradient(90deg, var(--success-color), var(--success-400));
-}
-
-.stat-card.warning {
-    border-left-color: var(--warning-color);
-}
-
-.stat-card.warning::before {
-    background: linear-gradient(90deg, var(--warning-color), var(--warning-400));
-}
-
-.stat-card.error {
-    border-left-color: var(--error-color);
-}
-
-.stat-card.error::before {
-    background: linear-gradient(90deg, var(--error-color), var(--error-400));
-}
-
-.stat-number {
-    font-size: var(--font-size-xxxl);
-    font-weight: var(--font-weight-bold);
-    color: var(--primary-color);
-    display: block;
-    line-height: 1;
-    margin-bottom: var(--space-sm);
-    font-feature-settings: "tnum";
-    font-variant-numeric: tabular-nums;
-}
-
-.stat-card.success .stat-number {
-    color: var(--success-color);
-}
-
-.stat-card.warning .stat-number {
-    color: var(--warning-color);
-}
-
-.stat-card.error .stat-number {
-    color: var(--error-color);
-}
-
-.stat-label {
-    color: var(--text-secondary);
-    font-size: var(--font-size-sm);
-    font-weight: var(--font-weight-medium);
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-}
-
-/* Material Design Categories Management */
-.categories-management {
-    margin-top: var(--space-xl);
-    padding-top: var(--space-xl);
-    border-top: 2px solid var(--border-light);
-}
-
-.category-item {
-    background: var(--bg-card);
-    padding: var(--space-xl);
-    margin-bottom: var(--space-md);
-    border-radius: var(--border-radius-lg);
-    box-shadow: var(--elevation-1);
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    transition: var(--material-transition);
-    border: 1px solid var(--border-light);
-}
-
-.category-item:hover {
-    box-shadow: var(--elevation-3);
-    transform: translateY(-1px);
-}
-
-.category-info h4 {
-    margin: 0 0 var(--space-sm) 0;
-    color: var(--text-primary);
-    font-size: var(--font-size-lg);
-    font-weight: var(--font-weight-medium);
-}
-
-.category-description {
-    color: var(--text-secondary);
-    font-size: var(--font-size-sm);
-    margin: 0;
-    line-height: var(--line-height-normal);
-}
-
-.category-stats {
-    display: flex;
-    gap: var(--space-lg);
-}
-
-.category-stats .stat {
-    font-size: var(--font-size-sm);
-    color: var(--text-secondary);
-    background: var(--surface-50);
-    padding: var(--space-xs) var(--space-md);
-    border-radius: var(--border-radius);
-    border: 1px solid var(--border-light);
-    font-weight: var(--font-weight-medium);
-}
-
-.category-actions {
-    display: flex;
-    gap: var(--space-sm);
-}
-
-.categories-list {
-    margin-top: var(--space-lg);
-}
-
-/* Material Design Section Headers */
-.section-header {
-    margin-bottom: var(--space-lg);
-    padding-bottom: var(--space-md);
-    border-bottom: 2px solid var(--border-light);
-}
-
-.section-header h2 {
-    color: var(--text-primary);
-    font-size: var(--font-size-xxl);
-    font-weight: var(--font-weight-medium);
-    margin: 0;
-    display: flex;
-    align-items: center;
-    gap: var(--space-md);
-}
-
-.contractors-management {
-    margin-bottom: var(--space-xl);
-}
-
-/* Material Design Reviews Management */
-.reviews-list {
-    margin-top: var(--space-lg);
-}
-
-.review-item {
-    background: var(--bg-card);
-    padding: var(--space-xl);
-    margin-bottom: var(--space-md);
-    border-radius: var(--border-radius-lg);
-    box-shadow: var(--elevation-1);
-    border-left: 4px solid var(--border-color);
-    transition: var(--material-transition);
-    border: 1px solid var(--border-light);
-}
-
-.review-item:hover {
-    box-shadow: var(--elevation-3);
-    transform: translateY(-1px);
-}
-
-.review-item.status-approved {
-    border-left-color: var(--success-color);
-    background: linear-gradient(90deg, var(--success-50) 0%, var(--bg-card) 100%);
-}
-
-.review-item.status-pending {
-    border-left-color: var(--warning-color);
-    background: linear-gradient(90deg, var(--warning-50) 0%, var(--bg-card) 100%);
-}
-
-.review-item.status-rejected {
-    border-left-color: var(--error-color);
-    background: linear-gradient(90deg, var(--error-50) 0%, var(--bg-card) 100%);
-}
-
-.review-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    margin-bottom: var(--space-lg);
-    gap: var(--space-md);
-}
-
-.reviewer-info {
-    display: flex;
-    flex-direction: column;
-    gap: var(--space-sm);
-    flex: 1;
-}
-
-.reviewer-name {
-    font-weight: var(--font-weight-medium);
-    color: var(--text-primary);
-    font-size: var(--font-size-lg);
-    margin: 0;
-}
-
-.review-rating {
-    display: flex;
-    align-items: center;
-    gap: var(--space-sm);
-    color: var(--warning-color);
-    font-weight: var(--font-weight-bold);
-}
-
-.review-meta {
-    display: flex;
-    flex-direction: column;
-    align-items: flex-end;
-    gap: var(--space-sm);
-    text-align: right;
-    flex-shrink: 0;
-}
-
-.review-date {
-    color: var(--text-secondary);
-    font-size: var(--font-size-sm);
-}
-
-.review-status {
-    padding: var(--space-xs) var(--space-md);
-    border-radius: var(--border-radius);
-    font-size: var(--font-size-xs);
-    font-weight: var(--font-weight-bold);
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-}
-
-.review-status.status-approved {
-    background: var(--success-color);
-    color: var(--text-on-primary);
-}
-
-.review-status.status-pending {
-    background: var(--warning-color);
-    color: var(--text-primary);
-}
-
-.review-status.status-rejected {
-    background: var(--error-color);
-    color: var(--text-on-primary);
-}
-
-.review-contractor {
-    margin-bottom: var(--space-md);
-    color: var(--text-secondary);
-    font-size: var(--font-size-sm);
-    display: flex;
-    align-items: center;
     gap: var(--space-xs);
+    align-items: center;
+    flex-wrap: nowrap;
+    justify-content: flex-end; /* Align buttons to the right */
 }
 
-.review-comment {
-    color: var(--text-primary);
-    line-height: var(--line-height-relaxed);
-    margin-bottom: var(--space-lg);
-    font-size: var(--font-size-base);
+.table-actions .btn {
+    padding: var(--space-xs) var(--space-sm);
+    font-size: var(--font-size-xs);
+    white-space: nowrap;
+    min-width: auto;
 }
 
-.review-actions {
-    display: flex;
-    gap: var(--space-sm);
-    flex-wrap: wrap;
+/* FIX: Icon buttons for compact actions */
+.btn-icon-compact {
+    padding: var(--space-xs) !important;
+    min-width: 32px !important;
+    width: 32px !important;
+    height: 32px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
 }
 
-/* Material Design Review Details */
-.review-details {
-    display: flex;
-    flex-direction: column;
-    gap: var(--space-xl);
+.btn-icon-compact .material-icons {
+    font-size: 16px !important;
+    margin: 0 !important;
 }
 
-.detail-section h3 {
-    color: var(--text-primary);
-    margin-bottom: var(--space-lg);
-    padding-bottom: var(--space-sm);
-    border-bottom: 1px solid var(--border-light);
-    font-size: var(--font-size-lg);
-    font-weight: var(--font-weight-medium);
-}
-
-.detail-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: var(--space-md);
-}
-
-.detail-item {
-    padding: var(--space-lg);
-    background: var(--surface-50);
-    border-radius: var(--border-radius);
-    border: 1px solid var(--border-light);
-}
-
-.detail-label {
-    font-size: var(--font-size-sm);
-    color: var(--text-secondary);
-    font-weight: var(--font-weight-medium);
-    margin-bottom: var(--space-xs);
+/* FIX: Text truncation for long content */
+.text-truncate {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
     display: block;
 }
 
-.detail-value {
-    font-size: var(--font-size-base);
-    color: var(--text-primary);
-    font-weight: var(--font-weight-medium);
+.email-cell,
+.name-cell {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
-.review-comment-detail {
-    padding: var(--space-lg);
-    background: var(--surface-50);
-    border-radius: var(--border-radius);
-    line-height: var(--line-height-relaxed);
-    border: 1px solid var(--border-light);
-    font-size: var(--font-size-base);
+/* FIXED: Use icon-only buttons for table actions on mobile */
+@media (max-width: 768px) {
+    .table-actions .btn .btn-text {
+        display: none;
+    }
+    
+    .table-actions .btn .material-icons {
+        margin: 0;
+    }
+    
+    .table-actions .btn {
+        padding: var(--space-xs);
+        width: 32px;
+        height: 32px;
+        justify-content: center;
+    }
+    
+    /* FIX: Adjust column widths for mobile */
+    .table th:nth-child(1),
+    .table td:nth-child(1) {
+        width: 25%;
+        min-width: 100px;
+    }
+    
+    .table th:nth-child(2),
+    .table td:nth-child(2) {
+        width: 20%;
+        min-width: 80px;
+    }
+    
+    .table th:nth-child(3),
+    .table td:nth-child(3) {
+        width: 30%;
+        min-width: 120px;
+    }
+    
+    .table th:nth-child(7),
+    .table td:nth-child(7) {
+        width: 25%;
+        min-width: 100px;
+    }
 }
 
-.detail-actions {
-    display: flex;
-    gap: var(--space-md);
-    justify-content: center;
-    flex-wrap: wrap;
-    padding-top: var(--space-xl);
-    border-top: 1px solid var(--border-light);
-}
-
-/* Material Design Button Variants */
+/* FIX: Material Design Button Variants */
 .btn-success {
     background: var(--success-color);
     color: var(--text-on-primary);
@@ -419,7 +190,7 @@
 }
 
 .btn-success:hover {
-    background: var(--success-600);
+    background: var(--success-color-dark);
     box-shadow: var(--elevation-2);
 }
 
@@ -430,7 +201,7 @@
 }
 
 .btn-warning:hover {
-    background: var(--warning-600);
+    background: var(--warning-color-dark);
     box-shadow: var(--elevation-2);
 }
 
@@ -441,206 +212,81 @@
 }
 
 .btn-error:hover {
-    background: var(--error-600);
+    background: var(--error-color-dark);
     box-shadow: var(--elevation-2);
 }
 
-/* No Reviews Message */
-.no-reviews {
-    text-align: center;
-    padding: var(--space-xxl);
-    background: var(--bg-card);
-    border-radius: var(--border-radius-lg);
-    box-shadow: var(--elevation-1);
-    color: var(--text-secondary);
-    border: 2px dashed var(--border-color);
-}
-
-.no-reviews p {
-    margin: 0;
-    font-size: var(--font-size-lg);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: var(--space-sm);
-}
-
-/* Material Design Filter Section */
-.filter-section {
-    display: flex;
-    gap: var(--space-md);
-    align-items: flex-end;
-}
-
-.filter-section .input,
-.filter-section select {
-    margin: 0;
-}
-
-/* Search and Filter Container */
-.search-filter-container {
-    display: flex;
-    gap: var(--space-md);
-    align-items: flex-end;
-    flex-wrap: wrap;
-    margin-bottom: var(--space-xl);
-    padding: var(--space-lg);
-    background: var(--surface-50);
-    border-radius: var(--border-radius-lg);
-    border: 1px solid var(--border-light);
-}
-
-.search-filter-container .search-box {
-    flex: 1;
-    min-width: 250px;
-}
-
-.search-filter-container .filter-group {
-    display: flex;
-    gap: var(--space-md);
-    align-items: flex-end;
-}
-
-/* Responsive Design for Tables and Admin */
+/* FIX: Responsive table styles */
 @media (max-width: 768px) {
-    .review-header {
-        flex-direction: column;
-        gap: var(--space-md);
-    }
-
-    .review-meta {
-        align-items: flex-start;
-        text-align: left;
-        flex-direction: row;
-        justify-content: space-between;
-        width: 100%;
-    }
-
-    .review-actions {
-        flex-direction: column;
-    }
-
-    .review-actions .btn {
-        width: 100%;
-        justify-content: center;
-    }
-
-    .detail-actions {
-        flex-direction: column;
-    }
-
-    .detail-actions .btn {
-        width: 100%;
-        justify-content: center;
-    }
-
-    .category-item {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: var(--space-lg);
-    }
-
-    .category-actions {
-        align-self: stretch;
-        justify-content: center;
-    }
-
-    .category-stats {
-        flex-direction: column;
-        gap: var(--space-sm);
-        width: 100%;
-    }
-
-    .table-actions {
-        flex-direction: column;
-        gap: var(--space-xs);
-    }
-
-    .search-filter-container {
-        flex-direction: column;
-        align-items: stretch;
+    .table-container {
+        border-radius: var(--border-radius);
     }
     
-    .search-filter-container .search-box {
-        min-width: auto;
-    }
-    
-    .search-filter-container .filter-group {
-        flex-direction: column;
-        gap: var(--space-md);
-    }
-
     .table {
         display: block;
         overflow-x: auto;
+        white-space: nowrap;
     }
-
+    
     .table th,
     .table td {
-        padding: var(--space-md);
+        padding: var(--space-sm) var(--space-md);
     }
-
-    .admin-stats {
-        grid-template-columns: repeat(2, 1fr);
+    
+    /* Hide less important columns on mobile */
+    .table td:nth-child(4), /* Phone */
+    .table td:nth-child(6) { /* Reviews count */
+        display: none;
+    }
+    
+    .table th:nth-child(4),
+    .table th:nth-child(6) {
+        display: none;
     }
 }
 
 @media (max-width: 480px) {
-    .category-actions {
-        flex-direction: column;
-    }
-
-    .category-actions .btn {
-        width: 100%;
-        justify-content: center;
+    .table th,
+    .table td {
+        padding: var(--space-xs) var(--space-sm);
+        font-size: var(--font-size-sm);
     }
     
-    .filter-section {
-        flex-direction: column;
-        align-items: stretch;
+    /* Hide more columns on very small screens */
+    .table td:nth-child(3), /* Email */
+    .table td:nth-child(5) { /* Rating */
+        display: none;
     }
-
-    .admin-stats {
-        grid-template-columns: 1fr;
+    
+    .table th:nth-child(3),
+    .table th:nth-child(5) {
+        display: none;
     }
-
-    .stat-card {
-        padding: var(--space-lg);
+    
+    /* FIX: Further adjust column widths for very small screens */
+    .table th:nth-child(1),
+    .table td:nth-child(1) {
+        width: 40%;
+        min-width: 80px;
     }
-
-    .stat-number {
-        font-size: var(--font-size-xxl);
+    
+    .table th:nth-child(2),
+    .table td:nth-child(2) {
+        width: 35%;
+        min-width: 60px;
     }
-
-    .detail-grid {
-        grid-template-columns: 1fr;
+    
+    .table th:nth-child(7),
+    .table td:nth-child(7) {
+        width: 25%;
+        min-width: 80px;
     }
 }
 
-/* Dark Theme Support */
+/* FIX: Dark Theme Support */
 @media (prefers-color-scheme: dark) {
-    .table-container,
-    .stat-card,
-    .category-item,
-    .review-item,
-    .no-reviews {
+    .table-container {
         background: var(--surface-800);
-        border-color: var(--surface-600);
-    }
-
-    .search-filter-container {
-        background: var(--surface-700);
-        border-color: var(--surface-600);
-    }
-
-    .detail-item,
-    .review-comment-detail {
-        background: var(--surface-700);
-        border-color: var(--surface-600);
-    }
-
-    .category-stats .stat {
-        background: var(--surface-700);
         border-color: var(--surface-600);
     }
 
@@ -649,66 +295,33 @@
     }
 }
 
-/* High Contrast Mode Support */
+/* FIX: High Contrast Mode Support */
 @media (prefers-contrast: high) {
-    .table-container,
-    .stat-card,
-    .category-item,
-    .review-item,
-    .search-filter-container,
-    .detail-item,
-    .review-comment-detail {
+    .table-container {
         border-width: 2px;
-    }
-
-    .section-header {
-        border-bottom-width: 3px;
     }
 
     .table th {
         border-bottom-width: 3px;
     }
-
-    .stat-card::before {
-        height: 6px;
-    }
 }
 
-/* Reduced Motion Support */
+/* FIX: Reduced Motion Support */
 @media (prefers-reduced-motion: reduce) {
-    .stat-card,
-    .category-item,
-    .review-item,
     .table tr {
         transition: none;
     }
-
-    .stat-card:hover,
-    .category-item:hover,
-    .review-item:hover {
-        transform: none;
-    }
 }
 
-/* Print Styles */
+/* FIX: Print Styles */
 @media print {
-    .table-container,
-    .stat-card,
-    .category-item,
-    .review-item {
+    .table-container {
         background: white;
         border: 1px solid #000;
         box-shadow: none;
     }
 
-    .table-actions,
-    .category-actions,
-    .review-actions,
-    .detail-actions {
-        display: none;
-    }
-
-    .stat-card::before {
+    .table-actions {
         display: none;
     }
 }

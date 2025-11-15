@@ -7,41 +7,113 @@
     <title>Admin - Contractor Reviews</title>
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⭐</text></svg>">
     <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="css/admin.css">
+    <!-- Material Icons -->
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
 </head>
 
-<body>
-    <div class="container">
-        <header class="flex-between">
-            <div>
-                <h1>Contractor Reviews Admin</h1>
-                <p>Manage contractors and reviews</p>
+<body class="admin-body">
+    <!-- Login Section (Initially visible) -->
+    <div id="loginSection" class="auth-container">
+        <div class="auth-card">
+            <div class="auth-header">
+                <h1 class="auth-title">Admin Login</h1>
+                <p class="auth-subtitle">Contractor Reviews Management</p>
             </div>
-            <nav>
-                <a href="index.html" class="btn btn-secondary">Back to Main Site</a>
-            </nav>
+            
+            <form id="loginForm" class="auth-form">
+                <div id="loginMessage" class="auth-message" style="display: none;"></div>
+                
+                <div class="form-group">
+                    <label for="username" class="form-label">Username</label>
+                    <input type="text" id="username" name="username" class="form-input" 
+                           placeholder="Enter username" autocomplete="username" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="password" class="form-label">Password</label>
+                    <input type="password" id="password" name="password" class="form-input" 
+                           placeholder="Enter password" autocomplete="current-password" required>
+                </div>
+                
+                <button type="submit" class="auth-button" id="loginButton">
+                    <span id="loginButtonText">Login</span>
+                    <span id="loginSpinner" class="auth-loading" style="display: none;"></span>
+                </button>
+            </form>
+            
+            <div class="auth-footer">
+                <p>Default credentials: admin / admin123</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Admin Content Section (Initially hidden) -->
+    <div id="adminContent" class="container" style="display: none;">
+        <!-- Modern App Bar -->
+        <header class="admin-app-bar">
+            <div class="app-bar-content">
+                <div class="app-bar-left">
+                    <div class="app-bar-icon">
+                        <span class="material-icons">admin_panel_settings</span>
+                    </div>
+                    <div class="app-bar-title">
+                        <h1>Contractor Reviews Admin</h1>
+                        <p>Manage contractors, categories, and reviews</p>
+                    </div>
+                </div>
+                
+                <div class="app-bar-right">
+                    <div class="app-bar-actions">
+                        <div class="user-info">
+                            <div class="user-avatar">
+                                <span class="material-icons">person</span>
+                            </div>
+                            <div class="user-details">
+                                <span class="user-name" id="usernameDisplay">Admin</span>
+                                <span class="user-role" id="sessionInfo">Session active</span>
+                            </div>
+                        </div>
+                        <button class="app-bar-btn logout-btn" id="logoutButton">
+                            <span class="material-icons">logout</span>
+                            <span class="btn-text">Logout</span>
+                        </button>
+                        <a href="index.html" class="app-bar-btn secondary-btn">
+                            <span class="material-icons">home</span>
+                            <span class="btn-text">Main Site</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
         </header>
+
+        <!-- Session Warning (Hidden by default) -->
+        <div id="sessionWarning" class="session-warning" style="display: none;">
+            <span class="material-icons">warning</span>
+            Your session will expire soon. Please save your work.
+        </div>
 
         <!-- Admin Dashboard -->
         <section class="admin-dashboard">
             <!-- Statistics -->
             <div class="admin-stats">
-                <div class="stat-card">
+                <div class="stat-card stat-card--primary">
                     <span class="stat-number" id="totalContractors">0</span>
                     <span class="stat-label">Total Contractors</span>
                 </div>
-                <div class="stat-card">
+                <div class="stat-card stat-card--accent">
                     <span class="stat-number" id="totalReviews">0</span>
                     <span class="stat-label">Total Reviews</span>
                 </div>
-                <div class="stat-card">
+                <div class="stat-card stat-card--success">
                     <span class="stat-number" id="averageRating">0.0</span>
                     <span class="stat-label">Average Rating</span>
                 </div>
-                <div class="stat-card">
+                <div class="stat-card stat-card--warning">
                     <span class="stat-number" id="totalCategories">0</span>
                     <span class="stat-label">Total Categories</span>
                 </div>
-                <div class="stat-card">
+                <div class="stat-card stat-card--primary">
                     <span class="stat-number" id="pendingReviews">0</span>
                     <span class="stat-label">Pending Reviews</span>
                 </div>
@@ -49,21 +121,32 @@
 
             <!-- Tabs Navigation -->
             <div class="tabs-navigation">
-                <button class="tab-button active" data-tab="contractors-tab">Contractors</button>
-                <button class="tab-button" data-tab="categories-tab">Categories</button>
-                <button class="tab-button" data-tab="reviews-tab">Reviews</button>
+                <button class="tab-button active" data-tab="contractors-tab">
+                    <span class="material-icons">business_center</span>
+                    <span class="tab-text">Contractors</span>
+                </button>
+                <button class="tab-button" data-tab="categories-tab">
+                    <span class="material-icons">category</span>
+                    <span class="tab-text">Categories</span>
+                </button>
+                <button class="tab-button" data-tab="reviews-tab">
+                    <span class="material-icons">reviews</span>
+                    <span class="tab-text">Reviews</span>
+                </button>
             </div>
 
             <!-- Contractors Tab -->
             <div id="contractors-tab" class="tab-content active">
-                <div class="section-header flex-between">
-                    <h2>Contractors Management</h2>
+                <div class="section-header">
                     <div class="search-filter-container">
                         <div class="search-box">
                             <input type="text" id="searchInput" placeholder="Search contractors..."
-                                class="input search-input" style="margin: 0;">
+                                class="input search-input">
                         </div>
-                        <button class="btn btn-primary" id="addContractorBtn">Add Contractor</button>
+                        <button class="btn btn-primary" id="addContractorBtn">
+                            <span class="material-icons">add</span>
+                            Add Contractor
+                        </button>
                     </div>
                 </div>
 
@@ -74,8 +157,6 @@
                             <tr>
                                 <th>Name</th>
                                 <th>Category</th>
-                                <th>Email</th>
-                                <th>Phone</th>
                                 <th>Rating</th>
                                 <th>Reviews</th>
                                 <th>Actions</th>
@@ -90,24 +171,26 @@
 
             <!-- Categories Tab -->
             <div id="categories-tab" class="tab-content">
-                <div class="section-header flex-between">
-                    <h2>Categories Management</h2>
+                <div class="section-header">
                     <div class="search-filter-container">
                         <div class="search-box">
                             <input type="text" id="categorySearch" placeholder="Search categories..."
-                                class="input search-input" style="margin: 0;">
+                                class="input search-input">
                         </div>
-                        <button class="btn btn-primary" id="addCategoryBtn">Add Category</button>
+                        <button class="btn btn-primary" id="addCategoryBtn">
+                            <span class="material-icons">add</span>
+                            Add Category
+                        </button>
                     </div>
                 </div>
 
                 <!-- Categories Stats -->
-                <div class="admin-stats">
-                    <div class="stat-card">
+                <div class="admin-stats compact">
+                    <div class="stat-card stat-card--primary">
                         <span class="stat-number" id="totalCategoriesCount">0</span>
                         <span class="stat-label">Total Categories</span>
                     </div>
-                    <div class="stat-card">
+                    <div class="stat-card stat-card--accent">
                         <span class="stat-number" id="totalCategorizedContractors">0</span>
                         <span class="stat-label">Categorized Contractors</span>
                     </div>
@@ -121,12 +204,11 @@
 
             <!-- Reviews Tab -->
             <div id="reviews-tab" class="tab-content">
-                <div class="section-header flex-between">
-                    <h2>Reviews Management</h2>
+                <div class="section-header">
                     <div class="search-filter-container">
                         <div class="search-box">
                             <input type="text" id="reviewSearch" placeholder="Search reviews..."
-                                class="input search-input" style="margin: 0;">
+                                class="input search-input">
                         </div>
                         <div class="filter-group">
                             <div class="form-group" style="margin: 0;">
@@ -148,20 +230,20 @@
                 </div>
 
                 <!-- Reviews Stats -->
-                <div class="admin-stats">
+                <div class="admin-stats compact">
                     <div class="stat-card">
                         <span class="stat-number" id="totalReviewsCount">0</span>
                         <span class="stat-label">Total Reviews</span>
                     </div>
-                    <div class="stat-card">
+                    <div class="stat-card stat-card--success">
                         <span class="stat-number" id="approvedReviewsCount">0</span>
                         <span class="stat-label">Approved</span>
                     </div>
-                    <div class="stat-card">
+                    <div class="stat-card stat-card--warning">
                         <span class="stat-number" id="pendingReviewsCount">0</span>
                         <span class="stat-label">Pending</span>
                     </div>
-                    <div class="stat-card">
+                    <div class="stat-card stat-card--accent">
                         <span class="stat-number" id="rejectedReviewsCount">0</span>
                         <span class="stat-label">Rejected</span>
                     </div>
@@ -240,19 +322,6 @@
             </div>
         </div>
 
-        <!-- Contractor Details Modal -->
-        <div class="modal" id="contractorDetailsModal">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h2>Contractor Details</h2>
-                    <span class="close" id="closeContractorDetailsModal">&times;</span>
-                </div>
-                <div class="modal-body" id="contractorDetailsContent">
-                    <!-- Contractor details will be loaded here -->
-                </div>
-            </div>
-        </div>
-
         <!-- Category Form Modal -->
         <div class="modal" id="categoryFormModal">
             <div class="modal-content">
@@ -289,19 +358,27 @@
         </div>
     </div>
 
+    <!-- Core Modules -->
     <script src="js/modules/storage.js"></script>
     <script src="js/data/defaultData.js"></script>
     <script src="js/modules/utils.js"></script>
     <script src="js/modules/contractorManager.js"></script>
     <script src="js/modules/reviewManager.js"></script>
-    <script src="js/modules/categoryManager.js"></script>
+    <script src="js/modules/categories.js"></script>
     <script src="js/modules/statsManager.js"></script>
     <script src="js/modules/data.js"></script>
-    <script src="js/modules/categories.js"></script>
-    <script src="js/admin.js"></script>
+    
+    <!-- Authentication Module -->
+    <script type="module" src="js/modules/auth.js"></script>
+    
+    <!-- Admin Feature Modules -->
     <script src="js/modules/admin-categories.js"></script>
     <script src="js/modules/admin-reviews.js"></script>
     <script src="js/modules/tabs.js"></script>
+
+    <!-- Admin Core Module -->
+    <script src="js/modules/admin-contractors.js"></script>
+    <script src="js/admin.js"></script>
 </body>
 
 </html>

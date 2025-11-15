@@ -34,7 +34,7 @@
 }
 
 .app-bar-icon {
-    font-size: 1.5rem;
+    font-size: var(--font-size-lg);
 }
 
 .app-bar-actions {
@@ -111,10 +111,10 @@
     left: 50%;
     width: 0;
     height: 0;
-    background: rgba(255, 255, 255, 0.1);
-    border-radius: 50%;
+    background: var(--material-ripple-color);
+    border-radius: var(--border-radius-full);
     transform: translate(-50%, -50%);
-    transition: width 0.6s, height 0.6s;
+    transition: width var(--transition-long), height var(--transition-long);
 }
 
 .material-button:active::before {
@@ -129,7 +129,7 @@
 }
 
 .material-button.contained:hover {
-    background-color: var(--primary-700);
+    background-color: var(--primary-color-dark);
     box-shadow: var(--elevation-2);
 }
 
@@ -224,7 +224,7 @@
 .material-textarea:focus {
     outline: none;
     border-color: var(--primary-color);
-    box-shadow: 0 0 0 2px rgba(33, 150, 243, 0.1);
+    box-shadow: var(--material-focus-ring);
 }
 
 .material-select {
@@ -243,7 +243,7 @@
 .material-select:focus {
     outline: none;
     border-color: var(--primary-color);
-    box-shadow: 0 0 0 2px rgba(33, 150, 243, 0.1);
+    box-shadow: var(--material-focus-ring);
 }
 
 /* Material Badges */
@@ -303,61 +303,6 @@
 
 .material-search-input::placeholder {
     color: var(--text-disabled);
-}
-
-/* Material Modals */
-.material-modal {
-    display: none;
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(0, 0, 0, 0.5);
-    z-index: var(--z-modal);
-    align-items: center;
-    justify-content: center;
-}
-
-.material-modal-content {
-    background: var(--bg-card);
-    border-radius: var(--border-radius-lg);
-    box-shadow: var(--elevation-5);
-    max-width: 90vw;
-    max-height: 90vh;
-    overflow: hidden;
-    animation: material-modal-appear 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-@keyframes material-modal-appear {
-    from {
-        opacity: 0;
-        transform: scale(0.9) translateY(-20px);
-    }
-    to {
-        opacity: 1;
-        transform: scale(1) translateY(0);
-    }
-}
-
-.material-modal-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: var(--space-lg) var(--space-xl);
-    border-bottom: 1px solid var(--border-light);
-}
-
-.material-modal-header h2 {
-    margin: 0;
-    font-size: var(--font-size-xl);
-    font-weight: var(--font-weight-medium);
-}
-
-.material-modal-body {
-    padding: var(--space-xl);
-    max-height: 70vh;
-    overflow-y: auto;
 }
 
 /* Material Expansion Panel */
@@ -530,7 +475,7 @@
 }
 
 .material-star {
-    font-size: 1.5rem;
+    font-size: var(--font-size-xl);
     color: var(--surface-300);
     cursor: pointer;
     transition: var(--material-transition);
@@ -614,15 +559,6 @@
     .stats-overview {
         grid-template-columns: repeat(2, 1fr);
     }
-    
-    .material-modal-content {
-        max-width: 95vw;
-        margin: var(--space-md);
-    }
-    
-    .material-modal-body {
-        padding: var(--space-lg);
-    }
 }
 
 @media (max-width: 480px) {
@@ -640,5 +576,28 @@
     
     .material-button {
         padding: var(--space-sm);
+    }
+}
+
+/* Dark Theme Support */
+@media (prefers-color-scheme: dark) {
+    .material-button.outlined:hover {
+        background-color: rgba(255, 255, 255, 0.08);
+    }
+    
+    .material-button.text:hover {
+        background-color: rgba(255, 255, 255, 0.08);
+    }
+    
+    .material-icon-button:hover {
+        background-color: rgba(255, 255, 255, 0.08);
+    }
+    
+    .expansion-header:hover {
+        background-color: rgba(255, 255, 255, 0.04);
+    }
+    
+    .filter-chip:hover {
+        background: var(--surface-700);
     }
 }
