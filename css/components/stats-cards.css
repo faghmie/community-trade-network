@@ -1,0 +1,330 @@
+/* Enhanced BUT Compact Stats Cards Component */
+.stats-overview {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: var(--space-md);
+    margin: var(--space-lg) 0;
+}
+
+/* Enhanced but Compact Stat Card */
+.stat-card {
+    background: linear-gradient(135deg, var(--bg-card), var(--surface-50));
+    padding: var(--space-lg);
+    border-radius: var(--border-radius-md);
+    box-shadow: 
+        var(--elevation-1),
+        0 0 0 1px var(--border-light);
+    border-left: 3px solid var(--primary-color);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    min-height: 80px;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: hidden;
+}
+
+.stat-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, var(--primary-color), var(--primary-400));
+    opacity: 0.8;
+}
+
+.stat-card:hover {
+    box-shadow: 
+        var(--elevation-2),
+        0 0 0 1px var(--primary-100);
+    transform: translateY(-2px);
+}
+
+/* Enhanced Stat Card Variants - Compact */
+.stat-card--primary {
+    border-left-color: var(--primary-color);
+    background: linear-gradient(135deg, var(--primary-25), var(--primary-50));
+}
+
+.stat-card--primary::before {
+    background: linear-gradient(90deg, var(--primary-color), var(--primary-500));
+}
+
+.stat-card--accent {
+    border-left-color: var(--accent-color);
+    background: linear-gradient(135deg, var(--accent-25), var(--accent-50));
+}
+
+.stat-card--accent::before {
+    background: linear-gradient(90deg, var(--accent-color), var(--accent-500));
+}
+
+.stat-card--success {
+    border-left-color: var(--success-color);
+    background: linear-gradient(135deg, var(--success-25), var(--success-50));
+}
+
+.stat-card--success::before {
+    background: linear-gradient(90deg, var(--success-color), var(--success-500));
+}
+
+.stat-card--warning {
+    border-left-color: var(--warning-color);
+    background: linear-gradient(135deg, var(--warning-25), var(--warning-50));
+}
+
+.stat-card--warning::before {
+    background: linear-gradient(90deg, var(--warning-color), var(--warning-500));
+}
+
+/* Enhanced but Compact Stat Content */
+.stat-number {
+    display: block;
+    font-size: var(--font-size-xl);
+    font-weight: var(--font-weight-bold);
+    color: var(--primary-700);
+    line-height: 1;
+    font-feature-settings: "tnum";
+    font-variant-numeric: tabular-nums;
+    margin-bottom: 2px;
+}
+
+.stat-card--accent .stat-number { color: var(--accent-700); }
+.stat-card--success .stat-number { color: var(--success-700); }
+.stat-card--warning .stat-number { color: var(--warning-700); }
+
+.stat-label {
+    font-size: var(--font-size-xs);
+    color: var(--text-secondary);
+    font-weight: var(--font-weight-medium);
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+}
+
+/* Enhanced but Compact Stat Card with Icon */
+.stat-card--with-icon {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    text-align: left;
+    gap: var(--space-md);
+    padding: var(--space-md);
+    min-height: 70px;
+}
+
+.stat-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    background: rgba(255, 255, 255, 0.9);
+    color: var(--primary-color);
+    border-radius: var(--border-radius);
+    flex-shrink: 0;
+    transition: all 0.2s ease;
+    box-shadow: var(--elevation-1);
+    font-size: var(--font-size-sm);
+}
+
+.stat-card:hover .stat-icon {
+    transform: scale(1.05);
+}
+
+.stat-card--primary .stat-icon {
+    background: rgba(255, 255, 255, 0.95);
+    color: var(--primary-color);
+}
+
+.stat-card--accent .stat-icon {
+    background: rgba(255, 255, 255, 0.95);
+    color: var(--accent-color);
+}
+
+.stat-card--success .stat-icon {
+    background: rgba(255, 255, 255, 0.95);
+    color: var(--success-color);
+}
+
+.stat-card--warning .stat-icon {
+    background: rgba(255, 255, 255, 0.95);
+    color: var(--warning-color);
+}
+
+.stat-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+/* Compact Trend Indicators */
+.stat-trend {
+    display: inline-flex;
+    align-items: center;
+    gap: 2px;
+    font-size: var(--font-size-xs);
+    font-weight: var(--font-weight-medium);
+    margin-top: 2px;
+}
+
+.trend--up {
+    color: var(--success-600);
+}
+
+.trend--down {
+    color: var(--error-600);
+}
+
+/* Ultra Compact Variant */
+.stats-overview--compact {
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: var(--space-sm);
+}
+
+.stat-card--ultra-compact {
+    padding: var(--space-md);
+    min-height: 60px;
+    text-align: center;
+}
+
+.stat-card--ultra-compact .stat-number {
+    font-size: var(--font-size-lg);
+}
+
+.stat-card--ultra-compact .stat-label {
+    font-size: 0.7rem;
+}
+
+/* MOBILE-FIRST RESPONSIVE - Keeping them compact! */
+@media (max-width: 768px) {
+    .stats-overview {
+        grid-template-columns: repeat(2, 1fr);
+        gap: var(--space-sm);
+        margin: var(--space-md) 0;
+    }
+    
+    .stat-card {
+        padding: var(--space-md);
+        min-height: 70px;
+    }
+    
+    .stat-card--with-icon {
+        padding: var(--space-sm);
+        min-height: 60px;
+        gap: var(--space-sm);
+    }
+    
+    .stat-number {
+        font-size: var(--font-size-lg);
+    }
+    
+    .stat-icon {
+        width: 28px;
+        height: 28px;
+        font-size: var(--font-size-xs);
+    }
+    
+    .stat-label {
+        font-size: 0.7rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .stats-overview {
+        grid-template-columns: repeat(2, 1fr);
+        gap: var(--space-sm);
+    }
+    
+    .stat-card--with-icon {
+        flex-direction: row;
+        text-align: left;
+        gap: var(--space-sm);
+    }
+    
+    .stat-card {
+        min-height: 65px;
+        padding: var(--space-md);
+    }
+    
+    .stat-number {
+        font-size: var(--font-size-md);
+    }
+    
+    /* Ultra compact for very small screens */
+    .stats-overview--compact-mobile {
+        grid-template-columns: repeat(3, 1fr);
+    }
+    
+    .stat-card--ultra-compact {
+        padding: var(--space-sm);
+        min-height: 55px;
+    }
+    
+    .stat-card--ultra-compact .stat-number {
+        font-size: var(--font-size-md);
+    }
+}
+
+@media (max-width: 360px) {
+    .stats-overview {
+        grid-template-columns: 1fr;
+    }
+    
+    .stats-overview--compact-mobile {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+/* Dark Theme for Compact Stats */
+@media (prefers-color-scheme: dark) {
+    .stat-card {
+        background: linear-gradient(135deg, var(--surface-800), var(--surface-700));
+        box-shadow: 
+            var(--elevation-1),
+            0 0 0 1px var(--surface-600);
+    }
+    
+    .stat-card--primary {
+        background: linear-gradient(135deg, var(--primary-900), var(--primary-800));
+    }
+    
+    .stat-card--accent {
+        background: linear-gradient(135deg, var(--accent-900), var(--accent-800));
+    }
+    
+    .stat-card--success {
+        background: linear-gradient(135deg, var(--success-900), var(--success-800));
+    }
+    
+    .stat-card--warning {
+        background: linear-gradient(135deg, var(--warning-900), var(--warning-800));
+    }
+    
+    .stat-icon {
+        background: rgba(255, 255, 255, 0.1);
+    }
+    
+    .stat-card:hover {
+        box-shadow: 
+            var(--elevation-2),
+            0 0 0 1px var(--primary-300);
+    }
+}
+
+/* Reduced motion for accessibility */
+@media (prefers-reduced-motion: reduce) {
+    .stat-card {
+        transition: none;
+    }
+    
+    .stat-card:hover {
+        transform: none;
+    }
+    
+    .stat-card:hover .stat-icon {
+        transform: none;
+    }
+}

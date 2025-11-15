@@ -1,181 +1,655 @@
-/* Rating Categories Styles */
+/* Material Design Rating System - Compact Card Variants */
+
+/* Base Star Styles - Material Design */
+.star, .material-star {
+    font-family: 'Material Icons';
+    font-weight: normal;
+    font-style: normal;
+    font-size: 16px;
+    line-height: 1;
+    letter-spacing: normal;
+    text-transform: none;
+    display: inline-block;
+    white-space: nowrap;
+    word-wrap: normal;
+    direction: ltr;
+    -webkit-font-feature-settings: 'liga';
+    -webkit-font-smoothing: antialiased;
+    background: transparent !important;
+}
+
+/* FIXED: Ultra Compact Card Rating Display - Minimal spacing, transparent backgrounds */
+.card-rating {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    margin: 0;
+    padding: 0;
+    background: transparent !important;
+    border: none !important;
+    min-height: auto;
+    line-height: 1;
+    height: 16px;
+}
+
+.card-rating .rating-stars {
+    display: flex;
+    align-items: center;
+    gap: 0;
+    background: transparent !important;
+    margin: 0;
+    padding: 0;
+    border: none !important;
+}
+
+.card-rating .rating-star {
+    color: var(--warning-color);
+    font-size: 14px;
+    width: 14px;
+    height: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: transparent !important;
+    margin: 0;
+    padding: 0;
+    line-height: 1;
+    border: none !important;
+}
+
+.card-rating .rating-value {
+    font-size: var(--font-size-sm);
+    font-weight: var(--font-weight-medium);
+    color: var(--text-primary);
+    line-height: 1;
+    margin: 0;
+    padding: 0;
+    background: transparent !important;
+    border: none !important;
+}
+
+.card-rating .review-count {
+    font-size: var(--font-size-xs);
+    color: var(--text-disabled);
+    line-height: 1;
+    margin: 0;
+    padding: 0;
+    background: transparent !important;
+    border: none !important;
+}
+
+/* FIXED: All rating containers - transparent background */
+.rating-container,
+.rating-wrapper,
+.stars-container,
+.rating-display-container,
+.rating-display-wrapper {
+    background: transparent !important;
+    border: none !important;
+    margin: 0 !important;
+    padding: 0 !important;
+}
+
+/* Ultra Compact Rating (for tight spaces) */
+.card-rating.ultra-compact {
+    gap: 2px;
+    height: 14px;
+    background: transparent !important;
+}
+
+.card-rating.ultra-compact .rating-stars {
+    gap: 0;
+    background: transparent !important;
+}
+
+.card-rating.ultra-compact .rating-star {
+    font-size: 12px;
+    width: 12px;
+    height: 12px;
+    background: transparent !important;
+}
+
+.card-rating.ultra-compact .rating-value {
+    font-size: var(--font-size-xs);
+    background: transparent !important;
+}
+
+.card-rating.ultra-compact .review-count {
+    font-size: var(--font-size-xs);
+    background: transparent !important;
+}
+
+/* FIXED: Active/Selected Stars - Remove any background colors */
+.overall-rating .star.active,
+.overall-rating .material-star.active,
+.quality-rating .star.active,
+.communication-rating .star.active,
+.timeliness-rating .star.active,
+.value-rating .star.active,
+.quality-rating .material-star.active,
+.communication-rating .material-star.active,
+.timeliness-rating .material-star.active,
+.value-rating .material-star.active,
+.star-rating .star.active,
+.material-star-rating .material-star.active {
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+}
+
+/* Overall Rating Stars - Material Design */
+.overall-rating .star {
+    font-size: 1.5rem;
+    cursor: pointer;
+    color: var(--surface-300);
+    transition: var(--material-transition);
+    padding: var(--space-xs);
+    text-shadow: var(--elevation-1);
+    user-select: none;
+    background: transparent !important;
+}
+
+.overall-rating .material-star {
+    font-size: 1.5rem;
+    cursor: pointer;
+    color: var(--surface-300);
+    transition: var(--material-transition);
+    padding: var(--space-xs);
+    text-shadow: var(--elevation-1);
+    user-select: none;
+    background: transparent !important;
+}
+
+.overall-rating .star:hover,
+.overall-rating .material-star:hover {
+    transform: scale(1.2);
+    color: var(--warning-300);
+    background: transparent !important;
+}
+
+.overall-rating .star.active,
+.overall-rating .material-star.active {
+    color: var(--warning-color);
+    text-shadow: 0 2px 8px rgba(255, 193, 7, 0.3);
+    transform: scale(1.1);
+    background: transparent !important;
+}
+
+/* Category-specific Star Ratings - Material Design */
+.quality-rating .star,
+.communication-rating .star,
+.timeliness-rating .star,
+.value-rating .star {
+    font-size: 1.25rem;
+    cursor: pointer;
+    color: var(--surface-300);
+    transition: var(--material-transition);
+    padding: 2px;
+    text-shadow: var(--elevation-1);
+    user-select: none;
+    background: transparent !important;
+}
+
+.quality-rating .material-star,
+.communication-rating .material-star,
+.timeliness-rating .material-star,
+.value-rating .material-star {
+    font-size: 1.25rem;
+    cursor: pointer;
+    color: var(--surface-300);
+    transition: var(--material-transition);
+    padding: 2px;
+    text-shadow: var(--elevation-1);
+    user-select: none;
+    background: transparent !important;
+}
+
+.quality-rating .star:hover,
+.communication-rating .star:hover,
+.timeliness-rating .star:hover,
+.value-rating .star:hover,
+.quality-rating .material-star:hover,
+.communication-rating .material-star:hover,
+.timeliness-rating .material-star:hover,
+.value-rating .material-star:hover {
+    transform: scale(1.15);
+    color: var(--warning-300);
+    background: transparent !important;
+}
+
+.quality-rating .star.active,
+.communication-rating .star.active,
+.timeliness-rating .star.active,
+.value-rating .star.active,
+.quality-rating .material-star.active,
+.communication-rating .material-star.active,
+.timeliness-rating .material-star.active,
+.value-rating .material-star.active {
+    color: var(--warning-color);
+    text-shadow: 0 1px 6px rgba(255, 193, 7, 0.25);
+    transform: scale(1.1);
+    background: transparent !important;
+}
+
+/* Material Design Rating Animation */
+@keyframes materialStarPulse {
+    0% { 
+        transform: scale(1);
+        text-shadow: 0 1px 6px rgba(255, 193, 7, 0.25);
+    }
+    50% { 
+        transform: scale(1.3);
+        text-shadow: 0 2px 12px rgba(255, 193, 7, 0.4);
+    }
+    100% { 
+        transform: scale(1.1);
+        text-shadow: 0 1px 6px rgba(255, 193, 7, 0.25);
+    }
+}
+
+.star-rating .star.active.pulse,
+.material-star-rating .material-star.active.pulse {
+    animation: materialStarPulse 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    background: transparent !important;
+}
+
+/* Focus States for Accessibility - Material Design */
+.star-rating .star:focus,
+.material-star-rating .material-star:focus {
+    outline: 2px solid var(--primary-color);
+    outline-offset: 2px;
+    border-radius: var(--border-radius-xs);
+    background: transparent !important;
+}
+
+.rating-category:focus-within,
+.material-rating-category:focus-within {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 2px rgba(33, 150, 243, 0.1);
+    transform: translateY(-1px);
+}
+
+/* Rating Value Display */
+.rating-value {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-xs);
+    font-weight: var(--font-weight-medium);
+    color: var(--text-primary);
+    font-size: var(--font-size-sm);
+    margin-left: var(--space-sm);
+    background: transparent !important;
+}
+
+.rating-value .material-icons {
+    font-size: 1.2rem;
+    color: var(--warning-color);
+    background: transparent !important;
+}
+
+/* FIXED: Rating Summary Styles - Transparent backgrounds */
+.rating-summary {
+    display: flex;
+    align-items: center;
+    gap: var(--space-md);
+    padding: var(--space-md);
+    background: transparent !important;
+    border-radius: var(--border-radius);
+    border: none !important;
+}
+
+.rating-summary .average-rating {
+    font-size: var(--font-size-xxl);
+    font-weight: var(--font-weight-bold);
+    color: var(--text-primary);
+    line-height: 1;
+    background: transparent !important;
+}
+
+.rating-summary .star-rating,
+.rating-summary .material-star-rating {
+    flex: 1;
+    background: transparent !important;
+}
+
+.rating-summary .total-reviews {
+    color: var(--text-secondary);
+    font-size: var(--font-size-sm);
+    background: transparent !important;
+}
+
+/* Category Breakdown */
+.rating-breakdown {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-sm);
+    background: transparent !important;
+}
+
+.rating-breakdown-item {
+    display: flex;
+    align-items: center;
+    gap: var(--space-md);
+    padding: var(--space-sm);
+    background: transparent !important;
+    border: none !important;
+}
+
+.rating-breakdown-label {
+    flex: 0 0 120px;
+    font-size: var(--font-size-sm);
+    color: var(--text-secondary);
+    font-weight: var(--font-weight-medium);
+    background: transparent !important;
+}
+
+.rating-breakdown-stars {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    gap: var(--space-xs);
+    background: transparent !important;
+}
+
+.rating-breakdown-value {
+    flex: 0 0 40px;
+    text-align: right;
+    font-size: var(--font-size-sm);
+    color: var(--text-secondary);
+    font-weight: var(--font-weight-medium);
+    background: transparent !important;
+}
+
+/* FIXED: Rating Categories Styles - Transparent backgrounds for card usage */
 .rating-categories {
-    margin: var(--space-lg) 0;
-    padding: var(--space-lg);
-    background: var(--bg-color);
+    margin: var(--space-xl) 0;
+    padding: var(--space-xl);
+    background: transparent !important;
     border-radius: var(--border-radius-lg);
-    border: 1px solid var(--border-color);
+    border: none !important;
+    box-shadow: none !important;
+    transition: var(--material-transition);
+}
+
+.rating-categories:hover {
+    box-shadow: none !important;
 }
 
 .rating-categories h4 {
     margin-bottom: var(--space-lg);
-    color: var(--primary-color);
-    font-size: 1.1rem;
+    color: var(--text-primary);
+    font-size: var(--font-size-lg);
+    font-weight: var(--font-weight-medium);
     text-align: center;
+    letter-spacing: 0.25px;
+    background: transparent !important;
+}
+
+.rating-categories-title {
+    margin-bottom: var(--space-lg);
+    color: var(--text-primary);
+    font-size: var(--font-size-lg);
+    font-weight: var(--font-weight-medium);
+    text-align: center;
+    letter-spacing: 0.25px;
+    background: transparent !important;
 }
 
 .rating-category {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: var(--space-md);
-    padding: var(--space-sm) var(--space-md);
-    background: var(--bg-white);
+    margin-bottom: var(--space-lg);
+    padding: var(--space-md) var(--space-lg);
+    background: transparent !important;
     border-radius: var(--border-radius);
-    border: 1px solid var(--border-color);
-    transition: var(--transition);
+    border: none !important;
+    transition: var(--material-transition);
+    position: relative;
+    overflow: hidden;
 }
 
-.rating-category:hover {
+.material-rating-category {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: var(--space-lg);
+    padding: var(--space-md) var(--space-lg);
+    background: transparent !important;
+    border-radius: var(--border-radius);
+    border: none !important;
+    transition: var(--material-transition);
+    position: relative;
+    overflow: hidden;
+}
+
+.rating-category:hover,
+.material-rating-category:hover {
     border-color: var(--primary-color);
-    box-shadow: var(--shadow-sm);
+    box-shadow: none !important;
+    transform: translateY(-1px);
 }
 
 .rating-category label {
     flex: 1;
-    font-weight: 600;
-    color: var(--text-color);
-    font-size: 0.95rem;
+    font-weight: var(--font-weight-medium);
+    color: var(--text-primary);
+    font-size: var(--font-size-base);
+    letter-spacing: 0.15px;
+    background: transparent !important;
+}
+
+.material-rating-category label {
+    flex: 1;
+    font-weight: var(--font-weight-medium);
+    color: var(--text-primary);
+    font-size: var(--font-size-base);
+    letter-spacing: 0.15px;
+    min-width: 140px;
+    background: transparent !important;
 }
 
 .rating-category .star-rating {
     flex: 0 0 auto;
     display: flex;
     gap: var(--space-xs);
+    background: transparent !important;
 }
 
-/* Overall rating stars */
-.overall-rating .star {
-    font-size: 1.8rem;
-    cursor: pointer;
-    color: #ddd;
-    transition: all 0.2s ease;
-    padding: var(--space-xs);
+.material-rating-category .material-star-rating {
+    flex: 0 0 auto;
+    display: flex;
+    gap: var(--space-xs);
+    background: transparent !important;
 }
 
-.overall-rating .star:hover {
-    transform: scale(1.3);
-}
-
-.overall-rating .star.active {
-    color: #ffc107;
-    text-shadow: 0 0 15px rgba(255, 193, 7, 0.5);
-}
-
-/* Category-specific star ratings */
-.quality-rating .star,
-.communication-rating .star,
-.timeliness-rating .star,
-.value-rating .star {
-    font-size: 1.4rem;
-    cursor: pointer;
-    color: #ddd;
-    transition: all 0.2s ease;
-    padding: 2px;
-}
-
-.quality-rating .star:hover,
-.communication-rating .star:hover,
-.timeliness-rating .star:hover,
-.value-rating .star:hover {
-    transform: scale(1.2);
-}
-
-.quality-rating .star.active,
-.communication-rating .star.active,
-.timeliness-rating .star.active,
-.value-rating .star.active {
-    color: #ffc107;
-    text-shadow: 0 0 10px rgba(255, 193, 7, 0.3);
-}
-
-/* Animation for rating interactions */
-@keyframes starPulse {
-    0% { transform: scale(1); }
-    50% { transform: scale(1.3); }
-    100% { transform: scale(1.2); }
-}
-
-.star-rating .star.active.pulse {
-    animation: starPulse 0.3s ease;
-}
-
-/* Focus states for accessibility */
-.star-rating .star:focus {
-    outline: 2px solid var(--primary-color);
-    outline-offset: 2px;
-    border-radius: 2px;
-}
-
-.rating-category:focus-within {
-    border-color: var(--primary-color);
-    box-shadow: 0 0 0 2px rgba(67, 97, 238, 0.1);
-}
-
-/* Responsive rating categories */
+/* FIXED: Responsive Rating Categories - Material Design */
 @media (max-width: 768px) {
     .rating-categories {
-        padding: var(--space-md);
-        margin: var(--space-md) 0;
+        padding: var(--space-lg);
+        margin: var(--space-lg) 0;
+        background: transparent !important;
     }
 
-    .rating-category {
+    .rating-category,
+    .material-rating-category {
         flex-direction: column;
         align-items: flex-start;
-        gap: var(--space-sm);
-        padding: var(--space-md);
+        gap: var(--space-md);
+        padding: var(--space-lg);
+        background: transparent !important;
     }
 
-    .rating-category label {
-        margin-bottom: var(--space-sm);
+    .rating-category label,
+    .material-rating-category label {
+        margin-bottom: 0;
+        min-width: auto;
+        background: transparent !important;
     }
 
-    .rating-category .star-rating {
-        align-self: center;
+    .rating-category .star-rating,
+    .material-rating-category .material-star-rating {
+        align-self: stretch;
+        justify-content: center;
+        background: transparent !important;
     }
 
     .quality-rating .star,
     .communication-rating .star,
     .timeliness-rating .star,
-    .value-rating .star {
-        font-size: 1.2rem;
+    .value-rating .star,
+    .quality-rating .material-star,
+    .communication-rating .material-star,
+    .timeliness-rating .material-star,
+    .value-rating .material-star {
+        font-size: 1.1rem;
+        flex: 1;
+        text-align: center;
+        background: transparent !important;
     }
 
-    .overall-rating .star {
-        font-size: 1.6rem;
+    .overall-rating .star,
+    .overall-rating .material-star {
+        font-size: 1.4rem;
+        background: transparent !important;
+    }
+
+    .rating-summary {
+        flex-direction: column;
+        text-align: center;
+        gap: var(--space-sm);
+        background: transparent !important;
+    }
+
+    .rating-breakdown-item {
+        flex-direction: column;
+        align-items: stretch;
+        gap: var(--space-xs);
+        background: transparent !important;
+    }
+
+    .rating-breakdown-label {
+        flex: none;
+        background: transparent !important;
+    }
+
+    .rating-breakdown-value {
+        flex: none;
+        text-align: left;
+        background: transparent !important;
+    }
+
+    /* Mobile card ratings */
+    .card-rating {
+        gap: 3px;
+        height: 14px;
+        background: transparent !important;
+    }
+    
+    .card-rating .rating-star {
+        font-size: 12px;
+        width: 12px;
+        height: 12px;
+        background: transparent !important;
+    }
+    
+    .card-rating .rating-value {
+        font-size: var(--font-size-xs);
+        background: transparent !important;
+    }
+    
+    .card-rating.ultra-compact {
+        gap: 1px;
+        height: 12px;
+        background: transparent !important;
+    }
+    
+    .card-rating.ultra-compact .rating-star {
+        font-size: 11px;
+        width: 11px;
+        height: 11px;
+        background: transparent !important;
     }
 }
 
 @media (max-width: 480px) {
-    .rating-category .star-rating {
+    .rating-category .star-rating,
+    .material-rating-category .material-star-rating {
         gap: 2px;
+        background: transparent !important;
     }
 
     .quality-rating .star,
     .communication-rating .star,
     .timeliness-rating .star,
-    .value-rating .star {
-        font-size: 1.1rem;
-        padding: 2px;
+    .value-rating .star,
+    .quality-rating .material-star,
+    .communication-rating .material-star,
+    .timeliness-rating .material-star,
+    .value-rating .material-star {
+        font-size: 1rem;
+        padding: 1px;
+        background: transparent !important;
     }
 
-    .overall-rating .star {
-        font-size: 1.4rem;
+    .overall-rating .star,
+    .overall-rating .material-star {
+        font-size: 1.2rem;
         padding: 2px;
+        background: transparent !important;
     }
 
     .rating-categories {
-        padding: var(--space-sm);
+        padding: var(--space-md);
+        background: transparent !important;
+    }
+
+    .rating-category,
+    .material-rating-category {
+        padding: var(--space-md);
+        background: transparent !important;
+    }
+
+    /* Mobile card ratings */
+    .card-rating {
+        gap: 2px;
+        height: 12px;
+        background: transparent !important;
+    }
+    
+    .card-rating .rating-star {
+        font-size: 11px;
+        width: 11px;
+        height: 11px;
+        background: transparent !important;
+    }
+    
+    .card-rating.ultra-compact {
+        gap: 0;
+        height: 11px;
+        background: transparent !important;
+    }
+    
+    .card-rating.ultra-compact .rating-star {
+        font-size: 10px;
+        width: 10px;
+        height: 10px;
+        background: transparent !important;
     }
 }
 
-/* Reduced motion support */
+/* Reduced Motion Support */
 @media (prefers-reduced-motion: reduce) {
     .overall-rating .star,
     .quality-rating .star,
     .communication-rating .star,
     .timeliness-rating .star,
-    .value-rating .star {
+    .value-rating .star,
+    .overall-rating .material-star,
+    .quality-rating .material-star,
+    .communication-rating .material-star,
+    .timeliness-rating .material-star,
+    .value-rating .material-star {
         transition: none;
     }
     
@@ -183,11 +657,100 @@
     .quality-rating .star:hover,
     .communication-rating .star:hover,
     .timeliness-rating .star:hover,
-    .value-rating .star:hover {
+    .value-rating .star:hover,
+    .overall-rating .material-star:hover,
+    .quality-rating .material-star:hover,
+    .communication-rating .material-star:hover,
+    .timeliness-rating .material-star:hover,
+    .value-rating .material-star:hover {
         transform: none;
     }
     
-    .star-rating .star.active.pulse {
+    .star-rating .star.active.pulse,
+    .material-star-rating .material-star.active.pulse {
         animation: none;
+    }
+
+    .rating-category:hover,
+    .material-rating-category:hover {
+        transform: none;
+    }
+}
+
+/* Dark Theme Support */
+@media (prefers-color-scheme: dark) {
+    .rating-categories {
+        background: transparent !important;
+        border-color: var(--surface-600);
+    }
+
+    .rating-category,
+    .material-rating-category {
+        background: transparent !important;
+        border-color: var(--surface-700);
+    }
+
+    .rating-summary {
+        background: transparent !important;
+        border-color: var(--surface-600);
+    }
+
+    .star,
+    .material-star {
+        color: var(--surface-600);
+        background: transparent !important;
+    }
+
+    .star:hover,
+    .material-star:hover {
+        color: var(--warning-400);
+    }
+
+    .star.active,
+    .material-star.active {
+        color: var(--warning-color);
+    }
+}
+
+/* High Contrast Mode Support */
+@media (prefers-contrast: high) {
+    .rating-categories,
+    .rating-category,
+    .material-rating-category,
+    .rating-summary {
+        border-width: 2px;
+    }
+
+    .star:focus,
+    .material-star:focus {
+        outline-width: 3px;
+    }
+
+    .rating-category:focus-within,
+    .material-rating-category:focus-within {
+        box-shadow: 0 0 0 3px var(--primary-color);
+    }
+}
+
+/* Print Styles */
+@media print {
+    .rating-categories,
+    .rating-category,
+    .material-rating-category {
+        background: transparent !important;
+        border: none !important;
+        box-shadow: none !important;
+    }
+
+    .star,
+    .material-star {
+        color: #000 !important;
+        text-shadow: none !important;
+        background: transparent !important;
+    }
+
+    .star.active,
+    .material-star.active {
+        color: #000 !important;
     }
 }

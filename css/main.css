@@ -1,6 +1,7 @@
 /* Import all CSS files */
 @import url('base/reset.css');
 @import url('base/variables.css');
+@import url('components/material.css'); /* New Material Design components */
 @import url('components/buttons.css');
 @import url('components/cards.css');
 @import url('components/modals.css');
@@ -13,118 +14,316 @@
 @import url('components/utilities.css');
 @import url('components/contractor-details.css');
 @import url('components/compact-filters.css');
+@import url('components/stats-cards.css');
 @import url('layout.css');
 
-/* Main layout styles */
-header {
-    text-align: center;
-    margin-bottom: var(--space-xl);
-    padding: var(--space-xl);
-    background: var(--bg-white);
-    border-radius: var(--border-radius-lg);
-    box-shadow: var(--shadow);
+/* Global Material Design Base Styles */
+* {
+    box-sizing: border-box;
 }
 
-header h1 {
-    color: var(--primary-color);
-    margin-bottom: var(--space-sm);
+body {
+    font-family: var(--font-family);
+    font-size: var(--font-size-base);
+    font-weight: var(--font-weight-regular);
+    line-height: var(--line-height-normal);
+    color: var(--text-primary);
+    /* FIXED: Use proper Material Design background */
+    background-color: var(--background);
+    margin: 0;
+    padding: 0;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    /* FIXED: Ensure consistent surface */
+    min-height: 100vh;
 }
 
-/* Contractor list specific styles */
-.contractor-list h2 {
-    text-align: center;
-    margin-bottom: var(--space-lg);
-    color: var(--primary-color);
+/* FIXED: Main content area with proper Material Design surface */
+.main-content {
+    background-color: var(--background);
+    min-height: calc(100vh - var(--app-bar-height, 64px));
+    position: relative;
 }
 
-/* Basic review item styles (detailed styles in contractor-details.css) */
-.review-item {
-    background: var(--bg-white);
-    padding: var(--space-lg);
-    margin-bottom: var(--space-md);
+/* FIXED: Container with proper Material Design spacing */
+.container {
+    background-color: var(--background);
+    position: relative;
+}
+
+/* FIXED: Card container backgrounds */
+.cards-container,
+.contractors-grid,
+.favorites-section,
+.results-section {
+    background-color: var(--background);
+    position: relative;
+}
+
+/* FIXED: Ensure panels and sections have consistent backgrounds */
+.section-panel,
+.content-panel,
+.main-panel {
+    background-color: var(--surface);
     border-radius: var(--border-radius);
-    box-shadow: var(--shadow-sm);
-    border-left: 4px solid var(--secondary-color);
+    padding: var(--space-xl);
+    margin-bottom: var(--space-xl);
+    border: 1px solid var(--border-light);
 }
 
-.review-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: var(--space-sm);
+/* FIXED: Empty states and loading states */
+.empty-state,
+.loading-state,
+.no-results {
+    background-color: var(--surface);
+    border-radius: var(--border-radius);
+    padding: var(--space-xxl);
+    text-align: center;
+    color: var(--text-secondary);
+    border: 1px solid var(--border-light);
 }
 
-.reviewer-name {
-    font-weight: bold;
-    color: var(--primary-color);
-}
-
-.review-date {
-    color: var(--text-light);
-    font-size: 0.875rem;
-}
-
-.review-comment {
-    color: var(--text-color);
-    line-height: 1.5;
-}
-
-/* Contractor card enhancements */
+/* FIXED: Ensure proper contrast for cards on background */
 .contractor-card {
-    cursor: pointer;
-    transition: transform 0.3s ease;
+    background-color: var(--bg-card);
+    transition: all var(--material-transition);
 }
 
 .contractor-card:hover {
-    transform: translateY(-5px);
+    background-color: var(--bg-card);
 }
 
-.contractor-card .card-body {
-    display: flex;
-    flex-direction: column;
-    gap: var(--space-sm);
+/* FIXED: Map container background */
+.map-container {
+    background-color: var(--surface);
+    border-radius: var(--border-radius);
+    overflow: hidden;
+    border: 1px solid var(--border-light);
 }
 
-.rating {
-    color: var(--warning-color);
-    font-weight: bold;
+/* FIXED: Filter section backgrounds */
+.filter-section,
+.search-section,
+.controls-section {
+    background-color: var(--surface);
+    border-radius: var(--border-radius);
+    padding: var(--space-lg);
+    margin-bottom: var(--space-lg);
+    border: 1px solid var(--border-light);
 }
 
-.category {
-    color: var(--text-light);
-}
-
-.review-count {
-    color: var(--text-light);
-    font-size: 0.875rem;
-}
-
-/* Service area location styling */
-.contractor-card .location {
-    color: var(--text-light);
-    font-size: 0.9rem;
-    margin: 0;
-    display: flex;
-    align-items: center;
-    gap: var(--space-xs);
-}
-
-.contractor-card .location i {
-    color: var(--accent-color);
-}
-
-/* Print styles */
-@media print {
-    .contractor-card {
-        break-inside: avoid;
+/* FIXED: Dark theme adjustments */
+@media (prefers-color-scheme: dark) {
+    body {
+        background-color: var(--background);
     }
     
-    .review-item {
-        break-inside: avoid;
-        border: 1px solid #000;
+    .main-content {
+        background-color: var(--background);
+    }
+    
+    .container {
+        background-color: var(--background);
+    }
+    
+    .empty-state,
+    .loading-state,
+    .no-results {
+        background-color: var(--surface);
+        border-color: var(--border-color);
+    }
+    
+    .filter-section,
+    .search-section,
+    .controls-section {
+        background-color: var(--surface);
+        border-color: var(--border-color);
+    }
+    
+    .section-panel,
+    .content-panel,
+    .main-panel {
+        background-color: var(--surface);
+        border-color: var(--border-color);
+    }
+}
+
+/* FIXED: High contrast mode support */
+@media (prefers-contrast: high) {
+    .contractor-card {
+        border: 1px solid var(--border-dark);
+    }
+    
+    .filter-section,
+    .search-section,
+    .controls-section {
+        border: 1px solid var(--border-dark);
+    }
+    
+    .section-panel,
+    .content-panel,
+    .main-panel {
+        border: 1px solid var(--border-dark);
+    }
+}
+
+/* FIXED: Print styles */
+@media print {
+    body {
+        background-color: var(--bg-white) !important;
+        color: var(--text-primary) !important;
+    }
+    
+    .contractor-card {
+        background-color: var(--bg-white) !important;
+        border: 1px solid var(--border-color) !important;
+        box-shadow: var(--elevation-0) !important;
+    }
+    
+    .main-content,
+    .container {
+        background-color: var(--bg-white) !important;
+    }
+    
+    .section-panel,
+    .content-panel,
+    .main-panel {
+        background-color: var(--bg-white) !important;
+        border: 1px solid var(--border-color) !important;
     }
     
     .no-print {
         display: none !important;
+    }
+}
+
+/* FIXED: Ensure proper stacking context */
+.app-container {
+    position: relative;
+    background-color: var(--background);
+    min-height: 100vh;
+}
+
+/* FIXED: Loading states with proper backgrounds */
+.loading-overlay {
+    background-color: var(--background);
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: var(--z-modal);
+}
+
+/* FIXED: Error states */
+.error-state {
+    background-color: var(--surface);
+    border: 1px solid var(--error-100);
+    border-radius: var(--border-radius);
+    padding: var(--space-xl);
+    text-align: center;
+    color: var(--error-color);
+}
+
+/* FIXED: Success states */
+.success-state {
+    background-color: var(--success-50);
+    border: 1px solid var(--success-200);
+    border-radius: var(--border-radius);
+    padding: var(--space-xl);
+    text-align: center;
+    color: var(--success-700);
+}
+
+/* FIXED: Warning states */
+.warning-state {
+    background-color: var(--warning-50);
+    border: 1px solid var(--warning-200);
+    border-radius: var(--border-radius);
+    padding: var(--space-xl);
+    text-align: center;
+    color: var(--warning-700);
+}
+
+/* FIXED: Info states */
+.info-state {
+    background-color: var(--primary-50);
+    border: 1px solid var(--primary-200);
+    border-radius: var(--border-radius);
+    padding: var(--space-xl);
+    text-align: center;
+    color: var(--primary-700);
+}
+
+/* FIXED: Mobile optimizations */
+@media (max-width: 768px) {
+    .section-panel,
+    .content-panel,
+    .main-panel {
+        padding: var(--space-lg);
+        margin-bottom: var(--space-lg);
+    }
+    
+    .empty-state,
+    .loading-state,
+    .no-results {
+        padding: var(--space-xl);
+    }
+    
+    .filter-section,
+    .search-section,
+    .controls-section {
+        padding: var(--space-md);
+        margin-bottom: var(--space-md);
+    }
+    
+    .error-state,
+    .success-state,
+    .warning-state,
+    .info-state {
+        padding: var(--space-lg);
+    }
+}
+
+@media (max-width: 480px) {
+    .section-panel,
+    .content-panel,
+    .main-panel {
+        padding: var(--space-md);
+        margin-bottom: var(--space-md);
+    }
+    
+    .empty-state,
+    .loading-state,
+    .no-results {
+        padding: var(--space-lg);
+    }
+    
+    .filter-section,
+    .search-section,
+    .controls-section {
+        padding: var(--space-sm);
+        margin-bottom: var(--space-sm);
+    }
+    
+    .error-state,
+    .success-state,
+    .warning-state,
+    .info-state {
+        padding: var(--space-md);
+    }
+}
+
+/* FIXED: Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+    .contractor-card {
+        transition: none;
+    }
+    
+    .contractor-card:hover {
+        transform: none;
     }
 }

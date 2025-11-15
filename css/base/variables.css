@@ -1,35 +1,324 @@
 :root {
-    /* Colors */
-    --primary-color: #2c3e50;
-    --secondary-color: #3498db;
-    --accent-color: #e74c3c;
-    --success-color: #27ae60;
-    --warning-color: #f39c12;
+    /* Material Design Color Palette - Enhanced */
+    --primary-50: #e3f2fd;
+    --primary-100: #bbdefb;
+    --primary-200: #90caf9;
+    --primary-300: #64b5f6;
+    --primary-400: #42a5f5;
+    --primary-500: #2196f3;
+    --primary-600: #1e88e5;
+    --primary-700: #1976d2;
+    --primary-800: #1565c0;
+    --primary-900: #0d47a1;
+    --primary-a100: #82b1ff;
+    --primary-a200: #448aff;
+    --primary-a400: #2979ff;
+    --primary-a700: #2962ff;
     
-    --text-color: #333;
-    --text-light: #666;
-    --bg-color: #f4f4f4;
-    --bg-white: #ffffff;
-    --border-color: #ddd;
+    --secondary-50: #fff3e0;
+    --secondary-100: #ffe0b2;
+    --secondary-200: #ffcc80;
+    --secondary-300: #ffb74d;
+    --secondary-400: #ffa726;
+    --secondary-500: #ff9800;
+    --secondary-600: #fb8c00;
+    --secondary-700: #f57c00;
+    --secondary-800: #ef6c00;
+    --secondary-900: #e65100;
     
-    /* Spacing */
-    --space-xs: 0.25rem;
-    --space-sm: 0.5rem;
-    --space-md: 1rem;
-    --space-lg: 1.5rem;
-    --space-xl: 2rem;
-    --space-xxl: 3rem;
+    --accent-50: #fce4ec;
+    --accent-100: #f8bbd9;
+    --accent-200: #f48fb1;
+    --accent-300: #f06292;
+    --accent-400: #ec407a;
+    --accent-500: #e91e63;
+    --accent-600: #d81b60;
+    --accent-700: #c2185b;
+    --accent-800: #ad1457;
+    --accent-900: #880e4f;
     
-    /* Border radius */
-    --border-radius-sm: 4px;
-    --border-radius: 8px;
-    --border-radius-lg: 12px;
+    --success-50: #e8f5e8;
+    --success-100: #c8e6c9;
+    --success-200: #a5d6a7;
+    --success-300: #81c784;
+    --success-400: #66bb6a;
+    --success-500: #4caf50;
+    --success-600: #43a047;
+    --success-700: #388e3c;
+    --success-800: #2e7d32;
+    --success-900: #1b5e20;
     
-    /* Shadows */
-    --shadow-sm: 0 1px 3px rgba(0,0,0,0.1);
-    --shadow: 0 2px 5px rgba(0,0,0,0.1);
-    --shadow-lg: 0 4px 6px rgba(0,0,0,0.1);
+    --warning-50: #fffde7;
+    --warning-100: #fff9c4;
+    --warning-200: #fff59d;
+    --warning-300: #fff176;
+    --warning-400: #ffee58;
+    --warning-500: #ffeb3b;
+    --warning-600: #fdd835;
+    --warning-700: #fbc02d;
+    --warning-800: #f9a825;
+    --warning-900: #f57f17;
     
-    /* Transitions */
-    --transition: all 0.3s ease;
+    --error-50: #ffebee;
+    --error-100: #ffcdd2;
+    --error-200: #ef9a9a;
+    --error-300: #e57373;
+    --error-400: #ef5350;
+    --error-500: #f44336;
+    --error-600: #e53935;
+    --error-700: #d32f2f;
+    --error-800: #c62828;
+    --error-900: #b71c1c;
+    
+    /* Neutral Colors - Enhanced Material Grays */
+    --neutral-50: #fafafa;
+    --neutral-100: #f5f5f5;
+    --neutral-200: #eeeeee;
+    --neutral-300: #e0e0e0;
+    --neutral-400: #bdbdbd;
+    --neutral-500: #9e9e9e;
+    --neutral-600: #757575;
+    --neutral-700: #616161;
+    --neutral-800: #424242;
+    --neutral-900: #212121;
+    
+    /* Surface Colors - Updated to Material Naming */
+    --surface-50: var(--neutral-50);
+    --surface-100: var(--neutral-100);
+    --surface-200: var(--neutral-200);
+    --surface-300: var(--neutral-300);
+    --surface-400: var(--neutral-400);
+    --surface-500: var(--neutral-500);
+    --surface-600: var(--neutral-600);
+    --surface-700: var(--neutral-700);
+    --surface-800: var(--neutral-800);
+    --surface-900: var(--neutral-900);
+    
+    /* Semantic Colors (Material Design Compliant) */
+    --primary-color: var(--primary-500);
+    --primary-color-dark: var(--primary-700);
+    --primary-color-darker: var(--primary-800); /* NEW: For active states */
+    --primary-color-light: var(--primary-300);
+    --primary-200: var(--primary-200); /* NEW: For focus rings */
+    --primary-300: var(--primary-300); /* NEW: For light variants */
+    
+    --secondary-color: var(--secondary-500);
+    --secondary-color-dark: var(--secondary-700);
+    --secondary-color-light: var(--secondary-300);
+    
+    --accent-color: var(--accent-500);
+    --accent-color-dark: var(--accent-700);
+    --accent-color-light: var(--accent-300);
+    --accent-400: var(--accent-400); /* NEW: For gradient variants */
+    
+    --success-color: var(--success-500);
+    --success-color-dark: var(--success-700);
+    --success-color-darker: var(--success-800); /* NEW: For active states */
+    --success-600: var(--success-600); /* NEW: For hover states */
+    
+    --warning-color: var(--warning-700);
+    --warning-color-dark: var(--warning-800); /* NEW: For hover states */
+    --warning-color-darker: var(--warning-900); /* NEW: For active states */
+    --warning-600: var(--warning-600); /* NEW: For hover states */
+    
+    --error-color: var(--error-500);
+    --error-color-dark: var(--error-700);
+    --error-color-darker: var(--error-800); /* NEW: For active states */
+    --error-600: var(--error-600); /* NEW: For hover states */
+    
+    /* Text Colors - Material Design Specification */
+    --text-primary: rgba(0, 0, 0, 0.87);
+    --text-secondary: rgba(0, 0, 0, 0.6);
+    --text-disabled: rgba(0, 0, 0, 0.38);
+    --text-hint: rgba(0, 0, 0, 0.38);
+    
+    --text-on-primary: rgba(255, 255, 255, 0.87);
+    --text-on-primary-medium: rgba(255, 255, 255, 0.6);
+    --text-on-secondary: rgba(255, 255, 255, 0.87);
+    --text-on-accent: rgba(255, 255, 255, 0.87);
+    
+    /* Background Colors */
+    --background: var(--surface-50);
+    --surface: #ffffff;
+    --surface-variant: var(--surface-100);
+    
+    --bg-color: var(--background);
+    --bg-white: var(--surface);
+    --bg-surface: var(--surface-variant);
+    --bg-card: var(--surface);
+    
+    /* Border Colors */
+    --border-color: rgba(0, 0, 0, 0.12);
+    --border-light: rgba(0, 0, 0, 0.08);
+    --border-dark: rgba(0, 0, 0, 0.24);
+    --divider: rgba(0, 0, 0, 0.12);
+    
+    /* Spacing Scale (Material Design 8px Grid) */
+    --space-0: 0;
+    --space-xxs: 4px;
+    --space-xs: 8px;
+    --space-sm: 16px;
+    --space-md: 24px;
+    --space-lg: 32px;
+    --space-xl: 40px;
+    --space-xxl: 48px;
+    --space-xxxl: 56px;
+    --space-xxxxl: 64px;
+    
+    /* Border Radius (Material Design) */
+    --border-radius-xs: 4px;
+    --border-radius-sm: 8px;
+    --border-radius: 12px;
+    --border-radius-md: 16px;
+    --border-radius-lg: 20px;
+    --border-radius-xl: 24px;
+    --border-radius-xxl: 28px;
+    --border-radius-full: 50%;
+    --border-radius-sharp: 0;
+    
+    /* Material Design Elevation System */
+    --elevation-0: none;
+    --elevation-1: 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24);
+    --elevation-2: 0 3px 6px rgba(0,0,0,0.15), 0 2px 4px rgba(0,0,0,0.12);
+    --elevation-3: 0 10px 20px rgba(0,0,0,0.15), 0 3px 6px rgba(0,0,0,0.10);
+    --elevation-4: 0 15px 25px rgba(0,0,0,0.15), 0 5px 10px rgba(0,0,0,0.05);
+    --elevation-5: 0 20px 40px rgba(0,0,0,0.2);
+    --elevation-6: 0 25px 50px rgba(0,0,0,0.25);
+    --elevation-8: 0 30px 60px rgba(0,0,0,0.3);
+    --elevation-12: 0 40px 80px rgba(0,0,0,0.35);
+    --elevation-16: 0 50px 100px rgba(0,0,0,0.4);
+    --elevation-24: 0 60px 120px rgba(0,0,0,0.45);
+    
+    /* Legacy Shadows (for compatibility) */
+    --shadow-sm: var(--elevation-1);
+    --shadow: var(--elevation-2);
+    --shadow-md: var(--elevation-3);
+    --shadow-lg: var(--elevation-4);
+    --shadow-xl: var(--elevation-5);
+    
+    /* Material Design Transitions */
+    --transition-short: 0.1s cubic-bezier(0.4, 0, 0.2, 1);
+    --transition-standard: 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    --transition-medium: 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    --transition-long: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    --transition-extra-long: 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+    
+    --transition-movement: 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    --transition-fade: 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+    --transition-transform: 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    
+    /* Legacy Transition */
+    --transition: var(--transition-standard);
+    
+    /* NEW: Material Design specific transitions */
+    --material-transition: var(--transition-standard); /* For consistent Material Design animations */
+    
+    /* Typography Scale - Material Design Type Scale */
+    --font-family: 'Roboto', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+    --font-family-mono: 'Roboto Mono', 'SF Mono', Monaco, Inconsolata, 'Fira Mono', 'DejaVu Sans Mono', monospace;
+    
+    --font-size-caption: 0.75rem;      /* 12px */
+    --font-size-helper: 0.8125rem;     /* 13px */
+    --font-size-body2: 0.875rem;       /* 14px */
+    --font-size-body1: 1rem;           /* 16px */
+    --font-size-h6: 1.25rem;           /* 20px */
+    --font-size-h5: 1.5rem;            /* 24px */
+    --font-size-h4: 2.125rem;          /* 34px */
+    --font-size-h3: 3rem;              /* 48px */
+    --font-size-h2: 3.75rem;           /* 60px */
+    --font-size-h1: 6rem;              /* 96px */
+    
+    /* Legacy Font Sizes */
+    --font-size-xs: var(--font-size-caption);
+    --font-size-sm: var(--font-size-body2);
+    --font-size-base: var(--font-size-body1);
+    --font-size-lg: var(--font-size-h6);
+    --font-size-xl: var(--font-size-h5);
+    --font-size-xxl: var(--font-size-h4);
+    --font-size-xxxl: var(--font-size-h3);
+    
+    /* Font Weights - Material Design */
+    --font-weight-light: 300;
+    --font-weight-regular: 400;
+    --font-weight-normal: 400; /* NEW: Alias for regular */
+    --font-weight-medium: 500;
+    --font-weight-semibold: 600;
+    --font-weight-bold: 700;
+    
+    /* Line Heights */
+    --line-height-tight: 1.25;
+    --line-height-normal: 1.5;
+    --line-height-relaxed: 1.75;
+    --line-height-loose: 2;
+    
+    /* Letter Spacing */
+    --letter-spacing-tight: -0.01em;
+    --letter-spacing-normal: 0;
+    --letter-spacing-wide: 0.01em;
+    --letter-spacing-wider: 0.025em;
+    
+    /* Layout */
+    --container-max-width: 1200px;
+    --sidebar-width: 280px;
+    --app-bar-height: 64px;
+    --nav-drawer-width: 256px;
+    --bottom-navigation-height: 56px;
+    
+    /* Z-index Scale - Material Design - ENHANCED FOR NOTIFICATION FIX */
+    --z-mobile-stepper: 1000;
+    --z-speed-dial: 1050;
+    --z-app-bar: 1100;        /* Top banner should be here */
+    --z-drawer: 1200;
+    --z-modal: 1300;
+    --z-snackbar: 1400;       /* Notifications should be here - HIGHER than top banner */
+    --z-tooltip: 1500;
+
+    /* NEW: Specific component z-indices for clarity and notification fix */
+    --z-top-banner: var(--z-app-bar);        /* 1100 */
+    --z-notification: var(--z-snackbar);     /* 1400 - HIGHER than top banner */
+    --z-dropdown: var(--z-mobile-stepper);
+    --z-sticky: var(--z-app-bar);
+    --z-fixed: var(--z-app-bar);
+    --z-modal-backdrop: var(--z-modal);
+    --z-popover: var(--z-tooltip);
+    
+    /* Breakpoints - Material Design */
+    --breakpoint-xs: 0;
+    --breakpoint-sm: 600px;
+    --breakpoint-md: 900px;
+    --breakpoint-lg: 1200px;
+    --breakpoint-xl: 1536px;
+    
+    /* Material Design Specific */
+    --material-border-radius: var(--border-radius-sm);
+    --material-elevation: var(--elevation-2);
+    --material-transition: var(--transition-standard);
+    --material-focus-ring: 0 0 0 2px var(--primary-200);
+    --material-ripple-color: rgba(0, 0, 0, 0.1);
+}
+
+/* Dark Theme Support - Material Design Dark Theme */
+@media (prefers-color-scheme: dark) {
+    :root {
+        --text-primary: rgba(255, 255, 255, 0.87);
+        --text-secondary: rgba(255, 255, 255, 0.6);
+        --text-disabled: rgba(255, 255, 255, 0.38);
+        --text-hint: rgba(255, 255, 255, 0.38);
+        
+        --background: #121212;
+        --surface: #1e1e1e;
+        --surface-variant: #2d2d2d;
+        
+        --bg-color: var(--background);
+        --bg-card: var(--surface);
+        --bg-surface: var(--surface-variant);
+        --bg-white: var(--surface); /* NEW: Ensure bg-white works in dark mode */
+        
+        --border-color: rgba(255, 255, 255, 0.12);
+        --border-light: rgba(255, 255, 255, 0.08);
+        --border-dark: rgba(255, 255, 255, 0.24);
+        --divider: rgba(255, 255, 255, 0.12);
+        
+        --material-ripple-color: rgba(255, 255, 255, 0.1);
+    }
 }

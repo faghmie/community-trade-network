@@ -4,177 +4,217 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Contractor Reviews</title>
+    <title>Contractor Reviews | Find Trusted Professionals</title>
     <link rel="icon"
         href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⭐</text></svg>">
     <link rel="stylesheet" href="css/main.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
 </head>
 
-<body>
-    <div class="container">
-        <header class="flex-between">
-            <div>
+<body class="material-theme">
+    <!-- App Bar -->
+    <header class="app-bar">
+        <div class="app-bar-content">
+            <div class="app-bar-title">
+                <i class="material-icons app-bar-icon">construction</i>
                 <h1>Contractor Reviews</h1>
-                <p>Find and review local contractors</p>
             </div>
-            <nav>
-                <a href="admin.html" class="btn btn-secondary">
-                    <i class="fas fa-cog"></i> Admin Dashboard
+            <nav class="app-bar-actions">
+                <a href="admin.html" class="btn btn-secondary btn-small">
+                    <i class="material-icons">admin_panel_settings</i>
+                    <span>Admin</span>
                 </a>
             </nav>
-        </header>
+        </div>
+    </header>
 
-        <!-- Search and Filter Section - UPDATED: Cleaned up compact filters -->
-        <section class="dashboard-controls">
-            <!-- Compact Filter Bar - UPDATED: Removed ratings and sort to advanced section -->
-            <div class="compact-filter-bar">
-                <div class="compact-filters">
-                    <!-- Integrated Search Box -->
-                    <div class="filter-group compact search-integrated">
-                        <div class="search-box compact">
-                            <input type="text" id="searchInput" placeholder="Search contractors..."
-                                class="input search-input compact" data-action="search-keypress">
-                            <button class="btn btn-primary btn-small" data-action="search">
-                                <i class="fas fa-search"></i>
-                            </button>
-                        </div>
+    <div class="container">
+        <!-- Hero Section -->
+        <section class="hero-section">
+            <div class="hero-content">
+                <h2 class="hero-title">Find Trusted Local Contractors</h2>
+                <p class="hero-subtitle">Read reviews, compare ratings, and connect with the best professionals in your
+                    area</p>
+            </div>
+        </section>
+
+        <!-- Search and Filter Section -->
+        <section class="dashboard-controls material-card">
+            <!-- Quick Filters -->
+            <div class="quick-filters">
+                <!-- FIXED: Moved search inside quick-filters to make it inline -->
+                <div class="material-search-container">
+                    <div class="material-search">
+                        <i class="material-icons">search</i>
+                        <input type="text" id="searchInput" placeholder="Search contractors..."
+                            class="material-search-input" data-action="search-keypress">
                     </div>
+                </div>
 
-                    <div class="filter-group compact">
-                        <select id="locationFilter" class="input filter-select compact" data-action="filter">
-                            <option value="">📍 All Locations</option>
-                            <!-- Locations will be populated dynamically -->
-                        </select>
-                    </div>
+                <div class="filter-chip-group">
+                    <select id="locationFilter" class="material-select filter-chip" data-action="filter">
+                        <option value="">📍 All Locations</option>
+                        <!-- Locations will be populated dynamically -->
+                    </select>
 
-                    <!-- Action Buttons Group -->
-                    <div class="filter-actions compact">
-                        <button class="btn btn-outline btn-small" id="toggleFiltersBtn" data-action="toggle-filters">
-                            <i class="fas fa-sliders-h"></i> Filters
-                            <span class="filter-badge hidden" id="activeFilterCount">0</span>
+                    <select id="categoryFilter" class="material-select filter-chip" data-action="filter">
+                        <option value="">All Categories</option>
+                        <!-- Categories will be populated dynamically -->
+                    </select>
+
+                    <!-- FIXED: Updated to use new button classes -->
+                    <button class="btn btn-toggle" id="toggleFiltersBtn" data-action="toggle-filters">
+                        <i class="material-icons">filter_list</i>
+                        <span>More Filters</span>
+                        <span class="filter-badge material-badge" id="activeFilterCount">0</span>
+                    </button>
+
+                    <!-- FIXED: Updated to use new button classes -->
+                    <button class="btn btn-text btn-small" data-action="clear-filters"
+                        title="Clear all filters">
+                        <i class="material-icons">clear</i>
+                        <span>Clear</span>
+                    </button>
+
+                    <!-- FIXED: Removed view-toggle-container wrapper to make it truly inline -->
+                    <div class="view-toggle" id="view-toggle">
+                        <!-- FIXED: Added view-toggle-btn class for CSS compatibility -->
+                        <button class="btn btn-toggle view-toggle-btn" data-view="list" title="List View">
+                            <i class="material-icons">view_list</i>
                         </button>
-
-                        <button class="btn btn-secondary btn-small clear-filters-btn" data-action="clear-filters"
-                            title="Clear all filters">
-                            <i class="fas fa-times"></i> Clear
+                        <!-- FIXED: Added view-toggle-btn class for CSS compatibility -->
+                        <button class="btn btn-toggle view-toggle-btn" data-view="map" title="Map View">
+                            <i class="material-icons">map</i>
                         </button>
-                    </div>
-
-                    <!-- View Toggle on right side -->
-                    <div class="filter-group compact view-toggle-integrated">
-                        <div class="view-toggle compact" id="view-toggle">
-                            <button class="view-toggle-btn active" data-view="list" title="List View">
-                                <i class="fas fa-list"></i> List
-                            </button>
-                            <button class="view-toggle-btn" data-view="map" title="Map View">
-                                <i class="fas fa-map"></i> Map
-                            </button>
-                        </div>
                     </div>
                 </div>
             </div>
 
-            <!-- Advanced Filters (Collapsible) - UPDATED: Cleaned up header -->
-            <div class="advanced-filters hidden" id="advancedFilters">
-                <!-- Quick Preset Buttons - No heading -->
-                <div class="quick-presets">
-                    <div class="preset-buttons">
-                        <button class="btn btn-outline btn-small" data-action="show-favorites">
-                            <i class="fas fa-heart"></i> Show Favorites
-                        </button>
-                        <button class="btn btn-outline btn-small" data-action="show-high-rated">
-                            <i class="fas fa-star"></i> Show Top Rated
-                        </button>
-                    </div>
-                </div>
-
-                <div class="advanced-filters-header">
+            <!-- Advanced Filters -->
+            <div class="advanced-filters material-expansion hidden" id="advancedFilters">
+                <div class="expansion-header">
                     <h4>Advanced Filters</h4>
+                    <i class="material-icons expansion-icon">expand_more</i>
                 </div>
 
-                <div class="advanced-filter-grid">
-                    <div class="filter-group">
-                        <label for="categoryFilter" class="filter-label">
-                            <i class="fas fa-tags"></i> Category
-                        </label>
-                        <select id="categoryFilter" class="input filter-select" data-action="filter">
-                            <option value="">All Categories</option>
-                            <!-- Categories will be populated dynamically -->
-                        </select>
+                <div class="expansion-content">
+                    <!-- Quick Presets -->
+                    <div class="quick-presets">
+                        <div class="preset-buttons">
+                            <!-- FIXED: Updated to use new button classes -->
+                            <button class="btn btn-secondary btn-small" data-action="show-favorites">
+                                <i class="material-icons">favorite</i>
+                                <span>Show Favorites</span>
+                            </button>
+                            <!-- FIXED: Updated to use new button classes -->
+                            <button class="btn btn-secondary btn-small" data-action="show-high-rated">
+                                <i class="material-icons">star</i>
+                                <span>Show Top Rated</span>
+                            </button>
+                        </div>
                     </div>
 
-                    <!-- MOVED: Ratings filter to advanced section -->
-                    <div class="filter-group">
-                        <label for="ratingFilter" class="filter-label">
-                            <i class="fas fa-star"></i> Minimum Rating
-                        </label>
-                        <select id="ratingFilter" class="input filter-select" data-action="filter">
-                            <option value="">All Ratings</option>
-                            <option value="4.5">4.5+ Stars ⭐⭐⭐⭐⭐</option>
-                            <option value="4.0">4.0+ Stars ⭐⭐⭐⭐</option>
-                            <option value="3.5">3.5+ Stars ⭐⭐⭐</option>
-                            <option value="3.0">3.0+ Stars ⭐⭐</option>
-                        </select>
-                    </div>
+                    <div class="advanced-filter-grid">
+                        <div class="material-form-group">
+                            <label for="ratingFilter" class="material-input-label">
+                                <i class="material-icons">star</i>
+                                Minimum Rating
+                            </label>
+                            <select id="ratingFilter" class="material-select" data-action="filter">
+                                <option value="">All Ratings</option>
+                                <option value="4.5">4.5+ Stars</option>
+                                <option value="4.0">4.0+ Stars</option>
+                                <option value="3.5">3.5+ Stars</option>
+                                <option value="3.0">3.0+ Stars</option>
+                            </select>
+                        </div>
 
-                    <!-- MOVED: Sort filter to advanced section -->
-                    <div class="filter-group">
-                        <label for="sortBy" class="filter-label">
-                            <i class="fas fa-sort"></i> Sort By
-                        </label>
-                        <select id="sortBy" class="input filter-select" data-action="sort">
-                            <option value="name">Name (A-Z)</option>
-                            <option value="rating">Highest Rated</option>
-                            <option value="reviews">Most Reviews</option>
-                            <option value="location">Location</option>
-                            <option value="favorites">Favorites First</option>
-                        </select>
-                    </div>
+                        <div class="material-form-group">
+                            <label for="sortBy" class="material-input-label">
+                                <i class="material-icons">sort</i>
+                                Sort By
+                            </label>
+                            <select id="sortBy" class="material-select" data-action="sort">
+                                <option value="name">Name (A-Z)</option>
+                                <option value="rating">Highest Rated</option>
+                                <option value="reviews">Most Reviews</option>
+                                <option value="location">Location</option>
+                                <option value="favorites">Favorites First</option>
+                            </select>
+                        </div>
 
-                    <div class="filter-group">
-                        <label for="favoritesFilter" class="filter-label">
-                            <i class="fas fa-heart"></i> Favorites
-                        </label>
-                        <select id="favoritesFilter" class="input filter-select" data-action="filter">
-                            <option value="">All Contractors</option>
-                            <option value="favorites">⭐ Favorites Only</option>
-                            <option value="non-favorites">Not in Favorites</option>
-                        </select>
+                        <div class="material-form-group">
+                            <label for="favoritesFilter" class="material-input-label">
+                                <i class="material-icons">favorite</i>
+                                Favorites
+                            </label>
+                            <select id="favoritesFilter" class="material-select" data-action="filter">
+                                <option value="">All Contractors</option>
+                                <option value="favorites">Favorites Only</option>
+                                <option value="non-favorites">Not in Favorites</option>
+                            </select>
+                        </div>
                     </div>
                 </div>
             </div>
+
+            <!-- Stats Overview -->
             <div class="stats-overview">
+                <!-- FIXED: Removed material-card class from stat cards -->
                 <div class="stat-card">
-                    <span class="stat-number" id="totalContractorsCount">0</span>
-                    <span class="stat-label">Contractors</span>
+                    <div class="stat-icon">
+                        <i class="material-icons">groups</i>
+                    </div>
+                    <div class="stat-content">
+                        <span class="stat-number" id="totalContractorsCount">0</span>
+                        <span class="stat-label">Contractors</span>
+                    </div>
                 </div>
                 <div class="stat-card">
-                    <span class="stat-number" id="totalReviewsCount">0</span>
-                    <span class="stat-label">Reviews</span>
+                    <div class="stat-icon">
+                        <i class="material-icons">reviews</i>
+                    </div>
+                    <div class="stat-content">
+                        <span class="stat-number" id="totalReviewsCount">0</span>
+                        <span class="stat-label">Reviews</span>
+                    </div>
                 </div>
                 <div class="stat-card">
-                    <span class="stat-number" id="averageRatingCount">0.0</span>
-                    <span class="stat-label">Avg Rating</span>
+                    <div class="stat-icon">
+                        <i class="material-icons">star</i>
+                    </div>
+                    <div class="stat-content">
+                        <span class="stat-number" id="averageRatingCount">0.0</span>
+                        <span class="stat-label">Avg Rating</span>
+                    </div>
                 </div>
-                <!-- Favorites Count -->
                 <div class="stat-card favorites-stat">
-                    <span class="stat-number favorites-count">0</span>
-                    <span class="stat-label">Favorites</span>
+                    <div class="stat-icon">
+                        <i class="material-icons">favorite</i>
+                    </div>
+                    <div class="stat-content">
+                        <span class="stat-number favorites-count">0</span>
+                        <span class="stat-label">Favorites</span>
+                    </div>
                 </div>
             </div>
         </section>
 
         <!-- Map Container -->
         <section class="map-section">
-            <div id="map-container" class="map-container hidden"></div>
+            <div id="map-container" class="map-container material-card hidden"></div>
         </section>
 
         <!-- Favorites Section -->
-        <section id="favoritesSection" class="favorites-section hidden">
+        <section id="favoritesSection" class="favorites-section material-card hidden">
             <div class="section-header">
-                <h2><i class="fas fa-heart favorites-icon"></i> Your Favorite Contractors</h2>
-                <span class="favorites-badge">0</span>
+                <div class="section-title">
+                    <i class="material-icons">favorite</i>
+                    <h2>Your Favorite Contractors</h2>
+                </div>
+                <span class="material-badge favorites-badge">0</span>
             </div>
             <div id="favoritesNotice">
                 <!-- Favorites notice will be populated dynamically -->
@@ -185,7 +225,7 @@
         </section>
 
         <!-- Contractor List -->
-        <section class="contractor-list" id="contractorList">
+        <section class="contractor-list material-card" id="contractorList">
             <div class="section-header">
                 <h2>Available Contractors</h2>
             </div>
@@ -195,25 +235,26 @@
         </section>
 
         <!-- Review Form Modal -->
-        <div class="modal" id="reviewModal">
-            <div class="modal-content">
-                <div class="modal-header">
+        <div class="modal material-modal" id="reviewModal">
+            <div class="modal-content material-modal-content">
+                <div class="modal-header material-modal-header">
                     <h2>Leave a Review</h2>
-                    <span class="close" id="closeModal">&times;</span>
+                    <button class="material-icon-button close" id="closeModal">
+                        <i class="material-icons">close</i>
+                    </button>
                 </div>
-                <div class="modal-body">
-                    <form id="reviewForm">
+                <div class="modal-body material-modal-body">
+                    <form id="reviewForm" class="material-form">
                         <input type="hidden" id="contractorId">
 
-                        <div class="form-group">
-                            <label for="reviewerName">Your Name:</label>
-                            <input type="text" id="reviewerName" class="input" required>
+                        <div class="material-form-group">
+                            <label for="reviewerName" class="material-input-label">Your Name</label>
+                            <input type="text" id="reviewerName" class="material-input" required>
                         </div>
 
-                        <!-- Project Type Only -->
-                        <div class="form-group">
-                            <label for="projectType">Project Type:</label>
-                            <select id="projectType" class="input" required>
+                        <div class="material-form-group">
+                            <label for="projectType" class="material-input-label">Project Type</label>
+                            <select id="projectType" class="material-select" required>
                                 <option value="">Select Project Type</option>
                                 <option value="bathroom-renovation">Bathroom Renovation</option>
                                 <option value="kitchen-remodel">Kitchen Remodel</option>
@@ -227,115 +268,130 @@
                             </select>
                         </div>
 
-                        <!-- Overall Rating - Separate container -->
-                        <div class="form-group">
-                            <label>Overall Rating:</label>
-                            <div class="star-rating overall-rating">
-                                <span class="star" data-rating="1">★</span>
-                                <span class="star" data-rating="2">★</span>
-                                <span class="star" data-rating="3">★</span>
-                                <span class="star" data-rating="4">★</span>
-                                <span class="star" data-rating="5">★</span>
+                        <!-- Overall Rating -->
+                        <div class="material-form-group">
+                            <label class="material-input-label">Overall Rating</label>
+                            <div class="material-star-rating overall-rating">
+                                <span class="material-star" data-rating="1">★</span>
+                                <span class="material-star" data-rating="2">★</span>
+                                <span class="material-star" data-rating="3">★</span>
+                                <span class="material-star" data-rating="4">★</span>
+                                <span class="material-star" data-rating="5">★</span>
                             </div>
                             <input type="hidden" id="rating" required>
                         </div>
 
-                        <!-- Category Ratings - Each with unique class -->
+                        <!-- Category Ratings -->
                         <div class="rating-categories">
-                            <h4>Rate by Category:</h4>
+                            <h4 class="rating-categories-title">Rate by Category</h4>
 
-                            <div class="rating-category">
+                            <div class="material-rating-category">
                                 <label>Quality of Work</label>
-                                <div class="star-rating quality-rating">
-                                    <span class="star" data-rating="1">★</span>
-                                    <span class="star" data-rating="2">★</span>
-                                    <span class="star" data-rating="3">★</span>
-                                    <span class="star" data-rating="4">★</span>
-                                    <span class="star" data-rating="5">★</span>
+                                <div class="material-star-rating quality-rating">
+                                    <span class="material-star" data-rating="1">★</span>
+                                    <span class="material-star" data-rating="2">★</span>
+                                    <span class="material-star" data-rating="3">★</span>
+                                    <span class="material-star" data-rating="4">★</span>
+                                    <span class="material-star" data-rating="5">★</span>
                                 </div>
                                 <input type="hidden" id="qualityRating" required>
                             </div>
 
-                            <div class="rating-category">
+                            <div class="material-rating-category">
                                 <label>Communication</label>
-                                <div class="star-rating communication-rating">
-                                    <span class="star" data-rating="1">★</span>
-                                    <span class="star" data-rating="2">★</span>
-                                    <span class="star" data-rating="3">★</span>
-                                    <span class="star" data-rating="4">★</span>
-                                    <span class="star" data-rating="5">★</span>
+                                <div class="material-star-rating communication-rating">
+                                    <span class="material-star" data-rating="1">★</span>
+                                    <span class="material-star" data-rating="2">★</span>
+                                    <span class="material-star" data-rating="3">★</span>
+                                    <span class="material-star" data-rating="4">★</span>
+                                    <span class="material-star" data-rating="5">★</span>
                                 </div>
                                 <input type="hidden" id="communicationRating" required>
                             </div>
 
-                            <div class="rating-category">
+                            <div class="material-rating-category">
                                 <label>Timeliness</label>
-                                <div class="star-rating timeliness-rating">
-                                    <span class="star" data-rating="1">★</span>
-                                    <span class="star" data-rating="2">★</span>
-                                    <span class="star" data-rating="3">★</span>
-                                    <span class="star" data-rating="4">★</span>
-                                    <span class="star" data-rating="5">★</span>
+                                <div class="material-star-rating timeliness-rating">
+                                    <span class="material-star" data-rating="1">★</span>
+                                    <span class="material-star" data-rating="2">★</span>
+                                    <span class="material-star" data-rating="3">★</span>
+                                    <span class="material-star" data-rating="4">★</span>
+                                    <span class="material-star" data-rating="5">★</span>
                                 </div>
                                 <input type="hidden" id="timelinessRating" required>
                             </div>
 
-                            <div class="rating-category">
+                            <div class="material-rating-category">
                                 <label>Value for Money</label>
-                                <div class="star-rating value-rating">
-                                    <span class="star" data-rating="1">★</span>
-                                    <span class="star" data-rating="2">★</span>
-                                    <span class="star" data-rating="3">★</span>
-                                    <span class="star" data-rating="4">★</span>
-                                    <span class="star" data-rating="5">★</span>
+                                <div class="material-star-rating value-rating">
+                                    <span class="material-star" data-rating="1">★</span>
+                                    <span class="material-star" data-rating="2">★</span>
+                                    <span class="material-star" data-rating="3">★</span>
+                                    <span class="material-star" data-rating="4">★</span>
+                                    <span class="material-star" data-rating="5">★</span>
                                 </div>
                                 <input type="hidden" id="valueRating" required>
                             </div>
                         </div>
 
-                        <div class="form-group">
-                            <label for="comment">Review Comment:</label>
-                            <textarea id="comment" rows="4" class="input" placeholder="Tell us about your experience..."
-                                required></textarea>
+                        <div class="material-form-group">
+                            <label for="comment" class="material-input-label">Review Comment</label>
+                            <textarea id="comment" rows="4" class="material-textarea"
+                                placeholder="Tell us about your experience..." required></textarea>
                         </div>
 
-                        <button type="submit" class="btn btn-primary">Submit Review</button>
+                        <!-- FIXED: Updated to use new button classes -->
+                        <button type="submit" class="btn btn-primary">
+                            <i class="material-icons">send</i>
+                            <span>Submit Review</span>
+                        </button>
                     </form>
                 </div>
             </div>
         </div>
 
         <!-- Contractor Details Modal -->
-        <div class="modal" id="contractorModal">
-            <div class="modal-content">
-                <div class="modal-header">
+        <div class="modal material-modal" id="contractorModal">
+            <div class="modal-content material-modal-content">
+                <div class="modal-header material-modal-header">
                     <h2>Contractor Details</h2>
-                    <span class="close close-contractor-modal">&times;</span>
+                    <button class="material-icon-button close close-contractor-modal">
+                        <i class="material-icons">close</i>
+                    </button>
                 </div>
-                <div class="modal-body" id="contractorDetails">
+                <div class="modal-body material-modal-body" id="contractorDetails">
                     <!-- Contractor details will be loaded here -->
                 </div>
             </div>
         </div>
 
         <!-- Quick Actions Footer -->
-        <footer class="app-footer">
+        <footer class="app-footer material-footer">
             <div class="footer-actions">
-                <button class="btn btn-secondary" data-action="view-favorites">
-                    <i class="fas fa-heart"></i> View Favorites
+                <!-- FIXED: Updated to use new button classes -->
+                <button class="btn btn-secondary btn-small" data-action="view-favorites">
+                    <i class="material-icons">favorite</i>
+                    <span>View Favorites</span>
                 </button>
-                <button class="btn btn-secondary" data-action="export-favorites">
-                    <i class="fas fa-download"></i> Export Favorites
+                <!-- FIXED: Updated to use new button classes -->
+                <button class="btn btn-secondary btn-small" data-action="export-favorites">
+                    <i class="material-icons">download</i>
+                    <span>Export Favorites</span>
                 </button>
-                <button class="btn btn-secondary" data-action="import-favorites">
-                    <i class="fas fa-upload"></i> Import Favorites
+                <!-- FIXED: Updated to use new button classes -->
+                <button class="btn btn-secondary btn-small" data-action="import-favorites">
+                    <i class="material-icons">upload</i>
+                    <span>Import Favorites</span>
                 </button>
-                <button class="btn btn-secondary" data-action="export-data">
-                    <i class="fas fa-file-export"></i> Export All Data
+                <!-- FIXED: Updated to use new button classes -->
+                <button class="btn btn-secondary btn-small" data-action="export-data">
+                    <i class="material-icons">file_export</i>
+                    <span>Export All Data</span>
                 </button>
                 <input type="file" id="importFavorites" accept=".json" class="hidden">
             </div>
             <p class="footer-note">
+                <i class="material-icons">info</i>
                 Your favorites are stored locally in this browser. Export to backup your data.
             </p>
         </footer>
@@ -355,6 +411,7 @@
     <script src="js/modules/statsManager.js"></script>
     <script src="js/modules/favoritesManager.js"></script>
     <script src="js/modules/mapManager.js"></script>
+    <script src="js/modules/cardManager.js"></script>
     <script src="js/modules/data.js"></script>
 
     <!-- App Modules (LOAD BEFORE script.js) -->

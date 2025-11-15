@@ -1,4 +1,4 @@
-/* Contractor Details Modal Styles */
+/* Material Design Contractor Details Modal Styles */
 .contractor-details {
     max-height: 70vh;
     overflow-y: auto;
@@ -8,20 +8,25 @@
 .contractor-header {
     margin-bottom: var(--space-lg);
     padding-bottom: var(--space-md);
-    border-bottom: 1px solid var(--border-color);
+    border-bottom: 1px solid var(--border-light);
 }
 
 .contractor-header .contractor-name {
     margin: 0 0 var(--space-sm) 0;
     color: var(--primary-color);
-    font-size: 1.5rem;
+    font-size: var(--font-size-xxl);
+    font-weight: var(--font-weight-medium);
+    line-height: var(--line-height-tight);
 }
 
 .contractor-category {
     margin: 0;
-    color: var(--text-light);
+    color: var(--text-secondary);
     font-style: italic;
-    font-size: 1.1rem;
+    font-size: var(--font-size-lg);
+    display: flex;
+    align-items: center;
+    gap: var(--space-xs);
 }
 
 .contractor-info-grid {
@@ -32,47 +37,73 @@
 }
 
 .contractor-info-grid .info-item {
-    padding: var(--space-md);
-    background: var(--bg-color);
+    padding: var(--space-lg);
+    background: var(--surface-50);
     border-radius: var(--border-radius);
-    border-left: 3px solid var(--primary-color);
+    border-left: 4px solid var(--primary-color);
+    box-shadow: var(--elevation-1);
+    transition: var(--material-transition);
+}
+
+.contractor-info-grid .info-item:hover {
+    box-shadow: var(--elevation-2);
+    transform: translateY(-2px);
 }
 
 .info-label {
-    color: var(--text-color);
-    font-weight: 600;
+    color: var(--text-primary);
+    font-weight: var(--font-weight-medium);
+    font-size: var(--font-size-sm);
+    margin-bottom: var(--space-xs);
+    display: block;
 }
 
 .info-value {
-    color: var(--text-light);
+    color: var(--text-secondary);
+    font-size: var(--font-size-base);
+    line-height: var(--line-height-normal);
 }
 
 .website-link {
-    color: var(--secondary-color);
+    color: var(--primary-color);
     text-decoration: none;
+    font-weight: var(--font-weight-medium);
+    transition: var(--material-transition);
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-xs);
 }
 
 .website-link:hover {
+    color: var(--primary-700);
     text-decoration: underline;
 }
 
 .rating-value {
     color: var(--warning-color);
-    font-weight: bold;
+    font-weight: var(--font-weight-bold);
+    display: flex;
+    align-items: center;
+    gap: var(--space-xs);
 }
 
 .category-ratings-section {
     margin-bottom: var(--space-lg);
-    padding: var(--space-lg);
-    background: var(--bg-color);
-    border-radius: var(--border-radius);
-    border: 1px solid var(--border-color);
+    padding: var(--space-xl);
+    background: var(--surface-50);
+    border-radius: var(--border-radius-lg);
+    border: 1px solid var(--border-light);
+    box-shadow: var(--elevation-1);
 }
 
 .section-title {
-    margin: 0 0 var(--space-md) 0;
-    color: var(--primary-color);
-    font-size: 1.2rem;
+    margin: 0 0 var(--space-lg) 0;
+    color: var(--text-primary);
+    font-size: var(--font-size-xl);
+    font-weight: var(--font-weight-medium);
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
 }
 
 .category-ratings-grid {
@@ -85,32 +116,43 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: var(--space-md);
-    background: var(--bg-white);
+    padding: var(--space-lg);
+    background: var(--bg-card);
     border-radius: var(--border-radius);
-    box-shadow: var(--shadow-sm);
+    box-shadow: var(--elevation-1);
+    transition: var(--material-transition);
+    border: 1px solid var(--border-light);
+}
+
+.category-rating-item:hover {
+    box-shadow: var(--elevation-2);
+    transform: translateY(-1px);
 }
 
 .category-label {
-    color: var(--text-color);
-    font-weight: 600;
+    color: var(--text-primary);
+    font-weight: var(--font-weight-medium);
+    font-size: var(--font-size-base);
 }
 
 .category-rating-display {
     display: flex;
     align-items: center;
-    gap: var(--space-sm);
+    gap: var(--space-md);
 }
 
 .category-rating-display .stars {
     color: var(--warning-color);
-    font-size: 1.1rem;
+    font-size: var(--font-size-lg);
+    letter-spacing: 2px;
 }
 
 .category-rating-display .rating-value {
-    font-weight: bold;
+    font-weight: var(--font-weight-bold);
     color: var(--primary-color);
-    font-size: 1.1rem;
+    font-size: var(--font-size-lg);
+    min-width: 40px;
+    text-align: center;
 }
 
 .reviews-section {
@@ -120,92 +162,176 @@
 .reviews-list {
     display: flex;
     flex-direction: column;
-    gap: var(--space-md);
+    gap: var(--space-lg);
 }
 
 .review-item {
-    background: var(--bg-white);
-    padding: var(--space-lg);
-    border-radius: var(--border-radius);
-    box-shadow: var(--shadow-sm);
+    background: var(--bg-card);
+    padding: var(--space-xl);
+    border-radius: var(--border-radius-lg);
+    box-shadow: var(--elevation-1);
     border-left: 4px solid var(--primary-color);
+    transition: var(--material-transition);
+}
+
+.review-item:hover {
+    box-shadow: var(--elevation-2);
+    transform: translateY(-1px);
 }
 
 .review-header {
     display: flex;
     justify-content: space-between;
     align-items: flex-start;
-    margin-bottom: var(--space-md);
+    margin-bottom: var(--space-lg);
+    gap: var(--space-md);
 }
 
 .reviewer-info {
     display: flex;
     flex-direction: column;
-    gap: var(--space-xs);
+    gap: var(--space-sm);
+    flex: 1;
 }
 
 .reviewer-name {
-    font-weight: 600;
-    color: var(--text-color);
-    font-size: 1.1rem;
+    font-weight: var(--font-weight-medium);
+    color: var(--text-primary);
+    font-size: var(--font-size-lg);
+    margin: 0;
 }
 
 .review-rating {
     color: var(--warning-color);
-    font-weight: bold;
+    font-weight: var(--font-weight-bold);
+    display: flex;
+    align-items: center;
+    gap: var(--space-xs);
 }
 
 .review-meta {
     display: flex;
     flex-direction: column;
     align-items: flex-end;
-    gap: var(--space-xs);
+    gap: var(--space-sm);
     text-align: right;
+    flex-shrink: 0;
 }
 
 .review-date {
-    font-size: 0.9rem;
-    color: var(--text-light);
+    font-size: var(--font-size-sm);
+    color: var(--text-secondary);
+    white-space: nowrap;
 }
 
 .project-type {
-    background: var(--bg-color);
+    background: var(--primary-50);
     color: var(--primary-color);
-    padding: var(--space-xs) var(--space-sm);
-    border-radius: 20px;
-    font-size: 0.8rem;
-    font-weight: 500;
+    padding: var(--space-xs) var(--space-md);
+    border-radius: 16px;
+    font-size: var(--font-size-xs);
+    font-weight: var(--font-weight-medium);
+    border: 1px solid var(--primary-100);
 }
 
 .category-ratings-preview {
-    font-size: 0.9em;
-    color: var(--text-light);
-    margin: var(--space-sm) 0;
-    padding: var(--space-sm);
-    background: var(--bg-color);
-    border-radius: var(--border-radius-sm);
-    border-left: 3px solid var(--accent-color);
+    font-size: var(--font-size-sm);
+    color: var(--text-secondary);
+    margin: var(--space-md) 0;
+    padding: var(--space-md);
+    background: var(--surface-50);
+    border-radius: var(--border-radius);
+    border-left: 4px solid var(--accent-color);
+    line-height: var(--line-height-normal);
 }
 
 .review-comment {
-    line-height: 1.6;
-    color: var(--text-color);
+    line-height: var(--line-height-relaxed);
+    color: var(--text-primary);
     margin: 0;
+    font-size: var(--font-size-base);
 }
 
 .no-reviews {
     text-align: center;
-    color: var(--text-light);
+    color: var(--text-secondary);
     font-style: italic;
-    padding: var(--space-xl);
+    padding: var(--space-xxl);
+    background: var(--surface-50);
+    border-radius: var(--border-radius);
+    border: 2px dashed var(--border-color);
+}
+
+.no-reviews .material-icons {
+    font-size: 3rem;
+    color: var(--surface-300);
+    margin-bottom: var(--space-md);
+    display: block;
 }
 
 .modal-actions {
     display: flex;
     justify-content: center;
-    margin-top: var(--space-lg);
-    padding-top: var(--space-md);
-    border-top: 1px solid var(--border-color);
+    gap: var(--space-md);
+    margin-top: var(--space-xl);
+    padding-top: var(--space-lg);
+    border-top: 1px solid var(--border-light);
+}
+
+/* Material Design Status Badges */
+.review-status {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-xs);
+    padding: var(--space-xs) var(--space-sm);
+    border-radius: 12px;
+    font-size: var(--font-size-xs);
+    font-weight: var(--font-weight-medium);
+    margin-left: var(--space-sm);
+}
+
+.review-status.approved {
+    background: var(--success-50);
+    color: var(--success-700);
+    border: 1px solid var(--success-200);
+}
+
+.review-status.pending {
+    background: var(--warning-50);
+    color: var(--warning-700);
+    border: 1px solid var(--warning-200);
+}
+
+.review-status.rejected {
+    background: var(--error-50);
+    color: var(--error-700);
+    border: 1px solid var(--error-200);
+}
+
+/* Enhanced Rating Display */
+.enhanced-rating {
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+}
+
+.enhanced-rating .stars {
+    position: relative;
+}
+
+.enhanced-rating .stars-background {
+    color: var(--surface-300);
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: 1;
+}
+
+.enhanced-rating .stars-foreground {
+    color: var(--warning-color);
+    position: relative;
+    z-index: 2;
+    overflow: hidden;
 }
 
 /* Responsive contractor details */
@@ -219,6 +345,10 @@
         gap: var(--space-sm);
     }
 
+    .contractor-info-grid .info-item {
+        padding: var(--space-md);
+    }
+
     .category-ratings-grid {
         grid-template-columns: 1fr;
         gap: var(--space-sm);
@@ -227,7 +357,7 @@
     .category-rating-item {
         flex-direction: column;
         align-items: flex-start;
-        gap: var(--space-sm);
+        gap: var(--space-md);
         padding: var(--space-md);
     }
 
@@ -239,38 +369,160 @@
     .review-header {
         flex-direction: column;
         align-items: flex-start;
-        gap: var(--space-sm);
+        gap: var(--space-md);
     }
 
     .review-meta {
         align-items: flex-start;
         text-align: left;
+        flex-direction: row;
+        justify-content: space-between;
+        width: 100%;
+    }
+
+    .modal-actions {
+        flex-direction: column;
+        gap: var(--space-sm);
+    }
+
+    .category-ratings-section {
+        padding: var(--space-lg);
+    }
+
+    .review-item {
+        padding: var(--space-lg);
     }
 }
 
 @media (max-width: 480px) {
     .contractor-header .contractor-name {
-        font-size: 1.3rem;
+        font-size: var(--font-size-xl);
     }
 
     .contractor-category {
-        font-size: 1rem;
+        font-size: var(--font-size-base);
     }
 
     .section-title {
-        font-size: 1.1rem;
+        font-size: var(--font-size-lg);
     }
 
     .review-item {
         padding: var(--space-md);
     }
 
-    .modal-actions {
-        justify-content: center;
-    }
-
     .modal-actions .btn {
         flex: 1;
         min-width: 120px;
+    }
+
+    .category-rating-display {
+        flex-direction: column;
+        gap: var(--space-sm);
+        align-items: flex-start;
+    }
+
+    .category-rating-display .rating-value {
+        min-width: auto;
+    }
+}
+
+/* Dark Theme Support */
+@media (prefers-color-scheme: dark) {
+    .contractor-info-grid .info-item,
+    .category-ratings-section,
+    .category-rating-item,
+    .category-ratings-preview,
+    .no-reviews {
+        background: var(--surface-800);
+        border-color: var(--surface-600);
+    }
+
+    .review-item {
+        background: var(--surface-900);
+        border-left-color: var(--primary-400);
+    }
+
+    .project-type {
+        background: var(--primary-900);
+        color: var(--primary-200);
+        border-color: var(--primary-700);
+    }
+
+    .review-status.approved {
+        background: var(--success-900);
+        color: var(--success-200);
+        border-color: var(--success-700);
+    }
+
+    .review-status.pending {
+        background: var(--warning-900);
+        color: var(--warning-200);
+        border-color: var(--warning-700);
+    }
+
+    .review-status.rejected {
+        background: var(--error-900);
+        color: var(--error-200);
+        border-color: var(--error-700);
+    }
+}
+
+/* High Contrast Mode Support */
+@media (prefers-contrast: high) {
+    .contractor-info-grid .info-item,
+    .category-ratings-section,
+    .category-rating-item,
+    .review-item {
+        border-width: 2px;
+    }
+
+    .contractor-header {
+        border-bottom-width: 2px;
+    }
+
+    .modal-actions {
+        border-top-width: 2px;
+    }
+}
+
+/* Reduced Motion Support */
+@media (prefers-reduced-motion: reduce) {
+    .contractor-info-grid .info-item,
+    .category-rating-item,
+    .review-item {
+        transition: none;
+    }
+
+    .contractor-info-grid .info-item:hover,
+    .category-rating-item:hover,
+    .review-item:hover {
+        transform: none;
+    }
+}
+
+/* Print Styles */
+@media print {
+    .contractor-details {
+        max-height: none;
+        overflow: visible;
+    }
+
+    .contractor-info-grid .info-item,
+    .category-ratings-section,
+    .category-rating-item,
+    .review-item {
+        box-shadow: none;
+        border: 1px solid #000;
+        break-inside: avoid;
+    }
+
+    .modal-actions {
+        display: none;
+    }
+
+    .website-link {
+        color: #000;
+        text-decoration: underline;
     }
 }

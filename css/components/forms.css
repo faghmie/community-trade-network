@@ -1,103 +1,211 @@
+/* Material Design Form System - ENHANCED & FIXED */
+
 .form-group {
-    margin-bottom: var(--space-lg);
+    margin-bottom: var(--space-xl);
+    position: relative;
 }
 
+.material-form-group {
+    margin-bottom: var(--space-xl);
+    position: relative;
+}
+
+/* FIXED: Enhanced Material Design Labels */
 .form-group label {
-    display: block;
+    display: block !important;
     margin-bottom: var(--space-sm);
-    font-weight: 600;
-    color: var(--primary-color);
-    font-size: 0.9rem;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
+    font-weight: var(--font-weight-medium);
+    color: var(--text-secondary);
+    font-size: var(--font-size-body2);
+    letter-spacing: 0.15px;
+    transition: all var(--transition-standard);
+    transform-origin: left top;
+    visibility: visible !important;
+    opacity: 1 !important;
+    line-height: var(--line-height-tight);
 }
 
+.material-input-label {
+    display: flex !important;
+    align-items: center;
+    gap: var(--space-xs);
+    margin-bottom: var(--space-sm);
+    font-weight: var(--font-weight-medium);
+    color: var(--text-secondary);
+    font-size: var(--font-size-body2);
+    letter-spacing: 0.15px;
+    transition: all var(--transition-standard);
+    transform-origin: left top;
+    visibility: visible !important;
+    opacity: 1 !important;
+    line-height: var(--line-height-tight);
+}
+
+/* Material Design Text Fields */
 .form-group input,
 .form-group textarea,
-.form-group select {
+.form-group select,
+.material-input,
+.material-textarea,
+.material-select {
     width: 100%;
-    padding: var(--space-md) var(--space-lg);
-    border: 2px solid var(--border-color);
-    border-radius: var(--border-radius);
-    font-size: 1rem;
-    transition: var(--transition);
-    background-color: var(--bg-white);
-    color: var(--text-color);
+    padding: var(--space-md) var(--space-sm);
+    border: none;
+    border-bottom: 1px solid var(--border-color);
+    border-radius: var(--border-radius-xs) var(--border-radius-xs) 0 0;
+    font-size: var(--font-size-body1);
+    font-weight: var(--font-weight-regular);
+    transition: all var(--transition-standard);
+    background-color: transparent;
+    color: var(--text-primary);
     font-family: inherit;
+    line-height: var(--line-height-normal);
+    letter-spacing: 0.15px;
 }
 
+/* Enhanced Focus States with Material Design Ripple */
 .form-group input:focus,
 .form-group textarea:focus,
-.form-group select:focus {
+.form-group select:focus,
+.material-input:focus,
+.material-textarea:focus,
+.material-select:focus {
     outline: none;
-    border-color: var(--secondary-color);
-    box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
-    background-color: #ffffff;
+    border-bottom-color: var(--primary-color);
+    border-bottom-width: 2px;
+    background-color: rgba(33, 150, 243, 0.04);
+    box-shadow: 0 1px 0 0 var(--primary-color);
 }
 
+/* Material Design Focus Label Animation */
+.form-group:focus-within label,
+.material-form-group:focus-within .material-input-label {
+    color: var(--primary-color);
+    transform: translateY(-2px);
+}
+
+/* Enhanced Hover States */
 .form-group input:hover,
-.form-group select:hover {
-    border-color: #c0c0c0;
+.form-group select:hover,
+.material-input:hover,
+.material-select:hover {
+    border-bottom-color: var(--neutral-600);
+    background-color: rgba(0, 0, 0, 0.04);
 }
 
+/* Material Design Placeholder */
 .form-group input::placeholder,
-.form-group textarea::placeholder {
-    color: #a0a0a0;
-    font-weight: 400;
+.form-group textarea::placeholder,
+.material-input::placeholder,
+.material-textarea::placeholder {
+    color: var(--text-hint);
+    font-weight: var(--font-weight-regular);
+    opacity: 1;
+    transition: opacity var(--transition-short);
 }
 
-/* Professional input styles */
+.form-group input:focus::placeholder,
+.form-group textarea:focus::placeholder,
+.material-input:focus::placeholder,
+.material-textarea:focus::placeholder {
+    opacity: 0.5;
+}
+
+/* Professional Input Styles (Material Enhanced) */
 .input {
     width: 100%;
-    padding: var(--space-md) var(--space-lg);
-    border: 2px solid var(--border-color);
-    border-radius: var(--border-radius);
-    font-size: 1rem;
-    transition: var(--transition);
-    background-color: var(--bg-white);
-    color: var(--text-color);
+    padding: var(--space-md) var(--space-sm);
+    border: none;
+    border-bottom: 1px solid var(--border-color);
+    border-radius: var(--border-radius-xs) var(--border-radius-xs) 0 0;
+    font-size: var(--font-size-body1);
+    font-weight: var(--font-weight-regular);
+    transition: all var(--transition-standard);
+    background-color: transparent;
+    color: var(--text-primary);
     font-family: inherit;
     margin: 0;
+    line-height: var(--line-height-normal);
+    letter-spacing: 0.15px;
 }
 
 .input:focus {
     outline: none;
-    border-color: var(--secondary-color);
-    box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
-    background-color: #ffffff;
+    border-bottom-color: var(--primary-color);
+    border-bottom-width: 2px;
+    background-color: rgba(33, 150, 243, 0.04);
+    box-shadow: 0 1px 0 0 var(--primary-color);
 }
 
 .input:hover {
-    border-color: #c0c0c0;
+    border-bottom-color: var(--neutral-600);
+    background-color: rgba(0, 0, 0, 0.04);
 }
 
 .input::placeholder {
-    color: #a0a0a0;
-    font-weight: 400;
+    color: var(--text-hint);
+    font-weight: var(--font-weight-regular);
 }
 
-/* Professional select styles */
-select {
+/* FIXED: Enhanced Material Design Select - DROPDOWN BACKGROUND FIX */
+select,
+.material-select {
     appearance: none;
-    background-image: url("data:image/svg+xml;charset=US-ASCII,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 4 5'><path fill='%23666' d='M2 0L0 2h4zm0 5L0 3h4z'/></svg>");
+    background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' height='24' viewBox='0 0 24 24' width='24' fill='%23666'%3e%3cpath d='M7 10l5 5 5-5z'/%3e%3c/svg%3e");
     background-repeat: no-repeat;
-    background-position: right var(--space-lg) center;
-    background-size: 12px;
+    background-position: right var(--space-sm) center;
+    background-size: 20px;
     padding-right: var(--space-xxl) !important;
     cursor: pointer;
+    /* FIX: Ensure proper background for dropdown options */
+    background-color: var(--surface) !important;
 }
 
-select:hover {
-    border-color: #c0c0c0;
+/* FIXED: Dropdown option styling */
+select option,
+.material-select option {
+    background-color: var(--surface) !important;
+    color: var(--text-primary) !important;
+    padding: var(--space-sm) var(--space-md);
+    font-size: var(--font-size-body2);
+    border: none;
 }
 
-select:focus {
+/* FIXED: Hover state for dropdown options */
+select option:hover,
+select option:focus,
+.material-select option:hover,
+.material-select option:focus {
+    background-color: var(--primary-50) !important;
+    color: var(--text-primary) !important;
+}
+
+/* FIXED: Selected option state */
+select option:checked,
+select option:selected,
+.material-select option:checked,
+.material-select option:selected {
+    background-color: var(--primary-100) !important;
+    color: var(--text-primary) !important;
+    font-weight: var(--font-weight-medium);
+}
+
+select:hover,
+.material-select:hover {
+    border-bottom-color: var(--neutral-600);
+    background-color: rgba(0, 0, 0, 0.04);
+}
+
+select:focus,
+.material-select:focus {
     outline: none;
-    border-color: var(--secondary-color);
-    box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+    border-bottom-color: var(--primary-color);
+    border-bottom-width: 2px;
+    background-color: rgba(33, 150, 243, 0.04);
+    box-shadow: 0 1px 0 0 var(--primary-color);
 }
 
-/* Select wrapper for better styling */
+/* Material Design Select Wrapper */
 .select-wrapper {
     position: relative;
     display: inline-block;
@@ -105,185 +213,600 @@ select:focus {
 }
 
 .select-wrapper::after {
-    content: '';
+    content: 'expand_more';
+    font-family: 'Material Icons';
     position: absolute;
-    right: var(--space-lg);
+    right: var(--space-sm);
     top: 50%;
     transform: translateY(-50%);
-    width: 0;
-    height: 0;
-    border-left: 5px solid transparent;
-    border-right: 5px solid transparent;
-    border-top: 5px solid var(--text-light);
+    color: var(--text-hint);
     pointer-events: none;
+    font-size: 1.5rem;
+    font-weight: normal;
 }
 
-/* Search input specific styles */
+/* Enhanced Material Design Search Input */
 .search-input {
-    background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='%23666' viewBox='0 0 16 16'%3e%3cpath d='M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z'/%3e%3c/svg%3e");
+    background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' height='24' viewBox='0 0 24 24' width='24' fill='%23666'%3e%3cpath d='M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z'/%3e%3c/svg%3e");
     background-repeat: no-repeat;
-    background-position: left var(--space-lg) center;
-    background-size: 16px;
+    background-position: left var(--space-sm) center;
+    background-size: 20px;
     padding-left: var(--space-xxl) !important;
+    border-radius: var(--border-radius-lg);
+    background-color: var(--surface-variant);
+    border: 1px solid transparent;
 }
 
-/* Textarea specific styles */
-.form-group textarea {
+.search-input:focus {
+    background-color: var(--surface);
+    border-color: var(--primary-color);
+    box-shadow: var(--elevation-1);
+}
+
+/* Enhanced Textarea Styles */
+.form-group textarea,
+.material-textarea {
     resize: vertical;
-    min-height: 100px;
-    line-height: 1.5;
+    min-height: 120px;
+    line-height: var(--line-height-normal);
     font-family: inherit;
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius-sm);
+    padding: var(--space-md);
+    transition: all var(--transition-standard);
+    background-color: var(--surface);
 }
 
-/* Form field states */
+.form-group textarea:focus,
+.material-textarea:focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 2px rgba(33, 150, 243, 0.1), var(--elevation-1);
+    background-color: var(--surface);
+}
+
+/* Material Design Form Validation States */
 .form-group input:invalid,
 .form-group textarea:invalid,
-.form-group select:invalid {
-    border-color: var(--accent-color);
+.form-group select:invalid,
+.material-input:invalid,
+.material-textarea:invalid,
+.material-select:invalid {
+    border-bottom-color: var(--error-color);
 }
 
 .form-group input:valid:not(:placeholder-shown),
 .form-group textarea:valid:not(:placeholder-shown),
-.form-group select:valid {
-    border-color: var(--success-color);
+.form-group select:valid,
+.material-input:valid:not(:placeholder-shown),
+.material-textarea:valid:not(:placeholder-shown),
+.material-select:valid {
+    border-bottom-color: var(--success-color);
 }
 
-/* Disabled state */
+/* Enhanced Error States */
+.form-group.error .material-input-label {
+    color: var(--error-color);
+}
+
+.form-group.error input,
+.form-group.error textarea,
+.form-group.error select {
+    border-bottom-color: var(--error-color);
+    background-color: rgba(244, 67, 54, 0.04);
+}
+
+.form-group.success .material-input-label {
+    color: var(--success-color);
+}
+
+.form-group.success input,
+.form-group.success textarea,
+.form-group.success select {
+    border-bottom-color: var(--success-color);
+    background-color: rgba(76, 175, 80, 0.04);
+}
+
+/* Material Design Disabled State */
 .form-group input:disabled,
 .form-group textarea:disabled,
-.form-group select:disabled {
-    background-color: #f8f9fa;
-    color: #6c757d;
+.form-group select:disabled,
+.material-input:disabled,
+.material-textarea:disabled,
+.material-select:disabled {
+    background-color: var(--surface-variant);
+    color: var(--text-disabled);
     cursor: not-allowed;
-    opacity: 0.7;
+    opacity: 0.6;
+    border-bottom-style: dotted;
 }
 
-/* Small form elements */
+/* Size Variants */
 .form-group-sm input,
-.form-group-sm select {
-    padding: var(--space-sm) var(--space-md);
-    font-size: 0.875rem;
+.form-group-sm select,
+.material-input.small,
+.material-select.small {
+    padding: var(--space-sm) var(--space-sm);
+    font-size: var(--font-size-body2);
 }
 
-/* Large form elements */
 .form-group-lg input,
-.form-group-lg select {
-    padding: var(--space-lg) var(--space-xl);
-    font-size: 1.125rem;
+.form-group-lg select,
+.material-input.large,
+.material-select.large {
+    padding: var(--space-lg) var(--space-sm);
+    font-size: var(--font-size-h6);
 }
 
-/* Inline form groups */
+/* NEW: Extra Small Variant for Compact Layouts */
+.form-group-xs input,
+.form-group-xs select,
+.material-input.xs,
+.material-select.xs {
+    padding: 6px 8px;
+    font-size: var(--font-size-xs);
+    height: 32px;
+    border-radius: var(--border-radius-sm);
+    border: 1px solid var(--border-color);
+    background-color: var(--bg-white);
+}
+
+.form-group-xs input:focus,
+.form-group-xs select:focus,
+.material-input.xs:focus,
+.material-select.xs:focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 2px rgba(33, 150, 243, 0.1);
+    background-color: var(--bg-white);
+}
+
+/* Enhanced Inline Form Groups */
 .form-inline {
     display: flex;
     gap: var(--space-md);
-    align-items: end;
+    align-items: flex-end;
 }
 
-.form-inline .form-group {
+.form-inline .form-group,
+.form-inline .material-form-group {
     flex: 1;
     margin-bottom: 0;
 }
 
-/* Filter section styles */
+/* Enhanced Filter Section */
 .filter-section {
     display: flex;
     gap: var(--space-md);
-    align-items: end;
+    align-items: flex-end;
+    padding: var(--space-md);
+    background-color: var(--surface-variant);
+    border-radius: var(--border-radius-md);
+    margin-bottom: var(--space-lg);
 }
 
-.filter-section .form-group {
+.filter-section .form-group,
+.filter-section .material-form-group {
     margin-bottom: 0;
+    flex: 1;
 }
 
 .filter-section select,
-.filter-section .input {
-    min-width: 150px;
+.filter-section .input,
+.filter-section .material-select {
+    min-width: 160px;
+    background-color: var(--surface);
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius-sm);
+    padding: var(--space-sm) var(--space-md);
 }
 
-/* Star rating */
-.star-rating {
+.filter-section select:focus,
+.filter-section .input:focus,
+.filter-section .material-select:focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 2px rgba(33, 150, 243, 0.1);
+}
+
+/* Enhanced Material Design Star Rating */
+.star-rating,
+.material-star-rating {
     display: flex;
-    gap: var(--space-sm);
+    gap: var(--space-xs);
     margin-bottom: var(--space-md);
+    padding: var(--space-sm);
+    background-color: var(--surface-variant);
+    border-radius: var(--border-radius-md);
 }
 
-.star {
-    font-size: 2rem;
-    color: #ddd;
+.star,
+.material-star {
+    font-size: 2.5rem;
+    color: var(--neutral-300);
     cursor: pointer;
-    transition: var(--transition);
-    text-shadow: 0 1px 2px rgba(0,0,0,0.1);
+    transition: all var(--transition-standard);
+    text-shadow: var(--elevation-1);
+    user-select: none;
+    padding: var(--space-xs);
+    border-radius: var(--border-radius-sm);
 }
 
 .star:hover,
-.star.active {
-    color: var(--warning-color);
-    transform: scale(1.1);
+.star.active,
+.material-star:hover,
+.material-star.active {
+    color: var(--warning-600);
+    transform: scale(1.15);
+    background-color: rgba(255, 193, 7, 0.08);
 }
 
-.star-rating:hover .star {
-    color: var(--warning-color);
+.star-rating:hover .star,
+.material-star-rating:hover .material-star {
+    color: var(--warning-400);
 }
 
-.star-rating .star:hover ~ .star {
-    color: #ddd;
+.star-rating .star:hover ~ .star,
+.material-star-rating .material-star:hover ~ .material-star {
+    color: var(--neutral-300);
 }
 
-/* Form help text */
-.form-help {
+/* Enhanced Form Help Text */
+.form-help,
+.material-form-help {
     display: block;
     margin-top: var(--space-xs);
-    font-size: 0.75rem;
-    color: var(--text-light);
-    font-style: italic;
+    font-size: var(--font-size-caption);
+    color: var(--text-hint);
+    font-style: normal;
+    line-height: var(--line-height-tight);
+    letter-spacing: 0.25px;
 }
 
-/* URL validation styling */
-.form-group input:valid:not(:placeholder-shown) {
-    border-color: var(--success-color);
+/* URL Validation Styling */
+.form-group input:valid:not(:placeholder-shown),
+.material-input:valid:not(:placeholder-shown) {
+    border-bottom-color: var(--success-color);
+    background-color: rgba(76, 175, 80, 0.04);
 }
 
-.form-group input:invalid:not(:placeholder-shown) {
-    border-color: var(--accent-color);
+.form-group input:invalid:not(:placeholder-shown),
+.material-input:invalid:not(:placeholder-shown) {
+    border-bottom-color: var(--error-color);
+    background-color: rgba(244, 67, 54, 0.04);
 }
 
-/* Responsive design */
+/* FIXED: Advanced Filters Label Visibility */
+.advanced-filters .filter-label,
+.advanced-filters .material-input-label,
+.advanced-filters .form-group label {
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    color: var(--text-secondary) !important;
+    font-size: var(--font-size-body2) !important;
+    font-weight: var(--font-weight-medium) !important;
+    margin-bottom: var(--space-xs) !important;
+}
+
+/* FIXED: Review Form Labels */
+.rating-categories .material-input-label,
+.rating-categories .form-group label,
+.modal .material-input-label,
+.modal .form-group label {
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    color: var(--text-secondary) !important;
+    font-size: var(--font-size-body2) !important;
+}
+
+/* Material Design Form Sections */
+.form-section {
+    background-color: var(--surface);
+    border-radius: var(--border-radius-md);
+    padding: var(--space-xl);
+    margin-bottom: var(--space-xl);
+    box-shadow: var(--elevation-1);
+}
+
+.form-section-header {
+    margin-bottom: var(--space-lg);
+    padding-bottom: var(--space-md);
+    border-bottom: 1px solid var(--border-color);
+}
+
+.form-section-title {
+    font-size: var(--font-size-h6);
+    font-weight: var(--font-weight-medium);
+    color: var(--text-primary);
+    margin: 0;
+}
+
+/* FIXED: Additional dropdown styling for better browser compatibility */
+select::-ms-expand {
+    display: none;
+}
+
+/* FIXED: Ensure dropdown has proper z-index */
+select:focus {
+    z-index: var(--z-dropdown);
+}
+
+/* NEW: Compact Form Variants for Filter Bar */
+.compact-form-group {
+    margin-bottom: 0;
+    flex: 0 0 auto;
+}
+
+.compact-form-group .material-input-label {
+    display: none !important;
+}
+
+.compact-form-group .material-input.xs,
+.compact-form-group .material-select.xs {
+    height: 32px;
+    padding: 6px 8px;
+    font-size: var(--font-size-xs);
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius-sm);
+    background-color: var(--bg-white);
+    min-width: 120px;
+    max-width: 140px;
+}
+
+.compact-form-group .material-input.xs:focus,
+.compact-form-group .material-select.xs:focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 2px rgba(33, 150, 243, 0.1);
+}
+
+/* NEW: Compact Search Input */
+.search-input.compact {
+    height: 32px;
+    padding: 6px 8px 6px 32px !important;
+    font-size: var(--font-size-xs);
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius-sm);
+    background-color: var(--bg-white);
+    background-size: 16px;
+    background-position: left 8px center;
+    min-width: 120px;
+}
+
+.search-input.compact:focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 2px rgba(33, 150, 243, 0.1);
+    background-color: var(--bg-white);
+}
+
+/* Responsive Design */
 @media (max-width: 768px) {
     .form-inline {
         flex-direction: column;
         align-items: stretch;
+        gap: var(--space-md);
     }
     
     .filter-section {
         flex-direction: column;
         align-items: stretch;
+        gap: var(--space-md);
     }
     
     .filter-section select,
-    .filter-section .input {
+    .filter-section .input,
+    .filter-section .material-select {
         min-width: auto;
         width: 100%;
     }
     
     .search-input {
-        background-position: left var(--space-md) center;
+        background-position: left var(--space-sm) center;
         padding-left: var(--space-xl) !important;
     }
     
-    select {
-        background-position: right var(--space-md) center;
+    select,
+    .material-select {
+        background-position: right var(--space-sm) center;
         padding-right: var(--space-xl) !important;
+    }
+    
+    .star-rating,
+    .material-star-rating {
+        justify-content: center;
+        gap: var(--space-xxs);
+    }
+    
+    .star,
+    .material-star {
+        font-size: 2rem;
+        padding: var(--space-xxs);
+    }
+    
+    /* Compact forms on mobile */
+    .compact-form-group .material-input.xs,
+    .compact-form-group .material-select.xs {
+        min-width: auto;
+        max-width: none;
+        width: 100%;
+    }
+    
+    .search-input.compact {
+        min-width: auto;
+        width: 100%;
     }
 }
 
 @media (max-width: 480px) {
     .form-group input,
     .form-group textarea,
-    .form-group select {
-        padding: var(--space-sm) var(--space-md);
+    .form-group select,
+    .material-input,
+    .material-textarea,
+    .material-select {
+        padding: var(--space-sm) var(--space-sm);
+        font-size: var(--font-size-body2);
     }
     
     .input {
-        padding: var(--space-sm) var(--space-md);
+        padding: var(--space-sm) var(--space-sm);
+        font-size: var(--font-size-body2);
+    }
+    
+    .star,
+    .material-star {
+        font-size: 1.75rem;
+    }
+    
+    .form-section {
+        padding: var(--space-lg);
+        margin-bottom: var(--space-lg);
+    }
+    
+    /* Extra small forms on very small screens */
+    .compact-form-group .material-input.xs,
+    .compact-form-group .material-select.xs {
+        font-size: 11px;
+        padding: 4px 6px;
+        height: 28px;
+    }
+    
+    .search-input.compact {
+        font-size: 11px;
+        padding: 4px 6px 4px 28px !important;
+        height: 28px;
+        background-size: 14px;
+        background-position: left 6px center;
+    }
+}
+
+/* Dark Theme Support */
+@media (prefers-color-scheme: dark) {
+    .form-group input:hover,
+    .form-group select:hover,
+    .material-input:hover,
+    .material-select:hover,
+    .input:hover {
+        background-color: rgba(255, 255, 255, 0.04);
+    }
+    
+    .form-group input:disabled,
+    .form-group textarea:disabled,
+    .form-group select:disabled,
+    .material-input:disabled,
+    .material-textarea:disabled,
+    .material-select:disabled {
+        background-color: var(--surface-800);
+    }
+    
+    .search-input {
+        background-color: var(--surface-800);
+    }
+    
+    .search-input:focus {
+        background-color: var(--surface-700);
+    }
+    
+    .star-rating,
+    .material-star-rating {
+        background-color: var(--surface-800);
+    }
+    
+    /* FIXED: Dark theme dropdown options */
+    select option,
+    .material-select option {
+        background-color: var(--surface-700) !important;
+        color: var(--text-primary) !important;
+    }
+    
+    select option:hover,
+    select option:focus,
+    .material-select option:hover,
+    .material-select option:focus {
+        background-color: var(--primary-700) !important;
+        color: var(--text-on-primary) !important;
+    }
+    
+    /* Compact forms dark theme */
+    .compact-form-group .material-input.xs,
+    .compact-form-group .material-select.xs,
+    .search-input.compact {
+        background-color: var(--surface-700);
+        border-color: var(--surface-600);
+        color: var(--text-on-primary);
+    }
+    
+    .compact-form-group .material-input.xs:focus,
+    .compact-form-group .material-select.xs:focus,
+    .search-input.compact:focus {
+        background-color: var(--surface-700);
+        border-color: var(--primary-400);
+    }
+}
+
+/* High Contrast Mode Support */
+@media (prefers-contrast: high) {
+    .form-group input:focus,
+    .form-group textarea:focus,
+    .form-group select:focus,
+    .material-input:focus,
+    .material-textarea:focus,
+    .material-select:focus,
+    .input:focus {
+        border-bottom-width: 3px;
+        outline: 2px solid var(--primary-color);
+    }
+    
+    .form-group label,
+    .material-input-label {
+        font-weight: var(--font-weight-bold) !important;
+    }
+    
+    .star,
+    .material-star {
+        text-shadow: 0 0 2px currentColor;
+    }
+    
+    /* FIXED: High contrast dropdown */
+    select option,
+    .material-select option {
+        border: 1px solid var(--border-color);
+    }
+    
+    /* Compact forms high contrast */
+    .compact-form-group .material-input.xs,
+    .compact-form-group .material-select.xs,
+    .search-input.compact {
+        border-width: 2px;
+    }
+}
+
+/* Reduced Motion Support */
+@media (prefers-reduced-motion: reduce) {
+    .form-group input,
+    .form-group textarea,
+    .form-group select,
+    .material-input,
+    .material-textarea,
+    .material-select,
+    .input,
+    .star,
+    .material-star {
+        transition: none;
+    }
+    
+    .star:hover,
+    .star.active,
+    .material-star:hover,
+    .material-star.active {
+        transform: none;
+    }
+    
+    .form-group label,
+    .material-input-label {
+        transition: none;
+    }
+    
+    .form-group:focus-within label,
+    .material-form-group:focus-within .material-input-label {
+        transform: none;
     }
 }

@@ -1,37 +1,56 @@
+/* Material Design Tables and Admin Components */
 .table-container {
-    background: var(--bg-white);
-    border-radius: var(--border-radius);
-    box-shadow: var(--shadow);
+    background: var(--bg-card);
+    border-radius: var(--border-radius-lg);
+    box-shadow: var(--elevation-2);
     overflow: hidden;
+    border: 1px solid var(--border-light);
 }
 
 .table {
     width: 100%;
     border-collapse: collapse;
+    font-family: var(--font-family);
 }
 
 .table th {
     background-color: var(--primary-color);
-    color: white;
-    padding: var(--space-md);
+    color: var(--text-on-primary);
+    padding: var(--space-lg);
     text-align: left;
-    font-weight: 600;
+    font-weight: var(--font-weight-medium);
+    font-size: var(--font-size-sm);
+    letter-spacing: 0.25px;
+    border-bottom: 1px solid var(--primary-700);
 }
 
 .table td {
-    padding: var(--space-md);
-    border-bottom: 1px solid var(--border-color);
+    padding: var(--space-lg);
+    border-bottom: 1px solid var(--border-light);
+    font-size: var(--font-size-base);
+    color: var(--text-primary);
+    line-height: var(--line-height-normal);
+}
+
+.table tr {
+    transition: var(--material-transition);
 }
 
 .table tr:hover {
-    background-color: #f8f9fa;
+    background-color: var(--surface-50);
+}
+
+.table tr:last-child td {
+    border-bottom: none;
 }
 
 .table-actions {
     display: flex;
     gap: var(--space-sm);
+    align-items: center;
 }
 
+/* Material Design Admin Stats */
 .admin-stats {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
@@ -40,51 +59,124 @@
 }
 
 .stat-card {
-    background: var(--bg-white);
-    padding: var(--space-lg);
-    border-radius: var(--border-radius);
-    box-shadow: var(--shadow);
+    background: var(--bg-card);
+    padding: var(--space-xl);
+    border-radius: var(--border-radius-lg);
+    box-shadow: var(--elevation-1);
     text-align: center;
+    border-left: 4px solid var(--primary-color);
+    transition: var(--material-transition);
+    position: relative;
+    overflow: hidden;
+}
+
+.stat-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, var(--primary-color), var(--primary-400));
+}
+
+.stat-card:hover {
+    box-shadow: var(--elevation-3);
+    transform: translateY(-2px);
+}
+
+.stat-card.success {
+    border-left-color: var(--success-color);
+}
+
+.stat-card.success::before {
+    background: linear-gradient(90deg, var(--success-color), var(--success-400));
+}
+
+.stat-card.warning {
+    border-left-color: var(--warning-color);
+}
+
+.stat-card.warning::before {
+    background: linear-gradient(90deg, var(--warning-color), var(--warning-400));
+}
+
+.stat-card.error {
+    border-left-color: var(--error-color);
+}
+
+.stat-card.error::before {
+    background: linear-gradient(90deg, var(--error-color), var(--error-400));
 }
 
 .stat-number {
-    font-size: 2rem;
-    font-weight: bold;
+    font-size: var(--font-size-xxxl);
+    font-weight: var(--font-weight-bold);
     color: var(--primary-color);
     display: block;
+    line-height: 1;
+    margin-bottom: var(--space-sm);
+    font-feature-settings: "tnum";
+    font-variant-numeric: tabular-nums;
+}
+
+.stat-card.success .stat-number {
+    color: var(--success-color);
+}
+
+.stat-card.warning .stat-number {
+    color: var(--warning-color);
+}
+
+.stat-card.error .stat-number {
+    color: var(--error-color);
 }
 
 .stat-label {
-    color: var(--text-light);
-    font-size: 0.875rem;
+    color: var(--text-secondary);
+    font-size: var(--font-size-sm);
+    font-weight: var(--font-weight-medium);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
 }
 
-/* Categories Styles */
+/* Material Design Categories Management */
 .categories-management {
     margin-top: var(--space-xl);
     padding-top: var(--space-xl);
-    border-top: 2px solid var(--border-color);
+    border-top: 2px solid var(--border-light);
 }
 
 .category-item {
-    background: var(--bg-white);
-    padding: var(--space-lg);
+    background: var(--bg-card);
+    padding: var(--space-xl);
     margin-bottom: var(--space-md);
-    border-radius: var(--border-radius);
-    box-shadow: var(--shadow-sm);
+    border-radius: var(--border-radius-lg);
+    box-shadow: var(--elevation-1);
     display: flex;
     justify-content: space-between;
     align-items: center;
-    transition: var(--transition);
+    transition: var(--material-transition);
+    border: 1px solid var(--border-light);
 }
 
 .category-item:hover {
-    box-shadow: var(--shadow);
+    box-shadow: var(--elevation-3);
+    transform: translateY(-1px);
 }
 
 .category-info h4 {
     margin: 0 0 var(--space-sm) 0;
-    color: var(--primary-color);
+    color: var(--text-primary);
+    font-size: var(--font-size-lg);
+    font-weight: var(--font-weight-medium);
+}
+
+.category-description {
+    color: var(--text-secondary);
+    font-size: var(--font-size-sm);
+    margin: 0;
+    line-height: var(--line-height-normal);
 }
 
 .category-stats {
@@ -93,11 +185,13 @@
 }
 
 .category-stats .stat {
-    font-size: 0.875rem;
-    color: var(--text-light);
-    background: #f8f9fa;
-    padding: var(--space-xs) var(--space-sm);
-    border-radius: var(--border-radius-sm);
+    font-size: var(--font-size-sm);
+    color: var(--text-secondary);
+    background: var(--surface-50);
+    padding: var(--space-xs) var(--space-md);
+    border-radius: var(--border-radius);
+    border: 1px solid var(--border-light);
+    font-weight: var(--font-weight-medium);
 }
 
 .category-actions {
@@ -109,111 +203,145 @@
     margin-top: var(--space-lg);
 }
 
-/* Section headers */
+/* Material Design Section Headers */
 .section-header {
     margin-bottom: var(--space-lg);
     padding-bottom: var(--space-md);
-    border-bottom: 2px solid var(--border-color);
+    border-bottom: 2px solid var(--border-light);
+}
+
+.section-header h2 {
+    color: var(--text-primary);
+    font-size: var(--font-size-xxl);
+    font-weight: var(--font-weight-medium);
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: var(--space-md);
 }
 
 .contractors-management {
     margin-bottom: var(--space-xl);
 }
 
-/* Reviews Management Styles */
+/* Material Design Reviews Management */
 .reviews-list {
     margin-top: var(--space-lg);
 }
 
 .review-item {
-    background: var(--bg-white);
-    padding: var(--space-lg);
+    background: var(--bg-card);
+    padding: var(--space-xl);
     margin-bottom: var(--space-md);
-    border-radius: var(--border-radius);
-    box-shadow: var(--shadow-sm);
+    border-radius: var(--border-radius-lg);
+    box-shadow: var(--elevation-1);
     border-left: 4px solid var(--border-color);
-    transition: var(--transition);
+    transition: var(--material-transition);
+    border: 1px solid var(--border-light);
 }
 
 .review-item:hover {
-    box-shadow: var(--shadow);
+    box-shadow: var(--elevation-3);
+    transform: translateY(-1px);
 }
 
 .review-item.status-approved {
     border-left-color: var(--success-color);
+    background: linear-gradient(90deg, var(--success-50) 0%, var(--bg-card) 100%);
 }
 
 .review-item.status-pending {
     border-left-color: var(--warning-color);
+    background: linear-gradient(90deg, var(--warning-50) 0%, var(--bg-card) 100%);
 }
 
 .review-item.status-rejected {
-    border-left-color: var(--accent-color);
+    border-left-color: var(--error-color);
+    background: linear-gradient(90deg, var(--error-50) 0%, var(--bg-card) 100%);
 }
 
 .review-header {
     display: flex;
     justify-content: space-between;
     align-items: flex-start;
-    margin-bottom: var(--space-sm);
+    margin-bottom: var(--space-lg);
+    gap: var(--space-md);
 }
 
 .reviewer-info {
     display: flex;
     flex-direction: column;
-    gap: var(--space-xs);
+    gap: var(--space-sm);
+    flex: 1;
 }
 
 .reviewer-name {
-    font-weight: bold;
-    color: var(--primary-color);
+    font-weight: var(--font-weight-medium);
+    color: var(--text-primary);
+    font-size: var(--font-size-lg);
+    margin: 0;
+}
+
+.review-rating {
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+    color: var(--warning-color);
+    font-weight: var(--font-weight-bold);
 }
 
 .review-meta {
     display: flex;
     flex-direction: column;
     align-items: flex-end;
-    gap: var(--space-xs);
+    gap: var(--space-sm);
+    text-align: right;
+    flex-shrink: 0;
 }
 
 .review-date {
-    color: var(--text-light);
-    font-size: 0.875rem;
+    color: var(--text-secondary);
+    font-size: var(--font-size-sm);
 }
 
 .review-status {
-    padding: var(--space-xs) var(--space-sm);
-    border-radius: var(--border-radius-sm);
-    font-size: 0.75rem;
-    font-weight: bold;
+    padding: var(--space-xs) var(--space-md);
+    border-radius: var(--border-radius);
+    font-size: var(--font-size-xs);
+    font-weight: var(--font-weight-bold);
     text-transform: uppercase;
+    letter-spacing: 0.5px;
 }
 
 .review-status.status-approved {
     background: var(--success-color);
-    color: white;
+    color: var(--text-on-primary);
 }
 
 .review-status.status-pending {
     background: var(--warning-color);
-    color: white;
+    color: var(--text-primary);
 }
 
 .review-status.status-rejected {
-    background: var(--accent-color);
-    color: white;
+    background: var(--error-color);
+    color: var(--text-on-primary);
 }
 
 .review-contractor {
-    margin-bottom: var(--space-sm);
-    color: var(--text-light);
-    font-size: 0.875rem;
+    margin-bottom: var(--space-md);
+    color: var(--text-secondary);
+    font-size: var(--font-size-sm);
+    display: flex;
+    align-items: center;
+    gap: var(--space-xs);
 }
 
 .review-comment {
-    color: var(--text-color);
-    line-height: 1.5;
-    margin-bottom: var(--space-md);
+    color: var(--text-primary);
+    line-height: var(--line-height-relaxed);
+    margin-bottom: var(--space-lg);
+    font-size: var(--font-size-base);
 }
 
 .review-actions {
@@ -222,18 +350,20 @@
     flex-wrap: wrap;
 }
 
-/* Review Details Styles */
+/* Material Design Review Details */
 .review-details {
     display: flex;
     flex-direction: column;
-    gap: var(--space-lg);
+    gap: var(--space-xl);
 }
 
 .detail-section h3 {
-    color: var(--primary-color);
-    margin-bottom: var(--space-md);
-    padding-bottom: var(--space-xs);
-    border-bottom: 1px solid var(--border-color);
+    color: var(--text-primary);
+    margin-bottom: var(--space-lg);
+    padding-bottom: var(--space-sm);
+    border-bottom: 1px solid var(--border-light);
+    font-size: var(--font-size-lg);
+    font-weight: var(--font-weight-medium);
 }
 
 .detail-grid {
@@ -243,16 +373,33 @@
 }
 
 .detail-item {
-    padding: var(--space-sm);
-    background: #f8f9fa;
-    border-radius: var(--border-radius-sm);
+    padding: var(--space-lg);
+    background: var(--surface-50);
+    border-radius: var(--border-radius);
+    border: 1px solid var(--border-light);
+}
+
+.detail-label {
+    font-size: var(--font-size-sm);
+    color: var(--text-secondary);
+    font-weight: var(--font-weight-medium);
+    margin-bottom: var(--space-xs);
+    display: block;
+}
+
+.detail-value {
+    font-size: var(--font-size-base);
+    color: var(--text-primary);
+    font-weight: var(--font-weight-medium);
 }
 
 .review-comment-detail {
-    padding: var(--space-md);
-    background: #f8f9fa;
+    padding: var(--space-lg);
+    background: var(--surface-50);
     border-radius: var(--border-radius);
-    line-height: 1.6;
+    line-height: var(--line-height-relaxed);
+    border: 1px solid var(--border-light);
+    font-size: var(--font-size-base);
 }
 
 .detail-actions {
@@ -260,49 +407,69 @@
     gap: var(--space-md);
     justify-content: center;
     flex-wrap: wrap;
-    padding-top: var(--space-lg);
-    border-top: 1px solid var(--border-color);
+    padding-top: var(--space-xl);
+    border-top: 1px solid var(--border-light);
 }
 
-/* Button variants */
+/* Material Design Button Variants */
 .btn-success {
     background: var(--success-color);
-    color: white;
+    color: var(--text-on-primary);
+    box-shadow: var(--elevation-1);
 }
 
 .btn-success:hover {
-    background: #219a52;
+    background: var(--success-600);
+    box-shadow: var(--elevation-2);
 }
 
 .btn-warning {
     background: var(--warning-color);
-    color: white;
+    color: var(--text-primary);
+    box-shadow: var(--elevation-1);
 }
 
 .btn-warning:hover {
-    background: #e67e22;
+    background: var(--warning-600);
+    box-shadow: var(--elevation-2);
 }
 
-/* No reviews message */
+.btn-error {
+    background: var(--error-color);
+    color: var(--text-on-primary);
+    box-shadow: var(--elevation-1);
+}
+
+.btn-error:hover {
+    background: var(--error-600);
+    box-shadow: var(--elevation-2);
+}
+
+/* No Reviews Message */
 .no-reviews {
     text-align: center;
-    padding: var(--space-xl);
-    background: var(--bg-white);
-    border-radius: var(--border-radius);
-    box-shadow: var(--shadow-sm);
-    color: var(--text-light);
+    padding: var(--space-xxl);
+    background: var(--bg-card);
+    border-radius: var(--border-radius-lg);
+    box-shadow: var(--elevation-1);
+    color: var(--text-secondary);
+    border: 2px dashed var(--border-color);
 }
 
 .no-reviews p {
     margin: 0;
-    font-size: 1.1rem;
+    font-size: var(--font-size-lg);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-sm);
 }
 
-/* Professional filter section */
+/* Material Design Filter Section */
 .filter-section {
     display: flex;
     gap: var(--space-md);
-    align-items: end;
+    align-items: flex-end;
 }
 
 .filter-section .input,
@@ -310,12 +477,17 @@
     margin: 0;
 }
 
-/* Search and filter container */
+/* Search and Filter Container */
 .search-filter-container {
     display: flex;
     gap: var(--space-md);
-    align-items: end;
+    align-items: flex-end;
     flex-wrap: wrap;
+    margin-bottom: var(--space-xl);
+    padding: var(--space-lg);
+    background: var(--surface-50);
+    border-radius: var(--border-radius-lg);
+    border: 1px solid var(--border-light);
 }
 
 .search-filter-container .search-box {
@@ -326,18 +498,22 @@
 .search-filter-container .filter-group {
     display: flex;
     gap: var(--space-md);
-    align-items: end;
+    align-items: flex-end;
 }
 
-/* Responsive design for reviews */
+/* Responsive Design for Tables and Admin */
 @media (max-width: 768px) {
     .review-header {
         flex-direction: column;
-        gap: var(--space-sm);
+        gap: var(--space-md);
     }
 
     .review-meta {
         align-items: flex-start;
+        text-align: left;
+        flex-direction: row;
+        justify-content: space-between;
+        width: 100%;
     }
 
     .review-actions {
@@ -346,6 +522,7 @@
 
     .review-actions .btn {
         width: 100%;
+        justify-content: center;
     }
 
     .detail-actions {
@@ -354,25 +531,29 @@
 
     .detail-actions .btn {
         width: 100%;
+        justify-content: center;
     }
 
     .category-item {
         flex-direction: column;
         align-items: flex-start;
-        gap: var(--space-md);
+        gap: var(--space-lg);
     }
 
     .category-actions {
-        align-self: flex-end;
+        align-self: stretch;
+        justify-content: center;
     }
 
     .category-stats {
         flex-direction: column;
         gap: var(--space-sm);
+        width: 100%;
     }
 
     .table-actions {
         flex-direction: column;
+        gap: var(--space-xs);
     }
 
     .search-filter-container {
@@ -386,20 +567,148 @@
     
     .search-filter-container .filter-group {
         flex-direction: column;
+        gap: var(--space-md);
+    }
+
+    .table {
+        display: block;
+        overflow-x: auto;
+    }
+
+    .table th,
+    .table td {
+        padding: var(--space-md);
+    }
+
+    .admin-stats {
+        grid-template-columns: repeat(2, 1fr);
     }
 }
 
 @media (max-width: 480px) {
     .category-actions {
         flex-direction: column;
-        width: 100%;
     }
 
     .category-actions .btn {
         width: 100%;
+        justify-content: center;
     }
     
     .filter-section {
         flex-direction: column;
+        align-items: stretch;
+    }
+
+    .admin-stats {
+        grid-template-columns: 1fr;
+    }
+
+    .stat-card {
+        padding: var(--space-lg);
+    }
+
+    .stat-number {
+        font-size: var(--font-size-xxl);
+    }
+
+    .detail-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* Dark Theme Support */
+@media (prefers-color-scheme: dark) {
+    .table-container,
+    .stat-card,
+    .category-item,
+    .review-item,
+    .no-reviews {
+        background: var(--surface-800);
+        border-color: var(--surface-600);
+    }
+
+    .search-filter-container {
+        background: var(--surface-700);
+        border-color: var(--surface-600);
+    }
+
+    .detail-item,
+    .review-comment-detail {
+        background: var(--surface-700);
+        border-color: var(--surface-600);
+    }
+
+    .category-stats .stat {
+        background: var(--surface-700);
+        border-color: var(--surface-600);
+    }
+
+    .table tr:hover {
+        background-color: var(--surface-700);
+    }
+}
+
+/* High Contrast Mode Support */
+@media (prefers-contrast: high) {
+    .table-container,
+    .stat-card,
+    .category-item,
+    .review-item,
+    .search-filter-container,
+    .detail-item,
+    .review-comment-detail {
+        border-width: 2px;
+    }
+
+    .section-header {
+        border-bottom-width: 3px;
+    }
+
+    .table th {
+        border-bottom-width: 3px;
+    }
+
+    .stat-card::before {
+        height: 6px;
+    }
+}
+
+/* Reduced Motion Support */
+@media (prefers-reduced-motion: reduce) {
+    .stat-card,
+    .category-item,
+    .review-item,
+    .table tr {
+        transition: none;
+    }
+
+    .stat-card:hover,
+    .category-item:hover,
+    .review-item:hover {
+        transform: none;
+    }
+}
+
+/* Print Styles */
+@media print {
+    .table-container,
+    .stat-card,
+    .category-item,
+    .review-item {
+        background: white;
+        border: 1px solid #000;
+        box-shadow: none;
+    }
+
+    .table-actions,
+    .category-actions,
+    .review-actions,
+    .detail-actions {
+        display: none;
+    }
+
+    .stat-card::before {
+        display: none;
     }
 }

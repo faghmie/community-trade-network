@@ -1,4 +1,5 @@
-// js/app/uiManager.js
+// js/app/uiManager.js - FIXED: Removed conflicting event listeners and fixed rating backgrounds
+// REFACTORED: Card rendering logic moved to cardManager
 class UIManager {
     constructor() {
         this.elements = {};
@@ -8,7 +9,8 @@ class UIManager {
         this.cacheElements();
         this.setupCategories();
         this.setupContractorModal();
-        this.setupFavorites(); // ADDED: Initialize favorites
+        this.setupFavorites();
+        // REMOVED: setupViewToggle() - handled by mapManager now
     }
 
     cacheElements() {
@@ -22,16 +24,21 @@ class UIManager {
             totalContractorsCount: document.getElementById('totalContractorsCount'),
             totalReviewsCount: document.getElementById('totalReviewsCount'),
             averageRatingCount: document.getElementById('averageRatingCount'),
-            // ADDED: Favorites elements
+            // Favorites elements
             favoritesSection: document.getElementById('favoritesSection'),
             favoritesGrid: document.getElementById('favoritesGrid'),
-            favoritesCount: document.getElementById('favoritesCount'),
+            favoritesCount: document.querySelector('.favorites-count'),
             favoritesNotice: document.getElementById('favoritesNotice'),
             favoritesFilter: document.getElementById('favoritesFilter'),
-            // ADDED: Modal elements
+            // Modal elements
             contractorModal: document.getElementById('contractorModal'),
-            contractorDetailsContent: document.getElementById('contractorDetailsContent'),
-            closeContractorModal: document.querySelector('.close-contractor-modal')
+            contractorDetailsContent: document.getElementById('contractorDetails'),
+            closeContractorModal: document.querySelector('.close-contractor-modal'),
+            // View toggle elements (kept for reference but not used for logic)
+            viewToggle: document.getElementById('view-toggle'),
+            viewToggleBtns: document.querySelectorAll('.view-toggle-btn'),
+            mapContainer: document.getElementById('map-container'),
+            contractorGrid: document.getElementById('contractor-grid')
         };
     }
 
@@ -69,14 +76,16 @@ class UIManager {
         }
     }
 
-    // ADDED: Setup favorites functionality
+    // REMOVED: setupViewToggle() - handled by mapManager
+
     setupFavorites() {
         // Listen for favorites updates
         document.addEventListener('favoritesUpdated', () => {
             this.updateFavoritesUI();
         });
 
-        // Setup favorites filter if it exists
+        // FIXED: Removed global event delegation that was causing conflicts
+        // Only setup favorites filter if it exists
         const { favoritesFilter } = this.elements;
         if (favoritesFilter) {
             favoritesFilter.addEventListener('change', (e) => {
@@ -88,7 +97,6 @@ class UIManager {
         this.updateFavoritesUI();
     }
 
-    // ADDED: Handle favorites filter changes
     handleFavoritesFilterChange(filterValue) {
         let contractors = dataModule.getContractors();
         
@@ -176,7 +184,7 @@ class UIManager {
         if (totalReviewsCount) totalReviewsCount.textContent = stats.totalReviews;
         if (averageRatingCount) averageRatingCount.textContent = stats.averageRating;
 
-        // ADDED: Update favorites count in stats if available
+        // Update favorites count in stats if available
         this.updateFavoritesCount();
     }
 
@@ -201,71 +209,21 @@ class UIManager {
         };
     }
 
+    // REFACTORED: Use cardManager for rendering contractor cards
     renderContractors(contractorsToRender = null) {
         const { contractorsGrid } = this.elements;
         if (!contractorsGrid) return;
 
         const contractors = contractorsToRender || dataModule.getContractors();
         
-        if (contractors.length === 0) {
-            contractorsGrid.innerHTML = '<div class="no-results">No contractors found matching your criteria.</div>';
-            return;
-        }
-
-        contractorsGrid.innerHTML = contractors.map(contractor => 
-            this.createContractorCard(contractor)
-        ).join('');
-
-        // ADDED: Update favorite buttons after rendering
-        this.updateFavoriteButtons();
-    }
-
-    // UPDATED: Contractor card with favorite button
-    createContractorCard(contractor) {
-        const approvedReviews = contractor.reviews.filter(review => review.status === 'approved');
-        const displayRating = approvedReviews.length > 0 ? 
-            dataModule.calculateAverageRating(approvedReviews) : 0;
-        
-        const ratingValue = typeof displayRating === 'number' ? displayRating : parseFloat(displayRating) || 0;
-        const displayRatingFormatted = !isNaN(ratingValue) ? ratingValue.toFixed(1) : '0.0';
-        const isFavorite = dataModule.isFavorite(contractor.id);
-
-        return `
-            <div class="card contractor-card" onclick="app.showContractorDetails('${contractor.id}')">
-                <div class="card-header">
-                    <button class="favorite-btn ${isFavorite ? 'favorited' : ''}" 
-                            data-contractor-id="${contractor.id}"
-                            onclick="toggleFavorite('${contractor.id}'); event.stopPropagation();"
-                            title="${isFavorite ? 'Remove from favorites' : 'Add to favorites'}">
-                        <i class="${isFavorite ? 'fas' : 'far'} fa-heart"></i>
-                    </button>
-                </div>
-                <div class="card-body">
-                    <h3>${contractor.name}</h3>
-                    <p class="category">${contractor.category}</p>
-                    <p class="location">
-                        <i class="fas fa-map-marker-alt"></i> ${contractor.location || 'Service area not specified'}
-                    </p>
-                    <div class="rating">
-                        ${'⭐'.repeat(Math.floor(ratingValue))}${ratingValue % 1 >= 0.5 ? '⭐' : ''} 
-                        ${displayRatingFormatted}
-                    </div>
-                    <p class="review-count">${approvedReviews.length} reviews</p>
-                </div>
-                <div class="card-footer">
-                    <button class="btn btn-primary" onclick="app.showReviewForm('${contractor.id}'); event.stopPropagation();">
-                        Leave Review
-                    </button>
-                </div>
-            </div>
-        `;
+        // Use cardManager to render the cards
+        cardManager.renderContractorCards(contractors, contractorsGrid);
     }
 
     updateStats(filteredContractors) {
         this.renderStats(filteredContractors);
     }
 
-    // ADDED: Favorites UI management
     updateFavoritesUI() {
         this.updateFavoritesCount();
         this.updateFavoriteButtons();
@@ -277,26 +235,21 @@ class UIManager {
         if (favoritesCount) {
             const count = dataModule.getFavoritesCount();
             favoritesCount.textContent = count;
-            favoritesCount.style.display = count > 0 ? 'inline-block' : 'none';
+            
+            // Update favorites badge in stats
+            const favoritesStat = document.querySelector('.favorites-stat .stat-number');
+            if (favoritesStat) {
+                favoritesStat.textContent = count;
+            }
         }
     }
 
+    // REFACTORED: Use cardManager for updating favorite buttons
     updateFavoriteButtons() {
-        // Update all favorite buttons in contractor cards
-        const favoriteButtons = document.querySelectorAll('.favorite-btn');
-        favoriteButtons.forEach(button => {
-            const contractorId = button.getAttribute('data-contractor-id');
-            if (contractorId) {
-                const isFavorite = dataModule.isFavorite(contractorId);
-                button.classList.toggle('favorited', isFavorite);
-                button.innerHTML = isFavorite ? 
-                    '<i class="fas fa-heart"></i>' : 
-                    '<i class="far fa-heart"></i>';
-                button.title = isFavorite ? 'Remove from favorites' : 'Add to favorites';
-            }
-        });
+        cardManager.updateFavoriteButtons();
     }
 
+    // REFACTORED: Use cardManager for rendering favorites section
     renderFavoritesSection() {
         const { favoritesGrid, favoritesSection, favoritesNotice } = this.elements;
         if (!favoritesGrid || !favoritesSection) return;
@@ -304,18 +257,13 @@ class UIManager {
         const favoriteContractors = dataModule.getFavoriteContractors();
         
         if (favoriteContractors.length === 0) {
-            favoritesGrid.innerHTML = `
-                <div class="no-favorites">
-                    <p>You haven't added any contractors to favorites yet.</p>
-                    <p>Click the heart icon 💖 on contractor cards to add them to your favorites!</p>
-                </div>
-            `;
-            favoritesSection.style.display = 'none';
+            // Use cardManager for empty favorites state
+            favoritesGrid.innerHTML = cardManager.createFavoritesEmptyState();
+            favoritesSection.classList.add('hidden');
         } else {
-            favoritesGrid.innerHTML = favoriteContractors.map(contractor => 
-                this.createContractorCard(contractor)
-            ).join('');
-            favoritesSection.style.display = 'block';
+            // Use cardManager to render favorite contractor cards
+            cardManager.renderContractorCards(favoriteContractors, favoritesGrid);
+            favoritesSection.classList.remove('hidden');
         }
 
         // Update favorites notice
@@ -328,20 +276,26 @@ class UIManager {
         const favoritesCount = dataModule.getFavoritesCount();
         return `
             <div class="favorites-notice">
-                <p>💡 <strong>Your ${favoritesCount} favorite contractor${favoritesCount !== 1 ? 's are' : ' is'} stored locally in this browser.</strong></p>
-                <p>They won't be available on other devices or if you clear browser data.</p>
+                <p>
+                    <i class="material-icons">info</i>
+                    <strong>Your ${favoritesCount} favorite contractor${favoritesCount !== 1 ? 's are' : ' is'} stored locally in this browser.</strong>
+                    They won't be available on other devices or if you clear browser data.
+                </p>
                 <div class="favorites-actions">
-                    <button class="btn btn-small" onclick="dataModule.downloadFavorites()">
-                        <i class="fas fa-download"></i> Export Favorites
+                    <button class="material-button outlined" onclick="dataModule.downloadFavorites()">
+                        <i class="material-icons">download</i>
+                        <span>Export Favorites</span>
                     </button>
-                    <button class="btn btn-small btn-secondary" onclick="document.getElementById('importFavorites').click()">
-                        <i class="fas fa-upload"></i> Import Favorites
+                    <button class="material-button outlined" onclick="document.getElementById('importFavorites').click()">
+                        <i class="material-icons">upload</i>
+                        <span>Import Favorites</span>
                     </button>
-                    <input type="file" id="importFavorites" accept=".json" style="display: none;" 
+                    <input type="file" id="importFavorites" accept=".json" class="hidden" 
                            onchange="handleFavoritesImport(this.files[0])">
                     ${favoritesCount > 0 ? `
-                    <button class="btn btn-small btn-danger" onclick="dataModule.clearFavorites()">
-                        <i class="fas fa-trash"></i> Clear All
+                    <button class="material-button outlined error" onclick="dataModule.clearFavorites()">
+                        <i class="material-icons">delete</i>
+                        <span>Clear All</span>
                     </button>
                     ` : ''}
                 </div>
@@ -349,11 +303,10 @@ class UIManager {
         `;
     }
 
-    // ADDED: Modal methods
     showContractorModal() {
         const { contractorModal } = this.elements;
         if (contractorModal) {
-            contractorModal.style.display = 'block';
+            contractorModal.style.display = 'flex';
         }
     }
 
@@ -364,34 +317,32 @@ class UIManager {
         }
     }
 
-    // ADDED: Update contractor details in modal
     updateContractorDetails(contractorId) {
         const { contractorDetailsContent } = this.elements;
         if (!contractorDetailsContent) return;
 
         const contractor = dataModule.getContractor(contractorId);
         if (contractor) {
-            // This would be handled by modalManager, but we can add a fallback
             console.log('Updating contractor details for:', contractor.name);
         }
     }
 }
 
-// ADDED: Global functions for favorites
+// UPDATED: Global functions for favorites with Material Design
 function toggleFavorite(contractorId) {
     const isNowFavorite = dataModule.toggleFavorite(contractorId);
     
     // Show feedback
-    const contractor = contractorManager.getById(contractorId);
+    const contractor = dataModule.getContractor(contractorId);
     if (contractor && typeof utils !== 'undefined' && utils.showNotification) {
         const message = isNowFavorite ? 
             `Added ${contractor.name} to favorites! 💖` : 
             `Removed ${contractor.name} from favorites.`;
-        utils.showNotification(message, 'success');
+        utils.showNotification(message, isNowFavorite ? 'success' : 'info');
     }
 }
 
-// ADDED: Handle favorites import
+// UPDATED: Handle favorites import
 async function handleFavoritesImport(file) {
     if (!file) return;
     
@@ -412,10 +363,11 @@ async function handleFavoritesImport(file) {
     }
 }
 
-// ADDED: Show favorites section
+// UPDATED: Show favorites section
 function showFavoritesSection() {
     const favoritesSection = document.getElementById('favoritesSection');
     if (favoritesSection) {
+        favoritesSection.classList.remove('hidden');
         favoritesSection.scrollIntoView({ behavior: 'smooth' });
     }
 }

@@ -1,4 +1,15 @@
 .
+|-- change_logs
+|   |-- 2025_11_13.md
+|   |-- 2025_11_14_01.md
+|   |-- 2025_11_14_02.md
+|   |-- 2025_11_14_03.md
+|   |-- 2025_11_15_01.md
+|   |-- 2025_11_15_02.md
+|   |-- _better_coding_prompt.md
+|   |-- _END_of_day_status_prompt.md
+|   |-- repo_structure.txt
+|   `-- _START_of_day_prompt.md
 |-- css
 |   |-- base
 |   |   |-- reset.css
@@ -10,10 +21,11 @@
 |   |   |-- contractor-details.css
 |   |   |-- dashboard.css
 |   |   |-- forms.css
-|   |   |-- layout.css
 |   |   |-- map.css
+|   |   |-- material.css
 |   |   |-- modals.css
 |   |   |-- ratings.css
+|   |   |-- stats-cards.css
 |   |   |-- tables.css
 |   |   |-- tabs.css
 |   |   `-- utilities.css
@@ -33,6 +45,7 @@
 |   |   |-- admin-categories.js
 |   |   |-- admin.js
 |   |   |-- admin-reviews.js
+|   |   |-- cardManager.js
 |   |   |-- categories.js
 |   |   |-- categoryManager.js
 |   |   |-- contractorManager.js
@@ -47,17 +60,10 @@
 |   |   `-- utils.js
 |   |-- admin.js
 |   `-- script.js
-|-- project_status_reports
-|   |-- 2025_11_13.md
-|   |-- 2025_11_14_01.md
-|   |-- _prompt_for_end_of_day_status.md
-|   |-- _prompt_for_START_of_day_status.md
-|   `-- prompting_for_better_coding.md
 |-- admin.html
 |-- index.html
 |-- manifest.json
 |-- rate-my-contractor-product-requirements.md
-|-- repo_structure.txt
 `-- sw.js
 
-9 directories, 52 files
+9 directories, 58 files
