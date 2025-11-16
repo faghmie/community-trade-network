@@ -2,8 +2,16 @@
 
 // Card Manager Module - Handles all card rendering and card-related components
 class CardManager {
-    constructor() {
-        // Cache any reusable templates or configurations
+    constructor(dataModule, reviewManager, favoritesManager) {
+        this.dataModule = dataModule;
+        this.reviewManager = reviewManager;
+        this.favoritesManager = favoritesManager;
+        
+        console.log('🔧 CardManager initialized with dependencies:', {
+            hasDataModule: !!dataModule,
+            hasReviewManager: !!reviewManager,
+            hasFavoritesManager: !!favoritesManager
+        });
     }
 
     /**
@@ -12,15 +20,16 @@ class CardManager {
      * @returns {string} HTML string for the contractor card
      */
     createContractorCard(contractor) {
-        const approvedReviews = contractor.reviews.filter(review => review.status === 'approved');
+        // Use injected dependencies instead of globals
+        const approvedReviews = this.reviewManager.getApprovedReviewsByContractor(contractor.id);
         const displayRating = approvedReviews.length > 0 ? 
-            dataModule.calculateAverageRating(approvedReviews) : 0;
+            this.dataModule.calculateAverageRating(approvedReviews) : 0;
         
         const ratingValue = typeof displayRating === 'number' ? displayRating : parseFloat(displayRating) || 0;
         const displayRatingFormatted = !isNaN(ratingValue) ? ratingValue.toFixed(1) : '0.0';
-        const isFavorite = dataModule.isFavorite(contractor.id);
+        const isFavorite = this.dataModule.isFavorite(contractor.id);
 
-        // Create star display with transparent backgrounds
+        // Create star display
         const fullStars = Math.floor(ratingValue);
         const hasHalfStar = ratingValue % 1 >= 0.5;
         const emptyStars = 5 - fullStars - (hasHalfStar ? 1 : 0);
@@ -32,7 +41,7 @@ class CardManager {
                             data-contractor-id="${this.escapeHtml(contractor.id)}"
                             onclick="toggleFavorite('${this.escapeHtml(contractor.id)}'); event.stopPropagation();"
                             title="${isFavorite ? 'Remove from favorites' : 'Add to favorites'}">
-                        ${isFavorite ? '♥' : '♡'}
+                        <i class="material-icons">${isFavorite ? 'favorite' : 'favorite_border'}</i>
                     </button>
                 </div>
                 <div class="card-body">
@@ -45,21 +54,21 @@ class CardManager {
                         <i class="material-icons">location_on</i>
                         ${this.escapeHtml(contractor.location || 'Service area not specified')}
                     </p>
-                    <div class="card-rating" style="background: transparent !important; border: none !important;">
-                        <span class="rating-stars" style="background: transparent !important; border: none !important;">
-                            ${'<span class="rating-star" style="background: transparent !important;">★</span>'.repeat(fullStars)}
-                            ${hasHalfStar ? '<span class="rating-star active half" style="background: transparent !important;">★</span>' : ''}
-                            ${'<span class="rating-star" style="background: transparent !important;">★</span>'.repeat(emptyStars)}
+                    <div class="card-rating">
+                        <span class="rating-stars">
+                            ${'<span class="rating-star active">★</span>'.repeat(fullStars)}
+                            ${hasHalfStar ? '<span class="rating-star active half">★</span>' : ''}
+                            ${'<span class="rating-star">★</span>'.repeat(emptyStars)}
                         </span>
-                        <span class="rating-value" style="background: transparent !important; border: none !important;">${displayRatingFormatted}</span>
+                        <span class="rating-value">${displayRatingFormatted}</span>
                     </div>
-                    <p class="review-count" style="background: transparent !important;">
+                    <p class="review-count">
                         <i class="material-icons">reviews</i>
                         ${approvedReviews.length} review${approvedReviews.length !== 1 ? 's' : ''}
                     </p>
                 </div>
                 <div class="card-footer">
-                    <button class="material-button contained primary" 
+                    <button class="btn btn-primary" 
                             onclick="app.showReviewForm('${this.escapeHtml(contractor.id)}'); event.stopPropagation();">
                         <i class="material-icons">rate_review</i>
                         <span>Leave Review</span>
@@ -81,13 +90,13 @@ class CardManager {
         const emptyStars = maxStars - fullStars - (hasHalfStar ? 1 : 0);
         
         return `
-            <span class="card-rating" style="background: transparent !important; border: none !important;">
-                <span class="rating-stars" style="background: transparent !important; border: none !important;">
-                    ${'<span class="rating-star" style="background: transparent !important;">★</span>'.repeat(fullStars)}
-                    ${hasHalfStar ? '<span class="rating-star active half" style="background: transparent !important;">★</span>' : ''}
-                    ${'<span class="rating-star" style="background: transparent !important;">★</span>'.repeat(emptyStars)}
+            <span class="card-rating">
+                <span class="rating-stars">
+                    ${'<span class="rating-star active">★</span>'.repeat(fullStars)}
+                    ${hasHalfStar ? '<span class="rating-star active half">★</span>' : ''}
+                    ${'<span class="rating-star">★</span>'.repeat(emptyStars)}
                 </span>
-                <span class="rating-value" style="background: transparent !important; border: none !important;">${rating.toFixed(1)}</span>
+                <span class="rating-value">${rating.toFixed(1)}</span>
             </span>
         `;
     }
@@ -104,13 +113,7 @@ class CardManager {
         }
 
         if (!contractors || contractors.length === 0) {
-            container.innerHTML = `
-                <div class="no-results">
-                    <i class="material-icons">search_off</i>
-                    <h3>No contractors found</h3>
-                    <p>Try adjusting your search criteria or filters</p>
-                </div>
-            `;
+            container.innerHTML = this.createEmptyState();
             return;
         }
 
@@ -130,9 +133,9 @@ class CardManager {
         favoriteButtons.forEach(button => {
             const contractorId = button.getAttribute('data-contractor-id');
             if (contractorId) {
-                const isFavorite = dataModule.isFavorite(contractorId);
+                const isFavorite = this.dataModule.isFavorite(contractorId);
                 button.classList.toggle('favorited', isFavorite);
-                button.innerHTML = isFavorite ? '♥' : '♡';
+                button.innerHTML = `<i class="material-icons">${isFavorite ? 'favorite' : 'favorite_border'}</i>`;
                 button.title = isFavorite ? 'Remove from favorites' : 'Add to favorites';
             }
         });
@@ -183,5 +186,5 @@ class CardManager {
     }
 }
 
-// Create global instance
-const cardManager = new CardManager();
+// Remove the global instance creation - we'll inject it properly
+// const cardManager = new CardManager();

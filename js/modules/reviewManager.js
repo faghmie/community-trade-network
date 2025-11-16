@@ -1,51 +1,64 @@
 // js/modules/reviewManager.js
-const reviewManager = {
-    init(contractorManager) {
-        this.contractorManager = contractorManager;
-    },
+class ReviewManager {
+    constructor() {
+        this.reviews = [];
+        this.contractorManager = null;
+        this.storage = null;
+        this.utils = null;
+    }
 
-    getAllReviews() {
-        const allReviews = [];
-        this.contractorManager.contractors.forEach(contractor => {
-            contractor.reviews.forEach(review => {
-                allReviews.push({
-                    ...review,
-                    contractorId: contractor.id,
-                    contractorName: contractor.name,
-                    contractorCategory: contractor.category
-                });
-            });
-        });
-        return allReviews;
-    },
+    init(contractorManager, storage, defaultReviews = [], utils) {
+        this.contractorManager = contractorManager;
+        this.storage = storage;
+        this.utils = utils;
+        
+        const saved = this.storage.load('reviews');
+        
+        if (saved && saved.length > 0) {
+            this.reviews = saved;
+        } else {
+            // Load default reviews if no saved reviews exist
+            this.reviews = JSON.parse(JSON.stringify(defaultReviews));
+            this.save();
+        }
+        
+        // Update all contractor stats after loading reviews
+        this.updateAllContractorStats();
+    }
+
+    save = () => this.storage.save('reviews', this.reviews);
+
+    getAllReviews = () => this.reviews;
+
+    getReviewsByContractor = (contractorId) => 
+        this.reviews.filter(review => review.contractor_id === contractorId);
+
+    getApprovedReviewsByContractor = (contractorId) =>
+        this.reviews.filter(review => review.contractor_id === contractorId && review.status === 'approved');
 
     addReview(contractorId, reviewData) {
         const contractor = this.contractorManager.getById(contractorId);
         if (!contractor) {
-            console.error('Contractor not found with ID:', contractorId);
-            return null;
+            throw new Error(`Contractor with ID ${contractorId} not found`);
         }
 
-        // Ensure we have a valid overall rating - use category average if overall is 0
-        let overallRating = reviewData.rating;
-        if (!overallRating || overallRating === 0) {
-            const categoryRatings = [
-                reviewData.qualityRating,
-                reviewData.communicationRating,
-                reviewData.timelinessRating,
-                reviewData.valueRating
-            ].filter(rating => rating > 0);
-            
-            if (categoryRatings.length > 0) {
-                overallRating = Math.round(categoryRatings.reduce((sum, rating) => sum + rating, 0) / categoryRatings.length);
-            }
-        }
+        // Calculate overall rating from category ratings
+        const categoryRatings = [
+            reviewData.qualityRating,
+            reviewData.communicationRating,
+            reviewData.timelinessRating,
+            reviewData.valueRating
+        ].filter(rating => rating > 0);
+        
+        const overallRating = categoryRatings.length > 0 
+            ? Math.round(categoryRatings.reduce((sum, rating) => sum + rating, 0) / categoryRatings.length)
+            : 0;
 
         const review = {
-            id: this.generateId(),
+            id: this.utils.generateId(),
+            contractor_id: contractorId,
             reviewerName: reviewData.reviewerName,
-            rating: overallRating, // Use the calculated or provided rating
-            // Category ratings
+            rating: overallRating,
             categoryRatings: {
                 quality: reviewData.qualityRating,
                 communication: reviewData.communicationRating,
@@ -58,132 +71,85 @@ const reviewManager = {
             status: 'pending'
         };
 
-        contractor.reviews.push(review);
+        this.reviews.push(review);
+        this.save();
+        this.updateContractorStats(contractorId);
         
-        // Update contractor overall rating
-        contractor.rating = this.calculateOverallRating(contractor.reviews);
-        
-        const success = this.contractorManager.save();
-        
-        if (success) {
-            // Show notification using utils
-            if (typeof utils !== 'undefined' && utils.showNotification) {
-                utils.showNotification('Review submitted successfully! It will be visible after approval.', 'success');
-            } else {
-                // Fallback if utils is not available
-                alert('Review submitted successfully! It will be visible after approval.');
-            }
-        } else {
-            console.error('Failed to save review');
-            if (typeof utils !== 'undefined' && utils.showNotification) {
-                utils.showNotification('Failed to submit review. Please try again.', 'error');
-            }
-        }
+        this.utils.showNotification('Review submitted successfully! It will be visible after approval.', 'success');
         
         return review;
-    },
+    }
 
-    updateReviewStatus(contractorId, reviewId, status) {
-        const contractor = this.contractorManager.getById(contractorId);
-        if (!contractor) return false;
-
-        const review = contractor.reviews.find(r => r.id === reviewId);
+    updateReviewStatus(reviewId, status) {
+        const review = this.reviews.find(r => r.id === reviewId);
         if (!review) return false;
 
-        const oldStatus = review.status;
         review.status = status;
+        this.save();
+        this.updateContractorStats(review.contractor_id);
 
-        // Update contractor rating if needed
-        if (status === 'approved' || oldStatus === 'approved') {
-            contractor.rating = this.calculateOverallRating(
-                contractor.reviews.filter(r => r.status === 'approved')
-            );
-        }
+        this.utils.showNotification(`Review ${status} successfully!`, 'success');
+        return true;
+    }
 
-        const success = this.contractorManager.save();
-        if (success && typeof utils !== 'undefined' && utils.showNotification) {
-            utils.showNotification(`Review ${status} successfully!`, 'success');
-        }
-        return success;
-    },
+    deleteReview(reviewId) {
+        const index = this.reviews.findIndex(r => r.id === reviewId);
+        if (index === -1) return false;
 
-    deleteReview(contractorId, reviewId) {
-        const contractor = this.contractorManager.getById(contractorId);
-        if (!contractor) return false;
+        const review = this.reviews[index];
+        this.reviews.splice(index, 1);
+        this.save();
+        this.updateContractorStats(review.contractor_id);
 
-        const reviewIndex = contractor.reviews.findIndex(r => r.id === reviewId);
-        if (reviewIndex === -1) return false;
+        this.utils.showNotification('Review deleted successfully!', 'success');
+        return true;
+    }
 
-        const wasApproved = contractor.reviews[reviewIndex].status === 'approved';
-        contractor.reviews.splice(reviewIndex, 1);
-
-        if (wasApproved) {
-            contractor.rating = this.calculateOverallRating(
-                contractor.reviews.filter(r => r.status === 'approved')
-            );
-        }
-
-        const success = this.contractorManager.save();
-        if (success && typeof utils !== 'undefined' && utils.showNotification) {
-            utils.showNotification('Review deleted successfully!', 'success');
-        }
-        return success;
-    },
-
-    // NEW: Search reviews method
     searchReviews(searchTerm = '', statusFilter = 'all', contractorFilter = 'all') {
-        const allReviews = this.getAllReviews();
-        return allReviews.filter(review => {
+        return this.reviews.filter(review => {
+            const contractor = this.contractorManager.getById(review.contractor_id);
+            const contractorName = contractor ? contractor.name : '';
+            
             const matchesSearch = !searchTerm ||
                 review.reviewerName.toLowerCase().includes(searchTerm.toLowerCase()) ||
                 review.comment.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                review.contractorName.toLowerCase().includes(searchTerm.toLowerCase());
+                contractorName.toLowerCase().includes(searchTerm.toLowerCase());
             
             const matchesStatus = statusFilter === 'all' || review.status === statusFilter;
-            
-            const matchesContractor = contractorFilter === 'all' || review.contractorId === contractorFilter;
+            const matchesContractor = contractorFilter === 'all' || review.contractor_id === contractorFilter;
             
             return matchesSearch && matchesStatus && matchesContractor;
         });
-    },
+    }
 
-    // Calculate overall rating from category ratings
+    updateContractorStats(contractorId) {
+        const contractor = this.contractorManager.getById(contractorId);
+        if (!contractor) return;
+
+        const approvedReviews = this.getApprovedReviewsByContractor(contractorId);
+        
+        contractor.reviewCount = approvedReviews.length;
+        contractor.overallRating = this.calculateOverallRating(approvedReviews);
+        
+        this.contractorManager.save();
+    }
+
+    updateAllContractorStats() {
+        const contractors = this.contractorManager.getAll();
+        contractors.forEach(contractor => {
+            this.updateContractorStats(contractor.id);
+        });
+    }
+
     calculateOverallRating(reviews) {
         if (!reviews || reviews.length === 0) return 0;
         
-        const approvedReviews = reviews.filter(review => review.status === 'approved');
-        if (approvedReviews.length === 0) return 0;
+        const totalRating = reviews.reduce((sum, review) => sum + review.rating, 0);
+        return parseFloat((totalRating / reviews.length).toFixed(1));
+    }
 
-        let totalRating = 0;
-        approvedReviews.forEach(review => {
-            if (review.categoryRatings) {
-                // Average of all category ratings
-                const categoryAverage = (
-                    review.categoryRatings.quality +
-                    review.categoryRatings.communication +
-                    review.categoryRatings.timeliness +
-                    review.categoryRatings.value
-                ) / 4;
-                totalRating += categoryAverage;
-            } else {
-                // Fallback to single rating for backward compatibility
-                totalRating += review.rating;
-            }
-        });
-
-        return parseFloat((totalRating / approvedReviews.length).toFixed(1));
-    },
-
-    // Keep old method for backward compatibility
-    calculateAverageRating(reviews) {
-        return this.calculateOverallRating(reviews);
-    },
-
-    // Get average for specific category
-    getCategoryAverage(reviews, category) {
-        const approvedReviews = reviews.filter(review => 
-            review.status === 'approved' && review.categoryRatings
-        );
+    getCategoryAverage(contractorId, category) {
+        const approvedReviews = this.getApprovedReviewsByContractor(contractorId);
         
         if (approvedReviews.length === 0) return 0;
 
@@ -192,9 +158,19 @@ const reviewManager = {
         );
         
         return parseFloat((total / approvedReviews.length).toFixed(1));
-    },
-
-    generateId() {
-        return Date.now().toString(36) + Math.random().toString(36).substr(2);
     }
-};
+
+    getPendingReviewsCount = () => 
+        this.reviews.filter(review => review.status === 'pending').length;
+
+    // Refresh reviews data from storage
+    refresh() {
+        const saved = this.storage.load('reviews');
+        if (saved && saved.length > 0) {
+            this.reviews = saved;
+        }
+    }
+}
+
+// Create singleton instance
+const reviewManager = new ReviewManager();

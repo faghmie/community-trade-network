@@ -5,7 +5,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin - Contractor Reviews</title>
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⭐</text></svg>">
+    <link rel="icon"
+        href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⭐</text></svg>">
     <link rel="stylesheet" href="css/main.css">
     <link rel="stylesheet" href="css/admin.css">
     <!-- Material Icons -->
@@ -20,28 +21,28 @@
                 <h1 class="auth-title">Admin Login</h1>
                 <p class="auth-subtitle">Contractor Reviews Management</p>
             </div>
-            
+
             <form id="loginForm" class="auth-form">
                 <div id="loginMessage" class="auth-message" style="display: none;"></div>
-                
+
                 <div class="form-group">
                     <label for="username" class="form-label">Username</label>
-                    <input type="text" id="username" name="username" class="form-input" 
-                           placeholder="Enter username" autocomplete="username" required>
+                    <input type="text" id="username" name="username" class="form-input" placeholder="Enter username"
+                        autocomplete="username" required>
                 </div>
-                
+
                 <div class="form-group">
                     <label for="password" class="form-label">Password</label>
-                    <input type="password" id="password" name="password" class="form-input" 
-                           placeholder="Enter password" autocomplete="current-password" required>
+                    <input type="password" id="password" name="password" class="form-input" placeholder="Enter password"
+                        autocomplete="current-password" required>
                 </div>
-                
+
                 <button type="submit" class="auth-button" id="loginButton">
                     <span id="loginButtonText">Login</span>
                     <span id="loginSpinner" class="auth-loading" style="display: none;"></span>
                 </button>
             </form>
-            
+
             <div class="auth-footer">
                 <p>Default credentials: admin / admin123</p>
             </div>
@@ -62,7 +63,7 @@
                         <p>Manage contractors, categories, and reviews</p>
                     </div>
                 </div>
-                
+
                 <div class="app-bar-right">
                     <div class="app-bar-actions">
                         <div class="user-info">
@@ -289,7 +290,8 @@
                         <div class="form-group">
                             <label for="contractorPhone">Phone:</label>
                             <input type="tel" id="contractorPhone" name="phone" class="input" required>
-                            <small class="form-help">South African format: +27 or 0 followed by 9 digits (e.g., +27821234567, 0821234567, 0123456789)</small>
+                            <small class="form-help">South African format: +27 or 0 followed by 9 digits (e.g.,
+                                +27821234567, 0821234567, 0123456789)</small>
                         </div>
 
                         <div class="form-group">
@@ -358,27 +360,36 @@
         </div>
     </div>
 
-    <!-- Core Modules -->
-    <script src="js/modules/storage.js"></script>
-    <script src="js/data/defaultData.js"></script>
+    <!-- Add this before your other scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+    <!-- Add this after supabase CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="js/config/supabase-credentials.js"></script>
+    <script src="js/modules/supabase.js"></script>
+
+    <!-- Core Modules - MUST LOAD AFTER supabase modules -->
+    <script src="js/modules/storage.js"></script> <!-- This needs supabaseClient -->
+
+    <!-- ES6 Data Modules Loader (REPLACES all individual data files) -->
+    <script src="js/data/dataLoader.js"></script>
+
     <script src="js/modules/utils.js"></script>
     <script src="js/modules/contractorManager.js"></script>
     <script src="js/modules/reviewManager.js"></script>
     <script src="js/modules/categories.js"></script>
     <script src="js/modules/statsManager.js"></script>
+    <script src="js/modules/favoritesManager.js"></script> 
     <script src="js/modules/data.js"></script>
-    
-    <!-- Authentication Module -->
-    <script type="module" src="js/modules/auth.js"></script>
-    
+
+
     <!-- Admin Feature Modules -->
     <script src="js/modules/admin-categories.js"></script>
     <script src="js/modules/admin-reviews.js"></script>
-    <script src="js/modules/tabs.js"></script>
 
     <!-- Admin Core Module -->
     <script src="js/modules/admin-contractors.js"></script>
-    <script src="js/admin.js"></script>
+    <script type="module" src="js/admin.js"></script>
 </body>
 
 </html>

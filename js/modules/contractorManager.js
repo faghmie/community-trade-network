@@ -1,49 +1,52 @@
 // js/modules/contractorManager.js
-const contractorManager = {
-    contractors: [],
+class ContractorManager {
+    constructor() {
+        this.contractors = [];
+        this.storage = null;
+        this.utils = null;
+        this.locationData = null;
+    }
 
-    init(storage, defaultContractors) {
+    init(storage, defaultContractors, utils, locationData) {
         this.storage = storage;
+        this.utils = utils;
+        this.locationData = locationData;
         const saved = this.storage.load('contractors');
         
-        if (saved && saved.length > 0) {
+        // FIX: Handle the case where storage returns the string "undefined"
+        if (saved && saved !== "undefined" && saved.length > 0) {
             this.contractors = saved;
-            this.migrateContractorFields();
         } else {
             this.contractors = JSON.parse(JSON.stringify(defaultContractors));
             this.save();
         }
-    },
+    }
 
-    save() {
-        return this.storage.save('contractors', this.contractors);
-    },
+    save = () => this.storage.save('contractors', this.contractors);
 
-    getAll() {
-        return this.contractors;
-    },
+    getAll = () => this.contractors;
 
-    getById(id) {
-        return this.contractors.find(contractor => contractor.id === id);
-    },
+    getById = (id) => this.contractors.find(contractor => contractor.id === id);
 
     create(contractorData) {
         // Generate coordinates and service areas based on location
         const { coordinates, serviceAreas } = this.generateMapData(contractorData.location);
         
         const contractor = {
-            id: this.generateId(),
+            id: this.utils.generateId(), // Use injected utils
             ...contractorData,
             coordinates: coordinates,
             serviceAreas: serviceAreas,
             rating: 0,
+            reviewCount: 0,
+            overallRating: 0,
             reviews: [],
             createdAt: new Date().toISOString()
         };
         this.contractors.push(contractor);
         this.save();
         return contractor;
-    },
+    }
 
     update(id, updates) {
         const contractor = this.getById(id);
@@ -60,7 +63,7 @@ const contractorManager = {
             return contractor;
         }
         return null;
-    },
+    }
 
     delete(id) {
         const index = this.contractors.findIndex(c => c.id === id);
@@ -70,7 +73,7 @@ const contractorManager = {
             return true;
         }
         return false;
-    },
+    }
 
     search(searchTerm, categoryFilter = '', ratingFilter = '', locationFilter = '') {
         return this.contractors.filter(contractor => {
@@ -81,60 +84,32 @@ const contractorManager = {
                 (contractor.location && contractor.location.toLowerCase().includes(searchTerm.toLowerCase()));
             
             const matchesCategory = !categoryFilter || contractor.category === categoryFilter;
-            const matchesRating = !ratingFilter || parseFloat(contractor.rating) >= parseFloat(ratingFilter);
+            const matchesRating = !ratingFilter || parseFloat(contractor.overallRating) >= parseFloat(ratingFilter);
             const matchesLocation = !locationFilter || contractor.location === locationFilter;
             
             return matchesSearch && matchesCategory && matchesRating && matchesLocation;
         });
-    },
+    }
 
-    getAllLocations() {
+    getAllLocations = () => {
         const locations = [...new Set(this.contractors
             .map(contractor => contractor.location)
             .filter(location => location && location.trim() !== '')
         )].sort();
         return locations;
-    },
+    }
 
-    migrateContractorFields() {
-        let migrated = false;
-        this.contractors.forEach(contractor => {
-            if (!contractor.hasOwnProperty('website')) {
-                contractor.website = '';
-                migrated = true;
-            }
-            if (!contractor.hasOwnProperty('location')) {
-                contractor.location = '';
-                migrated = true;
-            }
-            // Migrate missing map data
-            if (!contractor.hasOwnProperty('coordinates') && contractor.location) {
-                const { coordinates } = this.generateMapData(contractor.location);
-                contractor.coordinates = coordinates;
-                migrated = true;
-            }
-            if (!contractor.hasOwnProperty('serviceAreas') && contractor.location) {
-                const { serviceAreas } = this.generateMapData(contractor.location);
-                contractor.serviceAreas = serviceAreas;
-                migrated = true;
-            }
-        });
-        if (migrated) this.save();
-    },
-
-    generateId() {
-        return Date.now().toString(36) + Math.random().toString(36).substr(2);
-    },
-
-    // NEW: Generate coordinates and service areas based on location
+    // Generate coordinates and service areas based on location
     generateMapData(location) {
-        if (!location) {
+        if (!location || !this.locationData) {
             return {
                 coordinates: null,
                 serviceAreas: []
             };
         }
 
+        const { southAfricanCityCoordinates, southAfricanProvinces } = this.locationData;
+        
         // Extract area and province from location (format: "Area, Province")
         const [area, province] = location.split(', ').map(part => part.trim());
         
@@ -170,4 +145,16 @@ const contractorManager = {
             serviceAreas: serviceAreas
         };
     }
-};
+
+    // Refresh contractor data from storage
+    refresh() {
+        const saved = this.storage.load('contractors');
+        // FIX: Also handle "undefined" string in refresh method
+        if (saved && saved !== "undefined" && saved.length > 0) {
+            this.contractors = saved;
+        }
+    }
+}
+
+// Create singleton instance
+const contractorManager = new ContractorManager();

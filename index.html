@@ -72,8 +72,7 @@
                     </button>
 
                     <!-- FIXED: Updated to use new button classes -->
-                    <button class="btn btn-text btn-small" data-action="clear-filters"
-                        title="Clear all filters">
+                    <button class="btn btn-text btn-small" data-action="clear-filters" title="Clear all filters">
                         <i class="material-icons">clear</i>
                         <span>Clear</span>
                     </button>
@@ -401,10 +400,19 @@
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
         integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
 
-    <!-- Core Modules -->
+    <!-- Add this after supabase CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+    <script src="js/config/supabase-credentials.js"></script>
+    <script src="js/modules/supabase.js"></script>
+
+    <!-- Core Modules - MUST LOAD AFTER supabase modules -->
     <script src="js/modules/utils.js"></script>
-    <script src="js/modules/storage.js"></script>
-    <script src="js/data/defaultData.js"></script>
+    <script src="js/modules/storage.js"></script> <!-- This needs supabaseClient -->
+
+    <!-- ES6 Data Modules Loader (REPLACES all individual data files) -->
+    <script src="js/data/dataLoader.js"></script>
+
     <script src="js/modules/categories.js"></script>
     <script src="js/modules/contractorManager.js"></script>
     <script src="js/modules/reviewManager.js"></script>
@@ -421,8 +429,8 @@
     <script src="js/app/filterManager.js"></script>
     <script src="js/app/formManager.js"></script>
 
-    <!-- Main Script (LOAD LAST) -->
-    <script src="js/script.js"></script>
+    <!-- Main Script as ES6 Module (LOAD LAST) -->
+    <script type="module" src="js/script.js"></script>
 </body>
 
 </html>

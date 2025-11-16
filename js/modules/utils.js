@@ -19,7 +19,7 @@ const utils = {
         // Create notification element with proper Material Design classes
         const notification = document.createElement('div');
         notification.className = `notification notification-${type}`;
-        
+
         // Build notification content
         notification.innerHTML = `
             <div class="notification-content">
@@ -84,9 +84,9 @@ const utils = {
      */
     dismissNotification(notification) {
         if (!notification) return;
-        
+
         notification.classList.add('hiding');
-        
+
         // Remove after animation completes
         setTimeout(() => {
             if (notification && notification.parentNode) {
@@ -177,7 +177,7 @@ const utils = {
     // Throttle function for scroll and resize events
     throttle(func, limit) {
         let inThrottle;
-        return function(...args) {
+        return function (...args) {
             if (!inThrottle) {
                 func.apply(this, args);
                 inThrottle = true;
@@ -200,33 +200,33 @@ const utils = {
     // Phone validation for South Africa - FIXED VERSION
     isValidSouthAfricanPhone(phone) {
         if (!phone) return false;
-        
+
         // South African phone number regex - accepts all valid formats including landlines
         const saPhoneRegex = /^(\+27|0)[1-9][0-9]{8}$/;
-        
+
         // Remove spaces, dashes, and parentheses for validation
         const cleanPhone = phone.replace(/[\s\-()]/g, '');
-        
+
         return saPhoneRegex.test(cleanPhone);
     },
 
     // Format South African phone number for display
     formatSouthAfricanPhone(phone) {
         if (!phone) return '';
-        
+
         const cleanPhone = phone.replace(/[\s\-()]/g, '');
-        
+
         // Convert to international format if it starts with 0
         let formatted = cleanPhone;
         if (cleanPhone.startsWith('0')) {
             formatted = '+27' + cleanPhone.substring(1);
         }
-        
+
         // Format: +27 XX XXX XXXX
         if (formatted.startsWith('+27') && formatted.length === 11) {
             return formatted.replace(/(\+27)(\d{2})(\d{3})(\d{4})/, '$1 $2 $3 $4');
         }
-        
+
         return formatted;
     },
 
@@ -237,9 +237,81 @@ const utils = {
         return emailRegex.test(email);
     },
 
-    // Generate unique ID
+    // Generate unique ID - ENHANCED FOR SUPABASE COMPATIBILITY
     generateId() {
-        return 'id_' + Math.random().toString(36).substr(2, 9);
+        return this.generateUUID();
+    },
+
+    /**
+     * Generate RFC4122 version 4 compliant UUID for Supabase
+     * @returns {string} UUID v4 string
+     */
+    generateUUID() {
+        // Generate random values
+        const randomValues = new Uint8Array(16);
+        crypto.getRandomValues(randomValues);
+
+        // Set version (4) and variant (RFC4122)
+        randomValues[6] = (randomValues[6] & 0x0f) | 0x40; // version 4
+        randomValues[8] = (randomValues[8] & 0x3f) | 0x80; // variant
+
+        // Convert to hexadecimal and format as UUID
+        const hexBytes = [];
+        for (let i = 0; i < 16; i++) {
+            hexBytes.push(randomValues[i].toString(16).padStart(2, '0'));
+        }
+
+        return [
+            hexBytes.slice(0, 4).join(''),
+            hexBytes.slice(4, 6).join(''),
+            hexBytes.slice(6, 8).join(''),
+            hexBytes.slice(8, 10).join(''),
+            hexBytes.slice(10, 16).join('')
+        ].join('-');
+    },
+
+    /**
+     * Validate UUID format (RFC4122 version 4)
+     * @param {string} uuid - UUID string to validate
+     * @returns {boolean} True if valid UUID v4
+     */
+    isValidUUID(uuid) {
+        if (typeof uuid !== 'string') return false;
+
+        const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+        return uuidRegex.test(uuid);
+    },
+
+    /**
+     * Convert simple ID to UUID format if needed
+     * @param {string} id - ID to convert
+     * @param {boolean} forceUUID - Whether to force UUID generation
+     * @returns {string} UUID or original ID
+     */
+    ensureUUID(id, forceUUID = false) {
+        if (forceUUID || this.isValidUUID(id)) {
+            return id;
+        }
+
+        // If it's a simple ID and we want UUID, generate one
+        if (forceUUID && !this.isValidUUID(id)) {
+            return this.generateUUID();
+        }
+
+        return id;
+    },
+
+    /**
+     * Generate IDs in batch for data migration
+     * @param {number} count - Number of UUIDs to generate
+     * @returns {string[]} Array of UUIDs
+     */
+    generateUUIDs(count) {
+        const uuids = [];
+        for (let i = 0; i < count; i++) {
+            uuids.push(this.generateUUID());
+        }
+        return uuids;
     },
 
     // Format currency for South Africa
@@ -257,7 +329,7 @@ const utils = {
             month: 'short',
             day: 'numeric'
         };
-        
+
         return new Intl.DateTimeFormat('en-ZA', { ...defaultOptions, ...options }).format(new Date(date));
     },
 
@@ -320,21 +392,21 @@ const utils = {
         const params = {};
         const queryString = window.location.search.substring(1);
         const pairs = queryString.split('&');
-        
+
         pairs.forEach(pair => {
             const [key, value] = pair.split('=');
             if (key) {
                 params[decodeURIComponent(key)] = decodeURIComponent(value || '');
             }
         });
-        
+
         return params;
     },
 
     // Set query parameters in URL
     setQueryParams(params, replace = false) {
         const url = new URL(window.location);
-        
+
         if (replace) {
             // Replace all existing params
             const newParams = new URLSearchParams();
@@ -348,7 +420,7 @@ const utils = {
                 url.searchParams.set(key, params[key]);
             });
         }
-        
+
         window.history.pushState({}, '', url.toString());
     }
 };

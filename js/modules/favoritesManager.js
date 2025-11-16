@@ -1,9 +1,18 @@
-// js/modules/favoritesManager.js - UPDATED with correct element selectors
-const favoritesManager = {
-    favorites: [],
+// js/modules/favoritesManager.js - Cleaned up with no backward compatibility
+class FavoritesManager {
+    constructor() {
+        this.favorites = [];
+        this.storage = null;
+        this.utils = null;
+        this.dataModule = null;
+        this.uiManager = null;
+    }
 
-    init(storage) {
+    init(storage, utils, dataModule, uiManager) {
         this.storage = storage;
+        this.utils = utils;
+        this.dataModule = dataModule;
+        this.uiManager = uiManager;
         const saved = this.storage.load('favorites');
         
         if (saved && Array.isArray(saved)) {
@@ -20,7 +29,7 @@ const favoritesManager = {
         this.updateFavoritesUI();
         
         console.log('Favorites manager initialized with', this.favorites.length, 'favorites');
-    },
+    }
 
     setupEventListeners() {
         // Listen for favorites updates and refresh the UI
@@ -32,7 +41,7 @@ const favoritesManager = {
         document.addEventListener('contractorsUpdated', () => {
             this.updateFavoritesUI();
         });
-    },
+    }
 
     updateFavoritesUI() {
         const favoritesCount = this.getFavoritesCount();
@@ -67,7 +76,7 @@ const favoritesManager = {
         }
 
         console.log('Favorites UI updated:', favoritesCount, 'favorites');
-    },
+    }
 
     updateFavoriteButtons() {
         const favoriteButtons = document.querySelectorAll('.favorite-btn');
@@ -81,11 +90,11 @@ const favoritesManager = {
                 }
             }
         });
-    },
+    }
 
     save() {
         return this.storage.save('favorites', this.favorites);
-    },
+    }
 
     toggleFavorite(contractorId) {
         const index = this.favorites.indexOf(contractorId);
@@ -104,33 +113,29 @@ const favoritesManager = {
         const success = this.save();
         if (success) {
             this.dispatchFavoritesUpdate();
-            // Show notification
-            if (typeof utils !== 'undefined' && utils.showNotification) {
-                const action = isNowFavorite ? 'added to' : 'removed from';
-                utils.showNotification(`Contractor ${action} favorites!`, 'success');
-            }
+            const action = isNowFavorite ? 'added to' : 'removed from';
+            this.utils.showNotification(`Contractor ${action} favorites!`, 'success');
         } else {
             this.showStorageWarning();
         }
         
         return isNowFavorite;
-    },
+    }
 
     isFavorite(contractorId) {
         return this.favorites.includes(contractorId);
-    },
+    }
 
     getFavoriteContractors() {
-        // Use dataModule instead of contractorManager for consistency
-        const allContractors = dataModule.getContractors();
+        const allContractors = this.dataModule.getContractors();
         return allContractors.filter(contractor => 
             this.favorites.includes(contractor.id)
         );
-    },
+    }
 
     getFavoritesCount() {
         return this.favorites.length;
-    },
+    }
 
     // Event system for UI updates
     dispatchFavoritesUpdate() {
@@ -141,7 +146,7 @@ const favoritesManager = {
             }
         });
         document.dispatchEvent(event);
-    },
+    }
 
     // Show favorites section with actual favorites
     showFavoritesSection() {
@@ -160,10 +165,8 @@ const favoritesManager = {
             }
             favoritesGrid.style.display = 'grid';
             
-            // Render favorite contractors (you might need to call your UI manager here)
-            if (typeof uiManager !== 'undefined') {
-                uiManager.renderContractors(favoriteContractors, favoritesGrid);
-            }
+            // Render favorite contractors
+            this.uiManager.renderContractors(favoriteContractors, favoritesGrid);
         } else {
             // Show notice, hide grid
             if (favoritesNotice) {
@@ -179,7 +182,7 @@ const favoritesManager = {
         }
         
         favoritesSection.classList.remove('hidden');
-    },
+    }
 
     // Export functionality for user backup
     exportFavorites() {
@@ -196,7 +199,7 @@ const favoritesManager = {
             version: '1.0'
         };
         return JSON.stringify(data, null, 2);
-    },
+    }
 
     // Import functionality
     importFavorites(jsonData) {
@@ -207,20 +210,16 @@ const favoritesManager = {
                 const success = this.save();
                 if (success) {
                     this.dispatchFavoritesUpdate();
-                    if (typeof utils !== 'undefined' && utils.showNotification) {
-                        utils.showNotification('Favorites imported successfully!', 'success');
-                    }
+                    this.utils.showNotification('Favorites imported successfully!', 'success');
                     return true;
                 }
             }
         } catch (e) {
             console.error('Invalid favorites data');
-            if (typeof utils !== 'undefined' && utils.showNotification) {
-                utils.showNotification('Invalid favorites file format', 'error');
-            }
+            this.utils.showNotification('Invalid favorites file format', 'error');
         }
         return false;
-    },
+    }
 
     // Download favorites as file
     downloadFavorites() {
@@ -233,10 +232,8 @@ const favoritesManager = {
         a.click();
         URL.revokeObjectURL(url);
         
-        if (typeof utils !== 'undefined' && utils.showNotification) {
-            utils.showNotification('Favorites exported successfully!', 'success');
-        }
-    },
+        this.utils.showNotification('Favorites exported successfully!', 'success');
+    }
 
     // Handle file import
     handleFavoritesImport(file) {
@@ -245,21 +242,17 @@ const favoritesManager = {
         const reader = new FileReader();
         reader.onload = (e) => {
             const success = this.importFavorites(e.target.result);
-            if (!success && typeof utils !== 'undefined' && utils.showNotification) {
-                utils.showNotification('Failed to import favorites', 'error');
+            if (!success) {
+                this.utils.showNotification('Failed to import favorites', 'error');
             }
         };
         reader.readAsText(file);
-    },
+    }
 
     // Show storage warning
     showStorageWarning() {
-        if (typeof utils !== 'undefined' && utils.showNotification) {
-            utils.showNotification('Unable to save favorites. Your browser storage might be full.', 'error');
-        } else {
-            alert('Unable to save favorites. Your browser storage might be full.');
-        }
-    },
+        this.utils.showNotification('Unable to save favorites. Your browser storage might be full.', 'error');
+    }
 
     // Clear all favorites
     clearFavorites() {
@@ -268,10 +261,11 @@ const favoritesManager = {
             const success = this.save();
             if (success) {
                 this.dispatchFavoritesUpdate();
-                if (typeof utils !== 'undefined' && utils.showNotification) {
-                    utils.showNotification('All favorites cleared successfully!', 'success');
-                }
+                this.utils.showNotification('All favorites cleared successfully!', 'success');
             }
         }
     }
-};
+}
+
+// Create singleton instance
+const favoritesManager = new FavoritesManager();

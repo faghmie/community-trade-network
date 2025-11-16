@@ -1,9 +1,13 @@
 // Admin Reviews Management
-const adminReviewsModule = {
+class AdminReviewsModule {
+    constructor(dataModule) {
+        this.dataModule = dataModule;
+    }
+
     init() {
         this.bindEvents();
         this.renderReviews();
-    },
+    }
 
     bindEvents() {
         // Search reviews
@@ -20,20 +24,20 @@ const adminReviewsModule = {
         document.getElementById('reviewStatusFilter')?.addEventListener('change', (e) => {
             this.filterReviews();
         });
-    },
+    }
 
     renderReviews() {
         this.renderContractorFilter();
         this.renderReviewsList();
         this.renderReviewStats();
-    },
+    }
 
     // Populate contractor filter dropdown
     renderContractorFilter() {
         const contractorFilter = document.getElementById('reviewContractorFilter');
         if (!contractorFilter) return;
 
-        const contractors = dataModule.getContractors();
+        const contractors = this.dataModule.getContractors();
         const currentValue = contractorFilter.value;
         
         contractorFilter.innerHTML = '<option value="all">All Contractors</option>';
@@ -46,10 +50,10 @@ const adminReviewsModule = {
         if (currentValue && contractors.some(c => c.id === currentValue)) {
             contractorFilter.value = currentValue;
         }
-    },
+    }
 
     renderReviewsList(filteredReviews = null) {
-        const reviews = filteredReviews || dataModule.getAllReviews();
+        const reviews = filteredReviews || this.dataModule.getAllReviews();
         const container = document.getElementById('reviewsList');
         
         if (!container) return;
@@ -83,7 +87,7 @@ const adminReviewsModule = {
                             <span class="rating">${'⭐'.repeat(review.rating)} (${review.rating}/5)</span>
                         </div>
                         <div class="review-meta">
-                            <span class="review-date">${dataModule.formatDate(review.date)}</span>
+                            <span class="review-date">${this.dataModule.formatDate(review.date)}</span>
                             <span class="review-status ${statusClass}">${statusLabel}</span>
                         </div>
                     </div>
@@ -103,44 +107,49 @@ const adminReviewsModule = {
                     <p class="review-comment">${review.comment}</p>
                     <div class="review-actions">
                         ${review.status === 'pending' ? `
-                            <button class="btn btn-small btn-success" onclick="adminReviewsModule.approveReview('${review.contractorId}', '${review.id}')">
+                            <button class="btn btn-small btn-success" onclick="adminModule.approveReview('${review.contractorId}', '${review.id}')">
                                 Approve
                             </button>
-                            <button class="btn btn-small btn-warning" onclick="adminReviewsModule.rejectReview('${review.contractorId}', '${review.id}')">
+                            <button class="btn btn-small btn-warning" onclick="adminModule.rejectReview('${review.contractorId}', '${review.id}')">
                                 Reject
                             </button>
                         ` : ''}
                         ${review.status === 'approved' ? `
-                            <button class="btn btn-small btn-warning" onclick="adminReviewsModule.rejectReview('${review.contractorId}', '${review.id}')">
+                            <button class="btn btn-small btn-warning" onclick="adminModule.rejectReview('${review.contractorId}', '${review.id}')">
                                 Reject
                             </button>
                         ` : ''}
                         ${review.status === 'rejected' ? `
-                            <button class="btn btn-small btn-success" onclick="adminReviewsModule.approveReview('${review.contractorId}', '${review.id}')">
+                            <button class="btn btn-small btn-success" onclick="adminModule.approveReview('${review.contractorId}', '${review.id}')">
                                 Approve
                             </button>
                         ` : ''}
-                        <button class="btn btn-small btn-secondary" onclick="adminReviewsModule.viewReview('${review.contractorId}', '${review.id}')">
+                        <button class="btn btn-small btn-secondary" onclick="adminModule.viewReview('${review.contractorId}', '${review.id}')">
                             View Details
                         </button>
-                        <button class="btn btn-small" style="background: var(--accent-color); color: white;" 
-                                onclick="adminReviewsModule.deleteReview('${review.contractorId}', '${review.id}')">
+                        <button class="btn btn-small btn-danger" 
+                                onclick="adminModule.deleteReview('${review.contractorId}', '${review.id}')">
                             Delete
                         </button>
                     </div>
                 </div>
             `;
         }).join('');
-    },
+    }
 
     renderReviewStats() {
-        const stats = dataModule.getReviewStats();
+        const stats = this.dataModule.getReviewStats();
         
-        document.getElementById('totalReviewsCount').textContent = stats.totalReviews;
-        document.getElementById('approvedReviewsCount').textContent = stats.approvedReviews;
-        document.getElementById('pendingReviewsCount').textContent = stats.pendingReviews;
-        document.getElementById('rejectedReviewsCount').textContent = stats.rejectedReviews;
-    },
+        const totalReviewsEl = document.getElementById('totalReviewsCount');
+        const approvedReviewsEl = document.getElementById('approvedReviewsCount');
+        const pendingReviewsEl = document.getElementById('pendingReviewsCount');
+        const rejectedReviewsEl = document.getElementById('rejectedReviewsCount');
+        
+        if (totalReviewsEl) totalReviewsEl.textContent = stats.totalReviews;
+        if (approvedReviewsEl) approvedReviewsEl.textContent = stats.approvedReviews;
+        if (pendingReviewsEl) pendingReviewsEl.textContent = stats.pendingReviews;
+        if (rejectedReviewsEl) rejectedReviewsEl.textContent = stats.rejectedReviews;
+    }
 
     getStatusClass(status) {
         switch(status) {
@@ -149,7 +158,7 @@ const adminReviewsModule = {
             case 'rejected': return 'status-rejected';
             default: return '';
         }
-    },
+    }
 
     getStatusLabel(status) {
         switch(status) {
@@ -158,14 +167,14 @@ const adminReviewsModule = {
             case 'rejected': return 'Rejected';
             default: return status;
         }
-    },
+    }
 
     filterReviews() {
-        const searchTerm = document.getElementById('reviewSearch').value;
-        const statusFilter = document.getElementById('reviewStatusFilter').value;
-        const contractorFilter = document.getElementById('reviewContractorFilter').value;
+        const searchTerm = document.getElementById('reviewSearch')?.value || '';
+        const statusFilter = document.getElementById('reviewStatusFilter')?.value || 'all';
+        const contractorFilter = document.getElementById('reviewContractorFilter')?.value || 'all';
         
-        let filteredReviews = dataModule.searchReviews(searchTerm, statusFilter);
+        let filteredReviews = this.dataModule.searchReviews(searchTerm, statusFilter);
         
         // Apply contractor filter
         if (contractorFilter && contractorFilter !== 'all') {
@@ -173,49 +182,49 @@ const adminReviewsModule = {
         }
         
         this.renderReviewsList(filteredReviews);
-    },
+    }
 
     approveReview(contractorId, reviewId) {
         if (confirm('Are you sure you want to approve this review?')) {
-            const success = dataModule.updateReviewStatus(contractorId, reviewId, 'approved');
+            const success = this.dataModule.updateReviewStatus(contractorId, reviewId, 'approved');
             if (success) {
                 this.renderReviews();
                 // Update main stats if admin module is available
-                if (typeof adminModule !== 'undefined') {
+                if (window.adminModule) {
                     adminModule.renderStats();
                 }
             }
         }
-    },
+    }
 
     rejectReview(contractorId, reviewId) {
         if (confirm('Are you sure you want to reject this review?')) {
-            const success = dataModule.updateReviewStatus(contractorId, reviewId, 'rejected');
+            const success = this.dataModule.updateReviewStatus(contractorId, reviewId, 'rejected');
             if (success) {
                 this.renderReviews();
                 // Update main stats if admin module is available
-                if (typeof adminModule !== 'undefined') {
+                if (window.adminModule) {
                     adminModule.renderStats();
                 }
             }
         }
-    },
+    }
 
     deleteReview(contractorId, reviewId) {
         if (confirm('Are you sure you want to delete this review? This action cannot be undone.')) {
-            const success = dataModule.deleteReview(contractorId, reviewId);
+            const success = this.dataModule.deleteReview(contractorId, reviewId);
             if (success) {
                 this.renderReviews();
                 // Update main stats if admin module is available
-                if (typeof adminModule !== 'undefined') {
+                if (window.adminModule) {
                     adminModule.renderStats();
                 }
             }
         }
-    },
+    }
 
     viewReview(contractorId, reviewId) {
-        const contractor = dataModule.getContractor(contractorId);
+        const contractor = this.dataModule.getContractor(contractorId);
         if (contractor) {
             const review = contractor.reviews.find(r => r.id === reviewId);
             if (review) {
@@ -245,7 +254,7 @@ const adminReviewsModule = {
                                     <strong>Project Type:</strong> ${review.projectType || 'Not specified'}
                                 </div>
                                 <div class="detail-item">
-                                    <strong>Date:</strong> ${dataModule.formatDate(review.date)}
+                                    <strong>Date:</strong> ${this.dataModule.formatDate(review.date)}
                                 </div>
                                 <div class="detail-item">
                                     <strong>Status:</strong> <span class="review-status ${statusClass}">${statusLabel}</span>
@@ -312,37 +321,43 @@ const adminReviewsModule = {
                         
                         <div class="detail-actions">
                             ${review.status === 'pending' ? `
-                                <button class="btn btn-success" onclick="adminReviewsModule.approveReview('${contractorId}', '${review.id}'); adminReviewsModule.closeModal('reviewDetailsModal')">
+                                <button class="btn btn-success" onclick="adminModule.approveReview('${contractorId}', '${review.id}'); adminModule.closeModal('reviewDetailsModal')">
                                     Approve Review
                                 </button>
-                                <button class="btn btn-warning" onclick="adminReviewsModule.rejectReview('${contractorId}', '${review.id}'); adminReviewsModule.closeModal('reviewDetailsModal')">
+                                <button class="btn btn-warning" onclick="adminModule.rejectReview('${contractorId}', '${review.id}'); adminModule.closeModal('reviewDetailsModal')">
                                     Reject Review
                                 </button>
                             ` : ''}
                             ${review.status === 'approved' ? `
-                                <button class="btn btn-warning" onclick="adminReviewsModule.rejectReview('${contractorId}', '${review.id}'); adminReviewsModule.closeModal('reviewDetailsModal')">
+                                <button class="btn btn-warning" onclick="adminModule.rejectReview('${contractorId}', '${review.id}'); adminModule.closeModal('reviewDetailsModal')">
                                     Reject Review
                                 </button>
                             ` : ''}
                             ${review.status === 'rejected' ? `
-                                <button class="btn btn-success" onclick="adminReviewsModule.approveReview('${contractorId}', '${review.id}'); adminReviewsModule.closeModal('reviewDetailsModal')">
+                                <button class="btn btn-success" onclick="adminModule.approveReview('${contractorId}', '${review.id}'); adminModule.closeModal('reviewDetailsModal')">
                                     Approve Review
                                 </button>
                             ` : ''}
-                            <button class="btn" style="background: var(--accent-color); color: white;" 
-                                    onclick="adminReviewsModule.deleteReview('${contractorId}', '${review.id}'); adminReviewsModule.closeModal('reviewDetailsModal')">
+                            <button class="btn btn-danger" 
+                                    onclick="adminModule.deleteReview('${contractorId}', '${review.id}'); adminModule.closeModal('reviewDetailsModal')">
                                 Delete Review
                             </button>
                         </div>
                     </div>
                 `;
                 
-                modal.style.display = 'block';
+                if (modal) modal.style.display = 'block';
             }
         }
-    },
+    }
 
     closeModal(modalId) {
-        document.getElementById(modalId).style.display = 'none';
+        const modal = document.getElementById(modalId);
+        if (modal) {
+            modal.style.display = 'none';
+        }
     }
-};
+}
+
+// Export the class but don't create global instance
+// The instance will be created in admin.js after dataModule is available

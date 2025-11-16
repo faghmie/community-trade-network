@@ -125,10 +125,10 @@ class ModalManager {
         this.closeReviewModal();
     }
 
-    // Get category averages for a contractor
-    getCategoryAverages(contractor) {
-        const approvedReviews = contractor.reviews.filter(review => 
-            review.status === 'approved' && review.categoryRatings
+    // Get category averages for a contractor - FIXED: Use reviewManager instead of contractor.reviews
+    getCategoryAverages(contractorId) {
+        const approvedReviews = reviewManager.getApprovedReviewsByContractor(contractorId).filter(review => 
+            review.categoryRatings
         );
         
         if (approvedReviews.length === 0) {
@@ -163,12 +163,12 @@ class ModalManager {
     }
 
     createContractorDetailsHTML(contractor) {
-        const approvedReviews = contractor.reviews.filter(review => review.status === 'approved');
-        const ratingValue = typeof contractor.rating === 'number' ? contractor.rating : parseFloat(contractor.rating) || 0;
+        const approvedReviews = reviewManager.getApprovedReviewsByContractor(contractor.id);
+        const ratingValue = typeof contractor.overallRating === 'number' ? contractor.overallRating : parseFloat(contractor.overallRating) || 0;
         const ratingFormatted = !isNaN(ratingValue) ? ratingValue.toFixed(1) : '0.0';
         
-        // Get category averages
-        const categoryAverages = this.getCategoryAverages(contractor);
+        // Get category averages - FIXED: Pass contractorId instead of contractor object
+        const categoryAverages = this.getCategoryAverages(contractor.id);
         const hasCategoryRatings = categoryAverages.quality > 0 || categoryAverages.communication > 0 || 
                                  categoryAverages.timeliness > 0 || categoryAverages.value > 0;
 
@@ -349,7 +349,7 @@ class ModalManager {
                 </div>
                 
                 <div class="modal-actions">
-                    <button class="material-button contained primary" 
+                    <button class="btn btn-primary" 
                             onclick="modalManager.closeContractorModal(); app.showReviewForm('${contractor.id}')">
                         <i class="material-icons">rate_review</i>
                         <span>Leave a Review</span>
@@ -388,7 +388,7 @@ class ModalManager {
                     <i class="material-icons">error</i>
                     <h3>Error</h3>
                     <p>${cardManager.escapeHtml(message)}</p>
-                    <button class="material-button contained" onclick="modalManager.closeAllModals()">
+                    <button class="btn btn-secondary" onclick="modalManager.closeAllModals()">
                         <i class="material-icons">close</i>
                         <span>Close</span>
                     </button>

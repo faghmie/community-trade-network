@@ -2,7 +2,7 @@
  * Authentication Module with SHA-256 Password Hashing
  * Handles admin login, session management, and route protection
  */
-class AuthManager {
+export default class AuthManager {
     constructor() {
         this.currentUser = null;
         this.isAuthenticated = false;
@@ -171,7 +171,3 @@ class AuthManager {
         return (expiry - now) < fiveMinutes;
     }
 }
-
-// Create and export singleton instance
-const authManager = new AuthManager();
-export default authManager;

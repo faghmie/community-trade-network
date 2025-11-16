@@ -1,9 +1,27 @@
 // Admin Contractors Management
-const adminContractorsModule = {
+class AdminContractors {
+    constructor(dataModule, categoriesModule, utils, locationData) {
+        this.dataModule = dataModule;
+        this.categoriesModule = categoriesModule;
+        this.utils = utils;
+        this.locationData = locationData;
+        
+        // Bind methods
+        this.init = this.init.bind(this);
+        this.bindEvents = this.bindEvents.bind(this);
+        this.renderContractorsTable = this.renderContractorsTable.bind(this);
+        this.showContractorForm = this.showContractorForm.bind(this);
+        this.handleContractorSubmit = this.handleContractorSubmit.bind(this);
+        this.viewContractor = this.viewContractor.bind(this);
+        this.editContractor = this.editContractor.bind(this);
+        this.deleteContractor = this.deleteContractor.bind(this);
+        this.filterContractors = this.filterContractors.bind(this);
+    }
+
     init() {
         this.bindEvents();
         this.renderContractorsTable();
-    },
+    }
 
     bindEvents() {
         // Contractor form
@@ -35,15 +53,15 @@ const adminContractorsModule = {
                 }
             }
         });
-    },
+    }
 
     renderContractorsTable(filteredContractors = null) {
-        const contractors = filteredContractors || dataModule.getContractors();
+        const contractors = filteredContractors || this.dataModule.getContractors();
         const tbody = document.getElementById('contractorsTableBody');
 
         if (!tbody) return;
 
-        if (contractors.length === 0) {
+        if (!contractors || contractors.length === 0) {
             tbody.innerHTML = `
                 <tr>
                     <td colspan="5" class="text-center py-xl">
@@ -57,31 +75,37 @@ const adminContractorsModule = {
             return;
         }
 
-        tbody.innerHTML = contractors.map(contractor => `
+        tbody.innerHTML = contractors.map(contractor => {
+            // FIX: Get reviews from reviewManager instead of contractor.reviews
+            const reviews = this.dataModule.getReviewsForContractor(contractor.id);
+            const reviewCount = reviews.length;
+            const rating = contractor.rating || 0;
+            
+            return `
             <tr>
                 <td>${contractor.name}</td>
                 <td>${contractor.category}</td>
                 <td>
-                    <span class="rating-stars">${'⭐'.repeat(Math.floor(contractor.rating))}</span>
-                    <small class="text-secondary">(${contractor.rating})</small>
+                    <span class="rating-stars">${'⭐'.repeat(Math.floor(rating))}</span>
+                    <small class="text-secondary">(${rating})</small>
                 </td>
-                <td>${contractor.reviews.length}</td>
+                <td>${reviewCount}</td>
                 <td>
                     <div class="action-buttons">
-                        <button class="btn btn-icon btn-small btn-secondary" onclick="adminContractorsModule.viewContractor('${contractor.id}')" title="View Details">
+                        <button class="btn btn-icon btn-small btn-secondary" onclick="adminModule.viewContractor('${contractor.id}')" title="View Details">
                             <span class="material-icons">visibility</span>
                         </button>
-                        <button class="btn btn-icon btn-small btn-primary" onclick="adminContractorsModule.editContractor('${contractor.id}')" title="Edit Contractor">
+                        <button class="btn btn-icon btn-small btn-primary" onclick="adminModule.editContractor('${contractor.id}')" title="Edit Contractor">
                             <span class="material-icons">edit</span>
                         </button>
-                        <button class="btn btn-icon btn-small btn-danger" onclick="adminContractorsModule.deleteContractor('${contractor.id}')" title="Delete Contractor">
+                        <button class="btn btn-icon btn-small btn-danger" onclick="adminModule.deleteContractor('${contractor.id}')" title="Delete Contractor">
                             <span class="material-icons">delete</span>
                         </button>
                     </div>
                 </td>
             </tr>
-        `).join('');
-    },
+        `}).join('');
+    }
 
     showContractorForm(contractor = null) {
         const modal = document.getElementById('contractorFormModal');
@@ -94,9 +118,9 @@ const adminContractorsModule = {
         const categorySelect = document.getElementById('contractorCategory');
         if (categorySelect) {
             categorySelect.innerHTML = '<option value="">Select Category</option>';
-            const categories = categoriesModule.getCategories();
+            const categories = this.categoriesModule.getCategories();
             categories.forEach(category => {
-                categorySelect.innerHTML += `<option value="${category}">${category}</option>`;
+                categorySelect.innerHTML += `<option value="${category.name}">${category.name}</option>`;
             });
         }
 
@@ -105,9 +129,9 @@ const adminContractorsModule = {
         if (provinceSelect) {
             provinceSelect.innerHTML = '<option value="">Select Province</option>';
 
-            // Use the southAfricanProvinces from defaultData
-            if (typeof southAfricanProvinces !== 'undefined') {
-                Object.keys(southAfricanProvinces).forEach(province => {
+            // Use the injected locationData
+            if (this.locationData && this.locationData.southAfricanProvinces) {
+                Object.keys(this.locationData.southAfricanProvinces).forEach(province => {
                     provinceSelect.innerHTML += `<option value="${province}">${province}</option>`;
                 });
             }
@@ -163,7 +187,7 @@ const adminContractorsModule = {
         }
 
         modal.style.display = 'flex';
-    },
+    }
 
     // Helper function to find province for a given area
     findProvinceForArea(area) {
@@ -173,8 +197,8 @@ const adminContractorsModule = {
         if (!provinceSelect || !areaSelect) return;
 
         // Search through all provinces to find which one contains this area
-        if (typeof southAfricanProvinces !== 'undefined') {
-            for (const [province, provinceData] of Object.entries(southAfricanProvinces)) {
+        if (this.locationData && this.locationData.southAfricanProvinces) {
+            for (const [province, provinceData] of Object.entries(this.locationData.southAfricanProvinces)) {
                 if (provinceData.cities.includes(area)) {
                     provinceSelect.value = province;
                     this.updateAreaDropdown(province, area);
@@ -185,7 +209,7 @@ const adminContractorsModule = {
 
         // If area not found in any province, just enable area dropdown
         areaSelect.disabled = false;
-    },
+    }
 
     updateAreaDropdown(province, selectedArea = '') {
         const areaSelect = document.getElementById('contractorArea');
@@ -198,7 +222,7 @@ const adminContractorsModule = {
         }
 
         // Get the cities array from the province data
-        const provinceData = southAfricanProvinces[province];
+        const provinceData = this.locationData.southAfricanProvinces[province];
         const areas = provinceData ? provinceData.cities : [];
 
         areaSelect.innerHTML = '<option value="">Select Area</option>';
@@ -212,14 +236,14 @@ const adminContractorsModule = {
         if (selectedArea) {
             areaSelect.value = selectedArea;
         }
-    },
+    }
 
     handleContractorSubmit() {
         const province = document.getElementById('contractorProvince')?.value;
         const area = document.getElementById('contractorArea')?.value;
 
         if (!province || !area) {
-            utils.showNotification('Please select both province and area', 'error');
+            this.utils.showNotification('Please select both province and area', 'error');
             return;
         }
 
@@ -234,19 +258,19 @@ const adminContractorsModule = {
         };
 
         // Validate inputs
-        if (!utils.isValidEmail(contractorData.email)) {
-            utils.showNotification('Please enter a valid email address', 'error');
+        if (!this.utils.isValidEmail(contractorData.email)) {
+            this.utils.showNotification('Please enter a valid email address', 'error');
             return;
         }
 
         // FIXED: Updated phone validation to accept numbers like "0123456789"
-        if (!utils.isValidSouthAfricanPhone(contractorData.phone)) {
-            utils.showNotification('Please enter a valid South African phone number (e.g., +27821234567, 0821234567, or 0123456789)', 'error');
+        if (!this.utils.isValidSouthAfricanPhone(contractorData.phone)) {
+            this.utils.showNotification('Please enter a valid South African phone number (e.g., +27821234567, 0821234567, or 0123456789)', 'error');
             return;
         }
 
-        if (contractorData.website && !utils.isValidUrl(contractorData.website)) {
-            utils.showNotification('Please enter a valid website URL (include http:// or https://)', 'error');
+        if (contractorData.website && !this.utils.isValidUrl(contractorData.website)) {
+            this.utils.showNotification('Please enter a valid website URL (include http:// or https://)', 'error');
             return;
         }
 
@@ -254,30 +278,25 @@ const adminContractorsModule = {
 
         if (contractorId) {
             // Update existing contractor
-            dataModule.updateContractor(contractorId, contractorData);
-            utils.showNotification('Contractor updated successfully', 'success');
+            this.dataModule.updateContractor(contractorId, contractorData);
+            this.utils.showNotification('Contractor updated successfully', 'success');
         } else {
             // Add new contractor
-            dataModule.addContractor(contractorData);
-            utils.showNotification('Contractor added successfully', 'success');
+            this.dataModule.addContractor(contractorData);
+            this.utils.showNotification('Contractor added successfully', 'success');
         }
 
         this.closeModal('contractorFormModal');
         this.renderContractorsTable();
 
-        // Also update categories tab stats if it's visible
-        if (typeof adminCategoriesModule !== 'undefined') {
-            adminCategoriesModule.renderCategories();
-        }
-
         // Update stats in main admin module
-        if (typeof adminModule !== 'undefined') {
+        if (window.adminModule) {
             adminModule.renderStats();
         }
-    },
+    }
 
     viewContractor(id) {
-        const contractor = dataModule.getContractor(id);
+        const contractor = this.dataModule.getContractor(id);
         if (contractor) {
             // Create modal if it doesn't exist
             if (!document.getElementById('contractorDetailsModal')) {
@@ -288,8 +307,10 @@ const adminContractorsModule = {
             const content = document.getElementById('contractorDetailsContent');
 
             if (content) {
-                const approvedReviews = contractor.reviews.filter(r => r.status === 'approved');
-                const pendingReviews = contractor.reviews.filter(r => r.status === 'pending');
+                // FIX: Get reviews from reviewManager instead of contractor.reviews
+                const reviews = this.dataModule.getReviewsForContractor(contractor.id);
+                const approvedReviews = reviews.filter(r => r.status === 'approved');
+                const pendingReviews = reviews.filter(r => r.status === 'pending');
 
                 content.innerHTML = `
                 <div class="contractor-details">
@@ -330,14 +351,14 @@ const adminContractorsModule = {
                             <span class="info-label">Overall Rating</span>
                             <span class="info-value">
                                 <span class="rating-value">
-                                    ${'⭐'.repeat(Math.floor(contractor.rating))}
-                                    (${contractor.rating}/5)
+                                    ${'⭐'.repeat(Math.floor(contractor.rating || 0))}
+                                    (${contractor.rating || 0}/5)
                                 </span>
                             </span>
                         </div>
                         <div class="info-item">
                             <span class="info-label">Total Reviews</span>
-                            <span class="info-value">${contractor.reviews.length}</span>
+                            <span class="info-value">${reviews.length}</span>
                         </div>
                         <div class="info-item">
                             <span class="info-label">Approved Reviews</span>
@@ -349,7 +370,7 @@ const adminContractorsModule = {
                         </div>
                         <div class="info-item">
                             <span class="info-label">Member Since</span>
-                            <span class="info-value">${dataModule.formatDate(contractor.createdAt)}</span>
+                            <span class="info-value">${this.dataModule.formatDate(contractor.createdAt)}</span>
                         </div>
                     </div>
                     
@@ -360,14 +381,14 @@ const adminContractorsModule = {
                         <div class="reviews-section-header">
                             <h3 class="section-title">
                                 <span class="material-icons">reviews</span>
-                                Customer Reviews (${contractor.reviews.length})
+                                Customer Reviews (${reviews.length})
                             </h3>
                             <span class="reviews-count">${approvedReviews.length} approved • ${pendingReviews.length} pending</span>
                         </div>
                         
-                        ${contractor.reviews.length > 0 ?
+                        ${reviews.length > 0 ?
                         `<div class="reviews-list">
-                                ${contractor.reviews.map(review => `
+                                ${reviews.map(review => `
                                     <div class="review-item">
                                         <div class="review-header">
                                             <div class="reviewer-avatar">
@@ -382,7 +403,7 @@ const adminContractorsModule = {
                                                     </span>
                                                 </div>
                                                 <div class="review-meta">
-                                                    <span class="review-date">${dataModule.formatDate(review.date)}</span>
+                                                    <span class="review-date">${this.dataModule.formatDate(review.date)}</span>
                                                     <span class="project-type">${review.projectType}</span>
                                                     <span class="review-status ${review.status}">${review.status}</span>
                                                 </div>
@@ -404,7 +425,7 @@ const adminContractorsModule = {
 
             modal.style.display = 'flex';
         }
-    },
+    }
 
     createContractorDetailsModal() {
         // Create the modal if it doesn't exist
@@ -423,35 +444,30 @@ const adminContractorsModule = {
         `;
 
         document.body.insertAdjacentHTML('beforeend', modalHTML);
-    },
+    }
 
     editContractor(id) {
-        const contractor = dataModule.getContractor(id);
+        const contractor = this.dataModule.getContractor(id);
         if (contractor) {
             this.showContractorForm(contractor);
         }
-    },
+    }
 
     deleteContractor(id) {
         if (confirm('Are you sure you want to delete this contractor? This action cannot be undone.')) {
-            dataModule.deleteContractor(id);
+            this.dataModule.deleteContractor(id);
             this.renderContractorsTable();
-            utils.showNotification('Contractor deleted successfully', 'success');
-
-            // Also update categories tab stats if it's visible
-            if (typeof adminCategoriesModule !== 'undefined') {
-                adminCategoriesModule.renderCategories();
-            }
+            this.utils.showNotification('Contractor deleted successfully', 'success');
 
             // Update stats in main admin module
-            if (typeof adminModule !== 'undefined') {
+            if (window.adminModule) {
                 adminModule.renderStats();
             }
         }
-    },
+    }
 
     filterContractors(searchTerm) {
-        const contractors = dataModule.getContractors();
+        const contractors = this.dataModule.getContractors();
         const filtered = contractors.filter(contractor =>
             contractor.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
             contractor.category.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -459,7 +475,7 @@ const adminContractorsModule = {
             contractor.location.toLowerCase().includes(searchTerm.toLowerCase())
         );
         this.renderContractorsTable(filtered);
-    },
+    }
 
     closeModal(modalId) {
         const modal = document.getElementById(modalId);
@@ -467,4 +483,7 @@ const adminContractorsModule = {
             modal.style.display = 'none';
         }
     }
-};
+}
+
+// Export the class but don't create global instance
+// The instance will be created in admin.js after dependencies are available
