@@ -1,50 +1,48 @@
-// js/app/script.js - ES6 MODULE ENTRY POINT
-let app;
+// js/script.js - ES6 MODULE ENTRY POINT (CLEAN ENTRY POINT)
+import { DataModule } from './modules/data.js';
+import { ContractorReviewApp } from './app/main.js';
+
+// Import utility modules
+import { debounce } from './modules/utilities.js';
+import { showNotification } from './modules/notifications.js';
+import { generateUUID } from './modules/uuid.js';
+
+// Create a utils object with the imported functions for compatibility
+const utils = {
+    debounce,
+    showNotification,
+    generateId: generateUUID,
+    showSuccess: (message) => showNotification(message, 'success'),
+    showError: (message) => showNotification(message, 'error'),
+    showWarning: (message) => showNotification(message, 'warning'),
+    showInfo: (message) => showNotification(message, 'info')
+};
+
+// Make utils globally available for legacy code
+window.utils = utils;
 
 async function initializeApp() {
     try {
         console.log('🚀 Starting Contractor Reviews App...');
-        
-        // Wait for default data to be loaded first
-        console.log('⏳ Waiting for default data to load...');
-        await window.dataReady;
-        
-        console.log('✅ Default data loaded, initializing data module...');
-        
-        // Initialize data module first (this initializes all sub-managers)
-        await dataModule.init();
-        
-        console.log('✅ Data module initialized, creating managers...');
-        
-        // Create card manager with proper dependency injection
-        const cardManager = new CardManager(dataModule, reviewManager, favoritesManager);
-        
-        // Create UI manager with card manager dependency
-        const uiManager = new UIManager(cardManager);
-        const modalManager = new ModalManager();
-        const filterManager = new FilterManager();
-        const formManager = new FormManager();
-        const mapManager = new MapManager();
 
-        // Create main app with all managers
-        app = new ContractorReviewApp(uiManager, modalManager, filterManager, formManager, mapManager);
-        
-        // Set uiManager in dataModule for favorites
-        dataModule.setUIManager(uiManager);
-        
+        console.log('✅ Creating data module...');
+
+        // Create data module instance - it now handles all data loading internally
+        const dataModule = new DataModule();
+
+        console.log('✅ Data module created, creating main app...');
+
+        // Create main app - it handles all manager creation internally
+        const app = new ContractorReviewApp(dataModule);
+
         // Initialize the main app
         await app.init();
-        
-        // Make available globally for HTML onclick handlers
-        window.app = app;
-        window.cardManager = cardManager;
-        
+
         console.log('🎉 Contractor Reviews App initialized successfully!');
-        console.log('📊 App status:', app.getAppStatus());
-        
+
     } catch (error) {
         console.error('❌ Failed to initialize application:', error);
-        
+
         // Show user-friendly error message
         if (utils && utils.showNotification) {
             utils.showNotification('Error loading application. Please refresh the page.', 'error');
@@ -55,91 +53,118 @@ async function initializeApp() {
 // Event delegation system for data-action attributes
 function setupEventDelegation() {
     console.log('Setting up event delegation...');
-    
-    document.addEventListener('click', function(event) {
+
+    document.addEventListener('click', function (event) {
         const target = event.target.closest('[data-action]');
         if (!target || !window.app) return;
-        
+
         const action = target.getAttribute('data-action');
         console.log('Action triggered:', action);
-        
-        switch(action) {
+
+        switch (action) {
             case 'search':
                 event.preventDefault();
                 window.app.searchContractors();
                 break;
-                
+
             case 'toggle-filters':
                 event.preventDefault();
                 handleToggleFilters();
                 break;
-                
+
             case 'clear-filters':
                 event.preventDefault();
                 window.app.clearFilters();
                 break;
-                
+
             case 'show-favorites':
                 event.preventDefault();
                 window.app.showFavoritesOnly();
                 break;
-                
+
             case 'show-high-rated':
                 event.preventDefault();
                 window.app.showHighRated();
                 break;
-                
+
             case 'view-favorites':
                 event.preventDefault();
-                dataModule.showFavoritesSection();
+                window.app.showFavoritesSection();
                 break;
-                
+
             case 'export-favorites':
                 event.preventDefault();
-                dataModule.downloadFavorites();
+                if (window.app.favoritesManager) {
+                    window.app.favoritesManager.downloadFavorites();
+                }
                 break;
-                
+
             case 'import-favorites':
                 event.preventDefault();
                 document.getElementById('importFavorites').click();
                 break;
-                
+
             case 'export-data':
                 event.preventDefault();
                 window.app.exportData();
                 break;
+
+            case 'clear-all-favorites':
+                event.preventDefault();
+                if (window.app.favoritesManager) {
+                    window.app.favoritesManager.clearFavorites();
+                }
+                break;
+                
+            // Map view toggle actions
+            case 'view-map':
+                event.preventDefault();
+                window.app.showMapView();
+                break;
+                
+            case 'view-list':
+                event.preventDefault();
+                window.app.showListView();
+                break;
         }
     });
-    
-    document.addEventListener('change', function(event) {
+
+    document.addEventListener('change', function (event) {
         const target = event.target;
         if (!target.hasAttribute('data-action') || !window.app) return;
-        
+
         const action = target.getAttribute('data-action');
-        
-        switch(action) {
+
+        switch (action) {
             case 'filter':
                 window.app.filterContractors();
                 break;
-                
+
             case 'sort':
                 window.app.sortContractors();
                 break;
+
+            case 'import-favorites-file':
+                if (target.files && target.files[0]) {
+                    window.app.handleFavoritesImport(target.files[0]);
+                    target.value = ''; // Reset file input
+                }
+                break;
         }
     });
-    
-    document.addEventListener('keypress', function(event) {
+
+    document.addEventListener('keypress', function (event) {
         const target = event.target;
         if (!target.hasAttribute('data-action') || !window.app) return;
-        
+
         const action = target.getAttribute('data-action');
-        
+
         if (action === 'search-keypress' && event.key === 'Enter') {
             event.preventDefault();
             window.app.searchContractors();
         }
     });
-    
+
     console.log('Event delegation setup complete');
 }
 
@@ -147,11 +172,11 @@ function setupEventDelegation() {
 function handleToggleFilters() {
     const toggleBtn = document.getElementById('toggleFiltersBtn');
     const advancedFilters = document.getElementById('advancedFilters');
-    
+
     if (!toggleBtn || !advancedFilters) return;
-    
+
     const isHidden = advancedFilters.classList.contains('hidden');
-    
+
     if (isHidden) {
         advancedFilters.classList.remove('hidden');
         toggleBtn.innerHTML = '<i class="material-icons">filter_list</i><span>Less Filters</span>';
@@ -169,38 +194,6 @@ function initEventDelegation() {
         setupEventDelegation();
     }, 1000);
 }
-
-// Global functions for favorites (exported for use in HTML)
-window.toggleFavorite = (contractorId) => {
-    const isNowFavorite = dataModule.toggleFavorite(contractorId);
-    const contractor = dataModule.getContractor(contractorId);
-    
-    if (contractor) {
-        const message = isNowFavorite ? 
-            `Added ${contractor.name} to favorites! 💖` : 
-            `Removed ${contractor.name} from favorites.`;
-        utils.showNotification(message, isNowFavorite ? 'success' : 'info');
-    }
-};
-
-window.handleFavoritesImport = async (file) => {
-    const text = await file.text();
-    const success = dataModule.importFavorites(text);
-    
-    if (success) {
-        utils.showNotification('Favorites imported successfully! 🎉', 'success');
-    } else {
-        utils.showNotification('Failed to import favorites. Invalid file format.', 'error');
-    }
-};
-
-window.showFavoritesSection = () => {
-    const favoritesSection = document.getElementById('favoritesSection');
-    favoritesSection.classList.remove('hidden');
-    favoritesSection.scrollIntoView({ behavior: 'smooth' });
-};
-
-window.getApp = () => window.app;
 
 // Export the main initialization function
 export { initializeApp, initEventDelegation };

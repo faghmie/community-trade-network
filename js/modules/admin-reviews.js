@@ -107,20 +107,20 @@ class AdminReviewsModule {
                     <p class="review-comment">${review.comment}</p>
                     <div class="review-actions">
                         ${review.status === 'pending' ? `
-                            <button class="btn btn-small btn-success" onclick="adminModule.approveReview('${review.contractorId}', '${review.id}')">
+                            <button class="btn btn-small btn-success" onclick="adminModule.approveReview('${review.id}')">
                                 Approve
                             </button>
-                            <button class="btn btn-small btn-warning" onclick="adminModule.rejectReview('${review.contractorId}', '${review.id}')">
+                            <button class="btn btn-small btn-warning" onclick="adminModule.rejectReview('${review.id}')">
                                 Reject
                             </button>
                         ` : ''}
                         ${review.status === 'approved' ? `
-                            <button class="btn btn-small btn-warning" onclick="adminModule.rejectReview('${review.contractorId}', '${review.id}')">
+                            <button class="btn btn-small btn-warning" onclick="adminModule.rejectReview('${review.id}')">
                                 Reject
                             </button>
                         ` : ''}
                         ${review.status === 'rejected' ? `
-                            <button class="btn btn-small btn-success" onclick="adminModule.approveReview('${review.contractorId}', '${review.id}')">
+                            <button class="btn btn-small btn-success" onclick="adminModule.approveReview('${review.id}')">
                                 Approve
                             </button>
                         ` : ''}
@@ -128,7 +128,7 @@ class AdminReviewsModule {
                             View Details
                         </button>
                         <button class="btn btn-small btn-danger" 
-                                onclick="adminModule.deleteReview('${review.contractorId}', '${review.id}')">
+                                onclick="adminModule.deleteReview('${review.id}')">
                             Delete
                         </button>
                     </div>
@@ -184,9 +184,9 @@ class AdminReviewsModule {
         this.renderReviewsList(filteredReviews);
     }
 
-    approveReview(contractorId, reviewId) {
+    approveReview(reviewId) {
         if (confirm('Are you sure you want to approve this review?')) {
-            const success = this.dataModule.updateReviewStatus(contractorId, reviewId, 'approved');
+            const success = this.dataModule.updateReviewStatus(reviewId, 'approved');
             if (success) {
                 this.renderReviews();
                 // Update main stats if admin module is available
@@ -197,9 +197,9 @@ class AdminReviewsModule {
         }
     }
 
-    rejectReview(contractorId, reviewId) {
+    rejectReview(reviewId) {
         if (confirm('Are you sure you want to reject this review?')) {
-            const success = this.dataModule.updateReviewStatus(contractorId, reviewId, 'rejected');
+            const success = this.dataModule.updateReviewStatus(reviewId, 'rejected');
             if (success) {
                 this.renderReviews();
                 // Update main stats if admin module is available
@@ -210,9 +210,9 @@ class AdminReviewsModule {
         }
     }
 
-    deleteReview(contractorId, reviewId) {
+    deleteReview(reviewId) {
         if (confirm('Are you sure you want to delete this review? This action cannot be undone.')) {
-            const success = this.dataModule.deleteReview(contractorId, reviewId);
+            const success = this.dataModule.deleteReview(reviewId);
             if (success) {
                 this.renderReviews();
                 // Update main stats if admin module is available
@@ -226,7 +226,7 @@ class AdminReviewsModule {
     viewReview(contractorId, reviewId) {
         const contractor = this.dataModule.getContractor(contractorId);
         if (contractor) {
-            const review = contractor.reviews.find(r => r.id === reviewId);
+            const review = this.dataModule.getAllReviews().find(r => r.id === reviewId);
             if (review) {
                 const modal = document.getElementById('reviewDetailsModal');
                 const content = document.getElementById('reviewDetailsContent');
@@ -321,25 +321,25 @@ class AdminReviewsModule {
                         
                         <div class="detail-actions">
                             ${review.status === 'pending' ? `
-                                <button class="btn btn-success" onclick="adminModule.approveReview('${contractorId}', '${review.id}'); adminModule.closeModal('reviewDetailsModal')">
+                                <button class="btn btn-success" onclick="adminModule.approveReview('${review.id}'); adminModule.closeModal('reviewDetailsModal')">
                                     Approve Review
                                 </button>
-                                <button class="btn btn-warning" onclick="adminModule.rejectReview('${contractorId}', '${review.id}'); adminModule.closeModal('reviewDetailsModal')">
+                                <button class="btn btn-warning" onclick="adminModule.rejectReview('${review.id}'); adminModule.closeModal('reviewDetailsModal')">
                                     Reject Review
                                 </button>
                             ` : ''}
                             ${review.status === 'approved' ? `
-                                <button class="btn btn-warning" onclick="adminModule.rejectReview('${contractorId}', '${review.id}'); adminModule.closeModal('reviewDetailsModal')">
+                                <button class="btn btn-warning" onclick="adminModule.rejectReview('${review.id}'); adminModule.closeModal('reviewDetailsModal')">
                                     Reject Review
                                 </button>
                             ` : ''}
                             ${review.status === 'rejected' ? `
-                                <button class="btn btn-success" onclick="adminModule.approveReview('${contractorId}', '${review.id}'); adminModule.closeModal('reviewDetailsModal')">
+                                <button class="btn btn-success" onclick="adminModule.approveReview('${review.id}'); adminModule.closeModal('reviewDetailsModal')">
                                     Approve Review
                                 </button>
                             ` : ''}
                             <button class="btn btn-danger" 
-                                    onclick="adminModule.deleteReview('${contractorId}', '${review.id}'); adminModule.closeModal('reviewDetailsModal')">
+                                    onclick="adminModule.deleteReview('${review.id}'); adminModule.closeModal('reviewDetailsModal')">
                                 Delete Review
                             </button>
                         </div>
@@ -359,5 +359,4 @@ class AdminReviewsModule {
     }
 }
 
-// Export the class but don't create global instance
-// The instance will be created in admin.js after dataModule is available
+export default AdminReviewsModule;

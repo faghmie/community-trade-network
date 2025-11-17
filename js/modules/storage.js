@@ -1,15 +1,13 @@
 // js/modules/storage.js
-// Clean Storage module - Class-based with UUID support
+// ES6 Module for storage management with Supabase sync
 
-class Storage {
+export class Storage {
     constructor() {
         this.supabase = null;
-        console.log('🔧 Storage module initialized');
     }
 
     init(supabase = null) {
         this.supabase = supabase;
-        console.log('✅ Storage module initialized with Supabase sync');
     }
 
     // Save data to localStorage and optionally sync to Supabase
@@ -17,20 +15,17 @@ class Storage {
         const { syncToSupabase = true, immediate = true } = options;
         
         try {
-            // Always save to localStorage immediately for fast UI response
             localStorage.setItem(key, JSON.stringify(data));
-            console.log(`💾 Saved to localStorage ${key}:`, data);
 
-            // Sync to Supabase in background if enabled and Supabase is available
             if (syncToSupabase && immediate && this.isSupabaseAvailable()) {
                 this.syncToSupabase(key, data).catch(error => {
-                    console.warn(`⚠️ Background sync failed for ${key}:`, error);
+                    console.warn(`Background sync failed for ${key}:`, error);
                 });
             }
 
             return true;
         } catch (error) {
-            console.error('❌ Error saving to localStorage:', error);
+            console.error('Error saving to localStorage:', error);
             return false;
         }
     }
@@ -40,33 +35,32 @@ class Storage {
         const { preferRemote = false, forceRefresh = false } = options;
         
         try {
-            // If force refresh or no local data, try to load from Supabase first
+            // For favorites, always load from localStorage first as they are user-specific
+            if (key === 'favorites') {
+                const localData = localStorage.getItem(key);
+                return localData ? JSON.parse(localData) : [];
+            }
+
             if ((forceRefresh || !this.exists(key)) && this.isSupabaseAvailable()) {
                 try {
                     const remoteData = await this.loadFromSupabase(key);
                     if (remoteData) {
-                        // Save the remote data to localStorage for next time
                         localStorage.setItem(key, JSON.stringify(remoteData));
-                        console.log(`☁️ Loaded from Supabase and cached to localStorage: ${key}`);
                         return remoteData;
                     }
                 } catch (error) {
-                    console.warn(`⚠️ Failed to load from Supabase for ${key}:`, error);
                     // Fall back to localStorage
                 }
             }
 
-            // Load from localStorage as fallback or if preferRemote is false
             const localData = localStorage.getItem(key);
             if (localData) {
-                const parsedData = JSON.parse(localData);
-                console.log(`💾 Loaded from localStorage: ${key}`);
-                return parsedData;
+                return JSON.parse(localData);
             }
 
             return null;
         } catch (error) {
-            console.error('❌ Error loading data:', error);
+            console.error('Error loading data:', error);
             return null;
         }
     }
@@ -77,16 +71,9 @@ class Storage {
         
         try {
             localStorage.removeItem(key);
-            console.log(`🗑️ Removed from localStorage: ${key}`);
-
-            // Note: Bulk removal from Supabase requires specific IDs
-            if (syncToSupabase) {
-                console.log(`ℹ️ Bulk removal of ${key} from Supabase would require specific IDs`);
-            }
-
             return true;
         } catch (error) {
-            console.error('❌ Error removing data:', error);
+            console.error('Error removing data:', error);
             return false;
         }
     }
@@ -98,10 +85,10 @@ class Storage {
             localStorage.removeItem('reviews');
             localStorage.removeItem('categories');
             localStorage.removeItem('favorites');
-            console.log('🧹 Cleared all app data from localStorage');
+            localStorage.removeItem('locations');
             return true;
         } catch (error) {
-            console.error('❌ Error clearing localStorage:', error);
+            console.error('Error clearing localStorage:', error);
             return false;
         }
     }
@@ -123,8 +110,6 @@ class Storage {
         if (!this.isSupabaseAvailable()) {
             throw new Error('Cannot sync: Supabase not available');
         }
-
-        console.log(`🔄 Syncing ${key} to Supabase...`);
 
         try {
             switch (key) {
@@ -152,14 +137,19 @@ class Storage {
                     }
                     break;
                     
+                case 'favorites':
+                    // Favorites are user-specific and typically don't sync to Supabase
+                    // But we'll save them if the method exists
+                    if (data && data.length > 0 && typeof this.supabase.saveFavorites === 'function') {
+                        await this.supabase.saveFavorites(data);
+                    }
+                    break;
+                    
                 default:
-                    console.warn(`⚠️ No sync handler for key: ${key}`);
                     return;
             }
-            
-            console.log(`✅ Successfully synced ${key} to Supabase`);
         } catch (error) {
-            console.error(`❌ Error syncing ${key} to Supabase:`, error);
+            console.error(`Error syncing ${key} to Supabase:`, error);
             throw error;
         }
     }
@@ -169,8 +159,6 @@ class Storage {
         if (!this.isSupabaseAvailable()) {
             throw new Error('Cannot load from Supabase: not available');
         }
-
-        console.log(`☁️ Loading ${key} from Supabase...`);
 
         try {
             switch (key) {
@@ -183,21 +171,25 @@ class Storage {
                 case 'categories':
                     return await this.supabase.getAllCategories();
                     
+                case 'favorites':
+                    // Favorites are user-specific, load from localStorage only
+                    if (typeof this.supabase.getFavorites === 'function') {
+                        return await this.supabase.getFavorites();
+                    }
+                    return null;
+                    
                 default:
-                    console.warn(`⚠️ No load handler for key: ${key}`);
                     return null;
             }
         } catch (error) {
-            console.error(`❌ Error loading ${key} from Supabase:`, error);
+            console.error(`Error loading ${key} from Supabase:`, error);
             throw error;
         }
     }
 
-    // Retry pending syncs (handled by Supabase client)
+    // Retry pending syncs
     async retryPendingSyncs() {
         if (!this.isSupabaseAvailable()) return;
-
-        console.log('🔄 Retrying pending syncs via Supabase client...');
         await this.supabase.processPendingSync();
     }
 
@@ -206,23 +198,20 @@ class Storage {
         return navigator.onLine;
     }
 
-    // Full data sync - useful for initial setup or manual sync
+    // Full data sync
     async fullSync() {
         if (!this.isSupabaseAvailable()) {
             throw new Error('Cannot perform full sync: Supabase not available');
         }
 
-        console.log('🔄 Starting full data sync with Supabase...');
-
         try {
-            // Load all current data from localStorage
             const localData = {
-                contractors: this.load('contractors') || [],
-                reviews: this.load('reviews') || [],
-                categories: this.load('categories') || []
+                contractors: await this.load('contractors') || [],
+                reviews: await this.load('reviews') || [],
+                categories: await this.load('categories') || [],
+                favorites: await this.load('favorites') || []
             };
 
-            // Sync each data type individually
             if (localData.contractors.length > 0) {
                 await this.syncToSupabase('contractors', localData.contractors);
             }
@@ -232,11 +221,13 @@ class Storage {
             if (localData.categories.length > 0) {
                 await this.syncToSupabase('categories', localData.categories);
             }
+            if (localData.favorites.length > 0 && typeof this.supabase.saveFavorites === 'function') {
+                await this.syncToSupabase('favorites', localData.favorites);
+            }
 
-            console.log('✅ Full sync completed successfully');
             return true;
         } catch (error) {
-            console.error('❌ Full sync failed:', error);
+            console.error('Full sync failed:', error);
             throw error;
         }
     }
@@ -247,14 +238,11 @@ class Storage {
             throw new Error('Cannot pull latest data: Supabase not available');
         }
 
-        console.log('⬇️ Pulling latest data from Supabase...');
-
         try {
             const contractors = await this.loadFromSupabase('contractors');
             const reviews = await this.loadFromSupabase('reviews');
             const categories = await this.loadFromSupabase('categories');
 
-            // Update localStorage with remote data
             if (contractors) {
                 this.save('contractors', contractors, { syncToSupabase: false, immediate: false });
             }
@@ -265,28 +253,33 @@ class Storage {
                 this.save('categories', categories, { syncToSupabase: false, immediate: false });
             }
 
-            console.log('✅ Latest data pulled from Supabase and cached locally');
             return { contractors, reviews, categories };
         } catch (error) {
-            console.error('❌ Failed to pull latest data:', error);
+            console.error('Failed to pull latest data:', error);
             throw error;
         }
     }
 
     // Get storage statistics
     getStats() {
-        const stats = {
+        return {
             contractors: (this.load('contractors') || []).length,
             reviews: (this.load('reviews') || []).length,
             categories: (this.load('categories') || []).length,
             favorites: (this.load('favorites') || []).length,
             supabaseStatus: this.isSupabaseAvailable() ? this.supabase.getSyncStatus() : 'unavailable'
         };
+    }
 
-        console.log('📊 Storage stats:', stats);
-        return stats;
+    // Special method for favorites persistence
+    async saveFavorites(favorites) {
+        return this.save('favorites', favorites, { 
+            syncToSupabase: false, // Favorites typically don't sync to avoid user conflicts
+            immediate: true 
+        });
+    }
+
+    async loadFavorites() {
+        return this.load('favorites');
     }
 }
-
-// Create and export instance
-const storage = new Storage();

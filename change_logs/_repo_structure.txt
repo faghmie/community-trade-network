@@ -18,6 +18,18 @@
 |   |-- 2025_11_16_02.md
 |   |-- 2025_11_16_03.md
 |   |-- 2025_11_16_04.md
+|   |-- 2025_11_16_05.md
+|   |-- 2025_11_16_06.md
+|   |-- 2025_11_16_07.md
+|   |-- 2025_11_16_08.md
+|   |-- 2025_11_16_09.md
+|   |-- 2025_11_16_10.md
+|   |-- 2025_11_16_11.md
+|   |-- 2025_11_16_12.md
+|   |-- 2025_11_16_13.md
+|   |-- 2025_11_17_01.md
+|   |-- 2025_11_17_02.md
+|   |-- 2025_11_17_03.md
 |   |-- _better_coding_prompt.md
 |   |-- _END_of_day_status_prompt.md
 |   |-- _repo_structure.txt
@@ -45,17 +57,28 @@
 |   |-- admin.css
 |   |-- layout.css
 |   `-- main.css
+|-- icons
+|   |-- icon-128x128.png
+|   |-- icon-144x144.png
+|   |-- icon-152x152.png
+|   |-- icon-192x192.png
+|   |-- icon-384x384.png
+|   |-- icon-512x512.png
+|   |-- icon-72x72.png
+|   `-- icon-96x96.png
 |-- js
 |   |-- app
+|   |   |-- modals
+|   |   |   |-- baseModalManager.js
+|   |   |   |-- contractorModalManager.js
+|   |   |   `-- reviewModalManager.js
 |   |   |-- filterManager.js
-|   |   |-- formManager.js
 |   |   |-- main.js
 |   |   |-- modalManager.js
 |   |   `-- uiManager.js
 |   |-- config
 |   |   `-- supabase-credentials.js
 |   |-- data
-|   |   |-- dataLoader.js
 |   |   |-- defaultCategories.js
 |   |   |-- defaultContractors.js
 |   |   |-- defaultData.js
@@ -71,18 +94,23 @@
 |   |   |-- categories.js
 |   |   |-- contractorManager.js
 |   |   |-- data.js
+|   |   |-- favoritesDataManager.js
 |   |   |-- favoritesManager.js
 |   |   |-- mapManager.js
+|   |   |-- notifications.js
 |   |   |-- reviewManager.js
 |   |   |-- statsManager.js
 |   |   |-- storage.js
 |   |   |-- supabase.js
 |   |   |-- tabs.js
-|   |   `-- utils.js
+|   |   |-- utilities.js
+|   |   |-- uuid.js
+|   |   `-- validation.js
 |   |-- admin.js
 |   `-- script.js
 |-- admin.html
 |-- deployment_decisions.md
+|-- generate-icons.html
 |-- generate_password.html
 |-- index.html
 |-- manifest.json
@@ -90,4 +118,4 @@
 |-- rate-my-contractor-product-requirements.md
 `-- sw.js
 
-10 directories, 81 files
+12 directories, 107 files

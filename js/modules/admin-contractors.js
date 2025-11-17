@@ -1,9 +1,11 @@
 // Admin Contractors Management
-class AdminContractors {
-    constructor(dataModule, categoriesModule, utils, locationData) {
+import { showNotification } from './notifications.js';
+import { isValidEmail, isValidSouthAfricanPhone, isValidUrl } from './validation.js';
+
+class AdminContractorsModule {
+    constructor(dataModule, categoriesModule, locationData) {
         this.dataModule = dataModule;
         this.categoriesModule = categoriesModule;
-        this.utils = utils;
         this.locationData = locationData;
         
         // Bind methods
@@ -243,7 +245,7 @@ class AdminContractors {
         const area = document.getElementById('contractorArea')?.value;
 
         if (!province || !area) {
-            this.utils.showNotification('Please select both province and area', 'error');
+            showNotification('Please select both province and area', 'error');
             return;
         }
 
@@ -258,19 +260,19 @@ class AdminContractors {
         };
 
         // Validate inputs
-        if (!this.utils.isValidEmail(contractorData.email)) {
-            this.utils.showNotification('Please enter a valid email address', 'error');
+        if (!isValidEmail(contractorData.email)) {
+            showNotification('Please enter a valid email address', 'error');
             return;
         }
 
         // FIXED: Updated phone validation to accept numbers like "0123456789"
-        if (!this.utils.isValidSouthAfricanPhone(contractorData.phone)) {
-            this.utils.showNotification('Please enter a valid South African phone number (e.g., +27821234567, 0821234567, or 0123456789)', 'error');
+        if (!isValidSouthAfricanPhone(contractorData.phone)) {
+            showNotification('Please enter a valid South African phone number (e.g., +27821234567, 0821234567, or 0123456789)', 'error');
             return;
         }
 
-        if (contractorData.website && !this.utils.isValidUrl(contractorData.website)) {
-            this.utils.showNotification('Please enter a valid website URL (include http:// or https://)', 'error');
+        if (contractorData.website && !isValidUrl(contractorData.website)) {
+            showNotification('Please enter a valid website URL (include http:// or https://)', 'error');
             return;
         }
 
@@ -279,11 +281,11 @@ class AdminContractors {
         if (contractorId) {
             // Update existing contractor
             this.dataModule.updateContractor(contractorId, contractorData);
-            this.utils.showNotification('Contractor updated successfully', 'success');
+            showNotification('Contractor updated successfully', 'success');
         } else {
             // Add new contractor
             this.dataModule.addContractor(contractorData);
-            this.utils.showNotification('Contractor added successfully', 'success');
+            showNotification('Contractor added successfully', 'success');
         }
 
         this.closeModal('contractorFormModal');
@@ -457,7 +459,7 @@ class AdminContractors {
         if (confirm('Are you sure you want to delete this contractor? This action cannot be undone.')) {
             this.dataModule.deleteContractor(id);
             this.renderContractorsTable();
-            this.utils.showNotification('Contractor deleted successfully', 'success');
+            showNotification('Contractor deleted successfully', 'success');
 
             // Update stats in main admin module
             if (window.adminModule) {
@@ -485,5 +487,4 @@ class AdminContractors {
     }
 }
 
-// Export the class but don't create global instance
-// The instance will be created in admin.js after dependencies are available
+export default AdminContractorsModule;

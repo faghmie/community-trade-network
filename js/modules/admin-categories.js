@@ -177,5 +177,4 @@ class AdminCategoriesModule {
     }
 }
 
-// Export the class but don't create global instance
-// The instance will be created in admin.js after dataModule is available
+export default AdminCategoriesModule;

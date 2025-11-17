@@ -219,6 +219,143 @@
     font-size: 16px;
 }
 
+/* FIXED: Material Design Expansion Panel for Advanced Filters - AUTO HEIGHT */
+.advanced-filters {
+    background: var(--bg-card);
+    border: 1px solid var(--border-light);
+    border-radius: var(--border-radius-lg);
+    margin-bottom: var(--space-lg);
+    box-shadow: var(--elevation-1);
+    overflow: hidden;
+    animation: materialSlideDown 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    height: auto; /* FIXED: Allow auto height */
+    min-height: 0; /* FIXED: Remove fixed height */
+    max-height: none; /* FIXED: Remove max height restriction */
+}
+
+.advanced-filters.hidden {
+    display: none;
+}
+
+.advanced-filters:not(.hidden) {
+    display: block;
+}
+
+/* Expansion Header - Clickable area */
+.expansion-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: var(--space-md) var(--space-lg);
+    cursor: pointer;
+    background: var(--surface-50);
+    border-bottom: 1px solid var(--border-light);
+    transition: var(--material-transition);
+    margin: 0;
+}
+
+.expansion-header:hover {
+    background: var(--surface-100);
+}
+
+.expansion-header h4 {
+    margin: 0;
+    font-size: var(--font-size-md);
+    font-weight: var(--font-weight-medium);
+    color: var(--text-primary);
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+}
+
+.expansion-header .material-icons {
+    color: var(--text-secondary);
+    transition: var(--material-transition);
+    font-size: 20px;
+}
+
+/* Expansion Content - Contains all filter items - FIXED AUTO HEIGHT */
+.expansion-content {
+    padding: var(--space-lg);
+    background: var(--bg-card);
+    display: block;
+    visibility: visible;
+    opacity: 1;
+    animation: fadeIn 0.2s ease-in-out;
+    height: auto; /* FIXED: Allow content to determine height */
+    min-height: auto; /* FIXED: Remove fixed min-height */
+    overflow: visible; /* FIXED: Ensure content is visible */
+}
+
+/* Quick Presets Section */
+.quick-presets {
+    margin-bottom: var(--space-lg);
+    padding-bottom: var(--space-lg);
+    border-bottom: 1px solid var(--border-light);
+}
+
+.preset-buttons {
+    display: flex;
+    gap: var(--space-sm);
+    flex-wrap: wrap;
+}
+
+/* Advanced Filter Grid - Contains the filter form groups */
+.advanced-filter-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: var(--space-lg);
+    align-items: start;
+    height: auto; /* FIXED: Auto height */
+    min-height: auto; /* FIXED: Remove fixed height */
+}
+
+/* Material Form Groups inside Advanced Filters */
+.advanced-filters .material-form-group {
+    margin-bottom: 0;
+    height: auto; /* FIXED: Auto height for form groups */
+    min-height: auto;
+}
+
+.advanced-filters .material-input-label {
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+    font-size: var(--font-size-sm);
+    font-weight: var(--font-weight-medium);
+    color: var(--text-primary);
+    margin-bottom: var(--space-sm);
+}
+
+.advanced-filters .material-input-label .material-icons {
+    font-size: 18px;
+    color: var(--text-secondary);
+}
+
+.advanced-filters .material-select {
+    width: 100%;
+    height: 40px;
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius-sm);
+    padding: 0 var(--space-md);
+    font-size: var(--font-size-sm);
+    background: var(--bg-white);
+    color: var(--text-primary);
+    transition: var(--material-transition);
+    cursor: pointer;
+}
+
+.advanced-filters .material-select:hover {
+    border-color: var(--primary-color);
+    background: var(--surface-50);
+}
+
+.advanced-filters .material-select:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 2px rgba(33, 150, 243, 0.1);
+}
+
 /* FIXED: Compact stats overview for filter bar context */
 .stats-overview {
     display: grid;
@@ -324,40 +461,6 @@
     gap: var(--space-xs);
 }
 
-/* Material Design Advanced Filters */
-.advanced-filters {
-    background: var(--bg-card);
-    border: 1px solid var(--border-light);
-    border-radius: var(--border-radius-lg);
-    padding: var(--space-xl);
-    margin-bottom: var(--space-lg);
-    box-shadow: var(--elevation-1);
-    animation: materialSlideDown 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    display: block;
-}
-
-.advanced-filters.hidden {
-    display: none;
-}
-
-/* UPDATED: Material Design Quick Presets */
-.quick-presets {
-    margin-bottom: var(--space-lg);
-    padding-top: 0;
-    padding-bottom: 0;
-    border-top: none;
-}
-
-.quick-presets h5 {
-    display: none;
-}
-
-.preset-buttons {
-    display: flex;
-    gap: var(--space-sm);
-    flex-wrap: wrap;
-}
-
 /* Material Design Animations */
 @keyframes materialSlideDown {
     from {
@@ -367,6 +470,15 @@
     to {
         opacity: 1;
         transform: translateY(0);
+    }
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
     }
 }
 
@@ -481,6 +593,14 @@
         gap: var(--space-md);
     }
     
+    .expansion-header {
+        padding: var(--space-md);
+    }
+    
+    .expansion-content {
+        padding: var(--space-md);
+    }
+    
     .preset-buttons {
         flex-direction: column;
     }
@@ -492,10 +612,6 @@
     
     .dashboard-controls {
         padding: var(--space-md);
-    }
-    
-    .advanced-filters {
-        padding: var(--space-lg);
     }
     
     .stats-overview {
@@ -545,6 +661,18 @@
         gap: 4px; /* Slightly reduced gap on mobile */
     }
     
+    .expansion-header {
+        padding: var(--space-sm) var(--space-md);
+    }
+    
+    .expansion-header h4 {
+        font-size: var(--font-size-sm);
+    }
+    
+    .expansion-content {
+        padding: var(--space-md);
+    }
+    
     .stats-overview {
         grid-template-columns: 1fr;
     }
@@ -565,6 +693,15 @@
     .advanced-filters {
         background: var(--surface-800);
         border-color: var(--surface-600);
+    }
+    
+    .expansion-header {
+        background: var(--surface-700);
+        border-bottom-color: var(--surface-600);
+    }
+    
+    .expansion-header:hover {
+        background: var(--surface-600);
     }
     
     .material-search {
@@ -610,6 +747,16 @@
         background: var(--surface-700);
         color: var(--accent-300);
     }
+    
+    .advanced-filters .material-select {
+        background: var(--surface-700);
+        border-color: var(--surface-600);
+        color: var(--text-on-primary);
+    }
+    
+    .advanced-filters .material-select:hover {
+        background: var(--surface-600);
+    }
 }
 
 /* High Contrast Mode Support */
@@ -623,6 +770,10 @@
     .view-toggle,
     .filter-chip {
         border-width: 2px;
+    }
+    
+    .expansion-header {
+        border-bottom-width: 2px;
     }
     
     .stat-card::before {
@@ -657,6 +808,10 @@
     }
     
     .quick-filters {
+        display: none;
+    }
+    
+    .advanced-filters {
         display: none;
     }
     

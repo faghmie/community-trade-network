@@ -1,5 +1,7 @@
 // js/modules/statsManager.js
-class StatsManager {
+// ES6 Module for statistics management
+
+export class StatsManager {
     constructor() {
         this.contractorManager = null;
         this.reviewManager = null;
@@ -42,6 +44,3 @@ class StatsManager {
         };
     }
 }
-
-// Create singleton instance
-const statsManager = new StatsManager();

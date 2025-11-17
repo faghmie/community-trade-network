@@ -1,5 +1,7 @@
 // js/app/filterManager.js
-class FilterManager {
+// ES6 Module for pure filter management (no UI rendering)
+
+export class FilterManager {
     constructor() {
         this.elements = {};
         this.eventHandlers = {
@@ -8,20 +10,29 @@ class FilterManager {
         };
         this.currentFilters = {};
         this.isAdvancedFiltersVisible = false;
+        this.dataModule = null;
     }
 
-    async init() {
+    async init(dataModule) {
+        this.dataModule = dataModule;
         this.cacheElements();
         this.bindEvents();
         this.updateFilterCount();
         this.updateClearButton();
         this.updateViewToggle();
-        
+
         // Initialize the toggle button with correct initial state
         this.initializeToggleButton();
-        
-        // DEBUG: Log initial state
-        console.log('FilterManager initialized. Advanced filters visible:', this.isAdvancedFiltersVisible);
+
+        // Set initial filters to empty
+        this.currentFilters = {
+            searchTerm: '',
+            category: '',
+            location: '',
+            rating: '',
+            favorites: '',
+            sortBy: 'name'
+        };
     }
 
     cacheElements() {
@@ -38,42 +49,51 @@ class FilterManager {
             clearFiltersBtn: document.querySelector('[data-action="clear-filters"]'),
             viewToggle: document.getElementById('view-toggle'),
             viewToggleBtns: document.querySelectorAll('#view-toggle .btn'),
-            actionButtons: document.querySelectorAll('[data-action]'),
             expansionIcon: document.querySelector('.expansion-icon'),
             expansionHeader: document.querySelector('.expansion-header')
         };
-        
-        // DEBUG: Log element status
-        console.log('Advanced filters element:', this.elements.advancedFilters);
-        console.log('Toggle button element:', this.elements.toggleFiltersBtn);
     }
 
     // Initialize toggle button with correct icon
     initializeToggleButton() {
-        const { toggleFiltersBtn } = this.elements;
-        if (!toggleFiltersBtn) return;
+        const { toggleFiltersBtn, advancedFilters } = this.elements;
+        if (!toggleFiltersBtn || !advancedFilters) return;
 
-        // Set initial icon to expand_more (not filter_list)
+        // Set initial state - advanced filters should be hidden by default
+        this.isAdvancedFiltersVisible = false;
+        
         const icon = toggleFiltersBtn.querySelector('.material-icons');
-        if (icon && icon.textContent === 'filter_list') {
-            icon.textContent = 'expand_more';
+        const textSpans = toggleFiltersBtn.querySelectorAll('span');
+
+        // Find the text span (not the badge)
+        let textSpan = null;
+        for (let span of textSpans) {
+            if (!span.classList.contains('filter-badge') && !span.classList.contains('material-badge')) {
+                textSpan = span;
+                break;
+            }
         }
+
+        // Update button to reflect initial hidden state
+        if (icon) icon.textContent = 'expand_more';
+        if (textSpan) textSpan.textContent = 'More Filters';
+        toggleFiltersBtn.classList.remove('active');
     }
 
     bindEvents() {
         const { searchInput, toggleFiltersBtn, viewToggle, expansionHeader } = this.elements;
-        
+
         // Search input with debounce
         if (searchInput) {
             const debouncedSearch = utils.debounce(() => this.applyCurrentFilters(), 300);
             searchInput.addEventListener('input', debouncedSearch);
         }
 
-        // Toggle filters button - FIXED: Simple direct event handler
+        // Toggle filters button - FIXED: Handle click properly
         if (toggleFiltersBtn) {
             toggleFiltersBtn.addEventListener('click', (e) => {
                 e.preventDefault();
-                console.log('Toggle filters button clicked');
+                e.stopPropagation();
                 this.toggleAdvancedFilters();
             });
         }
@@ -89,27 +109,11 @@ class FilterManager {
             });
         }
 
-        // Action buttons event delegation - FIXED: Only handle specific actions
-        document.addEventListener('click', (e) => {
-            const button = e.target.closest('[data-action]');
-            if (button) {
-                const action = button.getAttribute('data-action');
-                // Only prevent default for actions we handle
-                if (action === 'show-favorites' || action === 'show-high-rated' || 
-                    action === 'clear-filters' || action === 'view-favorites' ||
-                    action === 'export-favorites' || action === 'import-favorites' || 
-                    action === 'export-data') {
-                    e.preventDefault();
-                    this.handleActionButton(button);
-                }
-            }
-        });
-
         // Expansion header click for advanced filters
         if (expansionHeader) {
             expansionHeader.addEventListener('click', (e) => {
                 e.preventDefault();
-                console.log('Expansion header clicked');
+                e.stopPropagation();
                 this.toggleAdvancedFilters();
             });
         }
@@ -120,9 +124,9 @@ class FilterManager {
 
     setupFilterEventListeners() {
         const { categoryFilter, locationFilter, ratingFilter, favoritesFilter, sortBy } = this.elements;
-        
+
         const filters = [categoryFilter, locationFilter, ratingFilter, favoritesFilter, sortBy];
-        
+
         filters.forEach(filter => {
             if (filter) {
                 filter.addEventListener('change', () => {
@@ -137,13 +141,13 @@ class FilterManager {
     handleViewToggle(button) {
         const { viewToggleBtns } = this.elements;
         const view = button.getAttribute('data-view');
-        
+
         if (!view) return;
 
         viewToggleBtns.forEach(btn => {
             btn.classList.remove('active');
         });
-        
+
         button.classList.add('active');
 
         if (this.eventHandlers.onViewChange) {
@@ -156,37 +160,6 @@ class FilterManager {
         }
     }
 
-    handleActionButton(button) {
-        const action = button.getAttribute('data-action');
-        
-        switch(action) {
-            case 'show-favorites':
-                this.showFavoritesOnly();
-                break;
-            case 'show-high-rated':
-                this.showHighRated();
-                break;
-            case 'clear-filters':
-                this.clearFilters();
-                break;
-            case 'toggle-filters':
-                // This should not happen since we have a direct event listener
-                console.log('Toggle filters action from button - this should use direct event listener');
-                this.toggleAdvancedFilters();
-                break;
-            case 'view-favorites':
-                this.showFavoritesOnly();
-                break;
-            case 'export-favorites':
-            case 'import-favorites':
-            case 'export-data':
-                // These are handled by other managers
-                break;
-            default:
-                break;
-        }
-    }
-
     onFiltersChange(callback) {
         this.eventHandlers.onFiltersChange = callback;
     }
@@ -195,24 +168,52 @@ class FilterManager {
         this.eventHandlers.onViewChange = callback;
     }
 
-    // FIXED: Reliable toggle function with proper visibility handling
+    // FIXED: Improved toggle function that works with CSS transitions
     toggleAdvancedFilters() {
         const { advancedFilters, toggleFiltersBtn, expansionIcon } = this.elements;
-        
+
         if (!advancedFilters || !toggleFiltersBtn) {
             console.warn('Advanced filters elements not found');
-            console.log('Advanced filters:', advancedFilters);
-            console.log('Toggle button:', toggleFiltersBtn);
             return;
         }
 
         this.isAdvancedFiltersVisible = !this.isAdvancedFiltersVisible;
-        console.log('Toggling advanced filters. New state:', this.isAdvancedFiltersVisible);
 
-        // FIXED: Simple and reliable DOM updates
+        // FIXED: Use a more reliable approach that works with CSS transitions
+        if (this.isAdvancedFiltersVisible) {
+            // Show advanced filters
+            advancedFilters.classList.remove('hidden');
+            
+            // Force a reflow to ensure the transition works
+            void advancedFilters.offsetHeight;
+            
+            // Update button and icon
+            this.updateToggleButtonState('expand_less', 'Less Filters', true);
+            
+        } else {
+            // Hide advanced filters
+            advancedFilters.classList.add('hidden');
+            
+            // Update button and icon
+            this.updateToggleButtonState('expand_more', 'More Filters', false);
+        }
+
+        // Update expansion icon if exists
+        if (expansionIcon) {
+            expansionIcon.textContent = this.isAdvancedFiltersVisible ? 'expand_less' : 'expand_more';
+        }
+
+        this.updateFilterCount();
+    }
+
+    // Helper method to update toggle button state
+    updateToggleButtonState(iconName, text, isActive) {
+        const { toggleFiltersBtn } = this.elements;
+        if (!toggleFiltersBtn) return;
+
         const icon = toggleFiltersBtn.querySelector('.material-icons');
         const textSpans = toggleFiltersBtn.querySelectorAll('span');
-        
+
         // Find the text span (not the badge)
         let textSpan = null;
         for (let span of textSpans) {
@@ -222,62 +223,19 @@ class FilterManager {
             }
         }
 
-        if (this.isAdvancedFiltersVisible) {
-            // Show advanced filters - FIXED: Use proper Material Design approach
-            console.log('Showing advanced filters');
-            advancedFilters.classList.remove('hidden');
-            advancedFilters.style.display = 'block';
-            advancedFilters.style.visibility = 'visible';
-            advancedFilters.style.opacity = '1';
-            
-            // Update button
-            if (icon) {
-                console.log('Changing icon to expand_less');
-                icon.textContent = 'expand_less';
-            }
-            if (textSpan) {
-                console.log('Changing text to Less Filters');
-                textSpan.textContent = 'Less Filters';
-            }
-            if (expansionIcon) {
-                expansionIcon.textContent = 'expand_less';
-            }
-            
+        if (icon) icon.textContent = iconName;
+        if (textSpan) textSpan.textContent = text;
+
+        if (isActive) {
             toggleFiltersBtn.classList.add('active');
-            
         } else {
-            // Hide advanced filters - FIXED: Use proper Material Design approach
-            console.log('Hiding advanced filters');
-            advancedFilters.classList.add('hidden');
-            advancedFilters.style.display = 'none';
-            
-            // Update button
-            if (icon) {
-                console.log('Changing icon to expand_more');
-                icon.textContent = 'expand_more';
-            }
-            if (textSpan) {
-                console.log('Changing text to More Filters');
-                textSpan.textContent = 'More Filters';
-            }
-            if (expansionIcon) {
-                expansionIcon.textContent = 'expand_more';
-            }
-            
             toggleFiltersBtn.classList.remove('active');
         }
-
-        this.updateFilterCount();
-        
-        // Debug log to verify state
-        console.log('Advanced filters visible after toggle:', this.isAdvancedFiltersVisible);
-        console.log('Advanced filters class list:', advancedFilters.classList);
-        console.log('Advanced filters display style:', advancedFilters.style.display);
     }
 
     applyCurrentFilters() {
         const { searchInput, categoryFilter, locationFilter, ratingFilter, favoritesFilter, sortBy } = this.elements;
-        
+
         this.currentFilters = {
             searchTerm: searchInput?.value || '',
             category: categoryFilter?.value || '',
@@ -286,6 +244,8 @@ class FilterManager {
             favorites: favoritesFilter?.value || '',
             sortBy: sortBy?.value || 'name'
         };
+
+        console.log('🔍 DEBUG - Current filter values:', this.currentFilters);
 
         if (this.eventHandlers.onFiltersChange) {
             this.eventHandlers.onFiltersChange(this.currentFilters);
@@ -297,7 +257,7 @@ class FilterManager {
 
     updateFilterCount() {
         const { activeFilterCount } = this.elements;
-        
+
         if (!activeFilterCount) return;
 
         const activeFilters = this.getActiveFilterCount();
@@ -312,7 +272,7 @@ class FilterManager {
 
     updateClearButton() {
         const { clearFiltersBtn } = this.elements;
-        
+
         if (!clearFiltersBtn) return;
 
         const hasActiveFilters = this.getActiveFilterCount() > 0;
@@ -328,13 +288,13 @@ class FilterManager {
 
     updateViewToggle() {
         const { viewToggleBtns } = this.elements;
-        
+
         if (!viewToggleBtns) return;
 
         const listViewBtn = document.querySelector('[data-view="list"]');
         if (listViewBtn && !document.querySelector('#view-toggle .btn.active')) {
             listViewBtn.classList.add('active');
-            
+
             const mapViewBtn = document.querySelector('[data-view="map"]');
             if (mapViewBtn) {
                 mapViewBtn.classList.remove('active');
@@ -344,7 +304,7 @@ class FilterManager {
 
     getActiveFilterCount() {
         const { locationFilter, ratingFilter, categoryFilter, favoritesFilter, searchInput, sortBy } = this.elements;
-        
+
         let count = 0;
 
         if (locationFilter?.value) count++;
@@ -358,36 +318,58 @@ class FilterManager {
     }
 
     applyFilters(filters) {
-        let contractors = dataModule.searchContractors(
+        if (!this.dataModule) {
+            console.error('DataModule not available for filtering');
+            return [];
+        }
+
+        console.log('🔍 DEBUG - applyFilters called with:', filters);
+
+        // Get all contractors first to see the baseline
+        const allContractors = this.dataModule.getContractors();
+        console.log('🔍 DEBUG - Total contractors available:', allContractors.length);
+
+        let contractors = this.dataModule.searchContractors(
             filters.searchTerm,
             filters.category,
             filters.rating,
             filters.location
         );
 
+        console.log('🔍 DEBUG - Contractors after search filters:', contractors.length);
+
+        // Check if favorites filter is being applied
         if (filters.favorites) {
+            console.log('🔍 DEBUG - Favorites filter IS being applied:', filters.favorites);
             if (filters.favorites === 'favorites') {
-                contractors = contractors.filter(contractor => 
-                    dataModule.isFavorite(contractor.id)
+                const beforeCount = contractors.length;
+                contractors = contractors.filter(contractor =>
+                    this.dataModule.isFavorite(contractor.id)
                 );
+                console.log('🔍 DEBUG - After favorites filter:', beforeCount, '->', contractors.length);
             } else if (filters.favorites === 'non-favorites') {
-                contractors = contractors.filter(contractor => 
-                    !dataModule.isFavorite(contractor.id)
+                const beforeCount = contractors.length;
+                contractors = contractors.filter(contractor =>
+                    !this.dataModule.isFavorite(contractor.id)
                 );
+                console.log('🔍 DEBUG - After non-favorites filter:', beforeCount, '->', contractors.length);
             }
+        } else {
+            console.log('🔍 DEBUG - No favorites filter being applied');
         }
 
+        console.log('🔍 DEBUG - Final contractors count:', contractors.length);
         return contractors;
     }
 
     applySorting() {
         const { sortBy } = this.elements;
         const sortValue = sortBy?.value || 'name';
-        
+
         let contractors = this.applyFilters(this.currentFilters);
-        
+
         contractors.sort((a, b) => {
-            switch(sortValue) {
+            switch (sortValue) {
                 case 'rating':
                     return parseFloat(b.rating) - parseFloat(a.rating);
                 case 'reviews':
@@ -395,8 +377,8 @@ class FilterManager {
                 case 'location':
                     return (a.location || '').localeCompare(b.location || '');
                 case 'favorites':
-                    const aFavorite = dataModule.isFavorite(a.id);
-                    const bFavorite = dataModule.isFavorite(b.id);
+                    const aFavorite = this.dataModule.isFavorite(a.id);
+                    const bFavorite = this.dataModule.isFavorite(b.id);
                     if (aFavorite && !bFavorite) return -1;
                     if (!aFavorite && bFavorite) return 1;
                     return a.name.localeCompare(b.name);
@@ -411,7 +393,7 @@ class FilterManager {
 
     clearFilters() {
         const { searchInput, categoryFilter, locationFilter, ratingFilter, favoritesFilter, sortBy } = this.elements;
-        
+
         if (searchInput) searchInput.value = '';
         if (categoryFilter) categoryFilter.value = '';
         if (locationFilter) locationFilter.value = '';
@@ -420,7 +402,7 @@ class FilterManager {
         if (sortBy) sortBy.value = 'name';
 
         this.applyCurrentFilters();
-        
+
         if (this.isAdvancedFiltersVisible) {
             this.toggleAdvancedFilters();
         }
@@ -432,41 +414,13 @@ class FilterManager {
         }
     }
 
-    showFavoritesOnly() {
-        const { favoritesFilter } = this.elements;
-        if (favoritesFilter) {
-            favoritesFilter.value = 'favorites';
-            this.applyCurrentFilters();
-            
-            if (!this.isAdvancedFiltersVisible) {
-                this.toggleAdvancedFilters();
-            }
-
-            if (typeof utils !== 'undefined' && utils.showNotification) {
-                utils.showNotification('Showing favorites only', 'info');
-            }
-        }
-    }
-
-    showHighRated() {
-        const { ratingFilter } = this.elements;
-        if (ratingFilter) {
-            ratingFilter.value = '4.5';
-            this.applyCurrentFilters();
-
-            if (typeof utils !== 'undefined' && utils.showNotification) {
-                utils.showNotification('Showing highly rated contractors', 'info');
-            }
-        }
-    }
-
     resetToDefault() {
         this.clearFilters();
     }
 
     setCurrentView(view) {
         const { viewToggleBtns } = this.elements;
-        
+
         if (!viewToggleBtns) return;
 
         viewToggleBtns.forEach(btn => {
@@ -490,54 +444,13 @@ class FilterManager {
 
     getCurrentView() {
         const { viewToggleBtns } = this.elements;
-        
+
         if (!viewToggleBtns) return 'list';
 
-        const activeBtn = Array.from(viewToggleBtns).find(btn => 
+        const activeBtn = Array.from(viewToggleBtns).find(btn =>
             btn.classList.contains('active')
         );
-        
+
         return activeBtn ? activeBtn.getAttribute('data-view') : 'list';
-    }
-
-    refreshFilterOptions(contractors) {
-        this.populateLocationFilter(contractors);
-        this.populateCategoryFilter(contractors);
-    }
-
-    populateLocationFilter(contractors) {
-        const { locationFilter } = this.elements;
-        if (!locationFilter) return;
-
-        const locations = [...new Set(contractors.map(c => c.location).filter(Boolean))].sort();
-        
-        while (locationFilter.options.length > 1) {
-            locationFilter.remove(1);
-        }
-
-        locations.forEach(location => {
-            const option = document.createElement('option');
-            option.value = location;
-            option.textContent = `📍 ${location}`;
-            locationFilter.appendChild(option);
-        });
-    }
-
-    populateCategoryFilter(contractors) {
-        const { categoryFilter } = this.elements;
-        if (!categoryFilter) return;
-
-        const categories = [...new Set(contractors.map(c => c.category).filter(Boolean))].sort();
-        
-        while (categoryFilter.options.length > 1) {
-            categoryFilter.remove(1);
-        }
-
-        categories.forEach(category => {
-            const option = document.createElement('option');
-            option.value = category;
-            option.textContent = category;
-            categoryFilter.appendChild(option);
-        });
     }
 }

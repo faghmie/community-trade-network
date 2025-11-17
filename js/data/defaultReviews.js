@@ -3,8 +3,8 @@
 
 export const defaultReviews = [
     {
-        id: 'b2c3d4e5-f6g7-8901-bcde-f23456789012',
-        contractor_id: 'a1b2c3d4-e5f6-7890-abcd-ef1234567890',
+        id: '550e8400-e29b-41d4-a716-446655440010',
+        contractor_id: '550e8400-e29b-41d4-a716-446655440000',
         reviewerName: 'Sarah Johnson',
         rating: 5,
         comment: 'Excellent work! Fixed my leaky faucet quickly and professionally.',
@@ -18,8 +18,8 @@ export const defaultReviews = [
         }
     },
     {
-        id: 'c3d4e5f6-g7h8-9012-cdef-345678901234',
-        contractor_id: 'a1b2c3d4-e5f6-7890-abcd-ef1234567890',
+        id: '550e8400-e29b-41d4-a716-446655440011',
+        contractor_id: '550e8400-e29b-41d4-a716-446655440000',
         reviewerName: 'Mike Chen',
         rating: 4,
         comment: 'Good service, fair pricing. Would hire again.',
@@ -33,8 +33,8 @@ export const defaultReviews = [
         }
     },
     {
-        id: 'e5f6g7h8-i9j0-1234-efgh-567890123456',
-        contractor_id: 'd4e5f6g7-h8i9-0123-defg-456789012345',
+        id: '550e8400-e29b-41d4-a716-446655440012',
+        contractor_id: '550e8400-e29b-41d4-a716-446655440001',
         reviewerName: 'Lisa Rodriguez',
         rating: 4,
         comment: 'Fixed my electrical issues efficiently. Professional team.',
@@ -48,8 +48,8 @@ export const defaultReviews = [
         }
     },
     {
-        id: 'g7h8i9j0-k1l2-3456-ghij-789012345678',
-        contractor_id: 'f6g7h8i9-j0k1-2345-fghi-678901234567',
+        id: '550e8400-e29b-41d4-a716-446655440013',
+        contractor_id: '550e8400-e29b-41d4-a716-446655440002',
         reviewerName: 'Robert Wilson',
         rating: 5,
         comment: 'Outstanding work on our home renovation! Highly recommended.',
@@ -63,8 +63,8 @@ export const defaultReviews = [
         }
     },
     {
-        id: 'h8i9j0k1-l2m3-4567-hijk-890123456789',
-        contractor_id: 'f6g7h8i9-j0k1-2345-fghi-678901234567',
+        id: '550e8400-e29b-41d4-a716-446655440014',
+        contractor_id: '550e8400-e29b-41d4-a716-446655440002',
         reviewerName: 'Emily Davis',
         rating: 5,
         comment: 'Professional, timely, and great quality work.',
@@ -78,8 +78,8 @@ export const defaultReviews = [
         }
     },
     {
-        id: 'i9j0k1l2-m3n4-5678-ijkl-901234567890',
-        contractor_id: 'f6g7h8i9-j0k1-2345-fghi-678901234567',
+        id: '550e8400-e29b-41d4-a716-446655440015',
+        contractor_id: '550e8400-e29b-41d4-a716-446655440002',
         reviewerName: 'James Brown',
         rating: 4,
         comment: 'Good work but slightly over budget.',
@@ -93,8 +93,8 @@ export const defaultReviews = [
         }
     },
     {
-        id: 'k1l2m3n4-o5p6-7890-klmn-123456789012',
-        contractor_id: 'j0k1l2m3-n4o5-6789-jklm-012345678901',
+        id: '550e8400-e29b-41d4-a716-446655440016',
+        contractor_id: '550e8400-e29b-41d4-a716-446655440003',
         reviewerName: 'Amanda White',
         rating: 5,
         comment: 'Beautiful paint job! Very clean and professional.',
@@ -108,8 +108,8 @@ export const defaultReviews = [
         }
     },
     {
-        id: 'm3n4o5p6-q7r8-9012-mnop-345678901234',
-        contractor_id: 'l2m3n4o5-p6q7-8901-lmno-234567890123',
+        id: '550e8400-e29b-41d4-a716-446655440017',
+        contractor_id: '550e8400-e29b-41d4-a716-446655440004',
         reviewerName: 'Thomas Green',
         rating: 4,
         comment: 'Great landscaping work! My yard looks amazing.',
@@ -123,8 +123,8 @@ export const defaultReviews = [
         }
     },
     {
-        id: 'o5p6q7r8-s9t0-1234-opqr-567890123456',
-        contractor_id: 'n4o5p6q7-r8s9-0123-nopq-456789012345',
+        id: '550e8400-e29b-41d4-a716-446655440018',
+        contractor_id: '550e8400-e29b-41d4-a716-446655440005',
         reviewerName: 'Jennifer Lee',
         rating: 4,
         comment: 'Fixed my AC unit quickly. Fair price.',
@@ -138,8 +138,8 @@ export const defaultReviews = [
         }
     },
     {
-        id: 'p6q7r8s9-t0u1-2345-pqrs-678901234567',
-        contractor_id: 'n4o5p6q7-r8s9-0123-nopq-456789012345',
+        id: '550e8400-e29b-41d4-a716-446655440019',
+        contractor_id: '550e8400-e29b-41d4-a716-446655440005',
         reviewerName: 'David Miller',
         rating: 3,
         comment: 'Service was okay but took longer than expected.',
@@ -153,8 +153,8 @@ export const defaultReviews = [
         }
     },
     {
-        id: 'r8s9t0u1-v2w3-4567-rstu-890123456789',
-        contractor_id: 'q7r8s9t0-u1v2-3456-qrst-789012345678',
+        id: '550e8400-e29b-41d4-a716-446655440020',
+        contractor_id: '550e8400-e29b-41d4-a716-446655440006',
         reviewerName: 'Paul van der Merwe',
         rating: 5,
         comment: 'Excellent roofing repair after the storm damage.',
@@ -168,8 +168,8 @@ export const defaultReviews = [
         }
     },
     {
-        id: 's9t0u1v2-w3x4-5678-stuv-901234567890',
-        contractor_id: 'q7r8s9t0-u1v2-3456-qrst-789012345678',
+        id: '550e8400-e29b-41d4-a716-446655440021',
+        contractor_id: '550e8400-e29b-41d4-a716-446655440006',
         reviewerName: 'Susan Khoza',
         rating: 4,
         comment: 'Good quality work, fair pricing.',
@@ -183,8 +183,8 @@ export const defaultReviews = [
         }
     },
     {
-        id: 'u1v2w3x4-y5z6-7890-uvwx-123456789012',
-        contractor_id: 't0u1v2w3-x4y5-6789-tuvw-012345678901',
+        id: '550e8400-e29b-41d4-a716-446655440022',
+        contractor_id: '550e8400-e29b-41d4-a716-446655440007',
         reviewerName: 'Michael Botha',
         rating: 5,
         comment: 'Beautiful custom cabinets! Exceptional craftsmanship.',
@@ -198,8 +198,8 @@ export const defaultReviews = [
         }
     },
     {
-        id: 'v2w3x4y5-z6a7-8901-vwxy-234567890123',
-        contractor_id: 't0u1v2w3-x4y5-6789-tuvw-012345678901',
+        id: '550e8400-e29b-41d4-a716-446655440023',
+        contractor_id: '550e8400-e29b-41d4-a716-446655440007',
         reviewerName: 'Sarah Petersen',
         rating: 5,
         comment: 'Transformed our living room with custom woodwork.',
@@ -213,8 +213,8 @@ export const defaultReviews = [
         }
     },
     {
-        id: 'w3x4y5z6-a7b8-9012-wxyz-345678901234',
-        contractor_id: 't0u1v2w3-x4y5-6789-tuvw-012345678901',
+        id: '550e8400-e29b-41d4-a716-446655440024',
+        contractor_id: '550e8400-e29b-41d4-a716-446655440007',
         reviewerName: 'John de Villiers',
         rating: 4,
         comment: 'Good work, minor delays but worth the wait.',

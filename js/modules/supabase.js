@@ -1,10 +1,12 @@
 // js/modules/supabase.js
 // Supabase Integration - Main Supabase client and data operations
 
-class SupabaseClient {
+import { supabaseUrl, supabaseAnonKey } from '../config/supabase-credentials.js';
+
+export class SupabaseClient {
     constructor() {
-        this.supabaseUrl = window.SUPABASE_URL || null;
-        this.supabaseAnonKey = window.SUPABASE_ANON_KEY || null;
+        this.supabaseUrl = supabaseUrl || null;
+        this.supabaseAnonKey = supabaseAnonKey || null;
         this.initialized = false;
         this.status = 'offline';
         this.client = null;
@@ -24,7 +26,9 @@ class SupabaseClient {
         }
 
         try {
-            this.client = window.supabase.createClient(this.supabaseUrl, this.supabaseAnonKey);
+            // Import supabase-js dynamically
+            const { createClient } = await import('https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm');
+            this.client = createClient(this.supabaseUrl, this.supabaseAnonKey);
             this.initialized = true;
 
             // Test connection
@@ -69,11 +73,14 @@ class SupabaseClient {
         }
 
         try {
-            const { id, created_at, updated_at, ...data } = contractor;
+            // For contractors, all data goes in the data column
+            const { id, createdAt, updatedAt, ...contractorData } = contractor;
+            
             const doc = {
                 id: id,
-                data: data,
-                updated_at: new Date().toISOString()
+                data: contractorData,
+                created_at: createdAt || new Date().toISOString(),
+                updated_at: updatedAt || new Date().toISOString()
             };
 
             const { error } = await this.client
@@ -97,13 +104,16 @@ class SupabaseClient {
         }
 
         try {
-            const { id, contractor_id, status, created_at, ...data } = review;
+            // Extract contractor_id and status for top-level columns, rest goes in data
+            const { id, contractor_id, status, createdAt, updatedAt, ...reviewData } = review;
+            
             const doc = {
                 id: id,
                 contractor_id: contractor_id,
                 status: status || 'pending',
-                data: data,
-                created_at: created_at || new Date().toISOString()
+                data: reviewData,
+                created_at: createdAt || new Date().toISOString(),
+                updated_at: updatedAt || new Date().toISOString()
             };
 
             const { error } = await this.client
@@ -127,10 +137,13 @@ class SupabaseClient {
         }
 
         try {
-            const { id, created_at, ...data } = category;
+            // For categories, all data goes in the data column
+            const { id, created_at, ...categoryData } = category;
+            
             const doc = {
                 id: id,
-                data: data
+                data: categoryData,
+                created_at: created_at || new Date().toISOString()
             };
 
             const { error } = await this.client
@@ -161,8 +174,8 @@ class SupabaseClient {
             return (data || []).map(row => ({
                 id: row.id,
                 ...row.data,
-                created_at: row.created_at,
-                updated_at: row.updated_at
+                createdAt: row.created_at,
+                updatedAt: row.updated_at
             }));
         } catch (error) {
             console.error('Error fetching contractors from Supabase:', error);
@@ -185,7 +198,8 @@ class SupabaseClient {
                 contractor_id: row.contractor_id,
                 status: row.status,
                 ...row.data,
-                created_at: row.created_at
+                createdAt: row.created_at,
+                updatedAt: row.updated_at
             }));
         } catch (error) {
             console.error('Error fetching reviews from Supabase:', error);
@@ -301,10 +315,4 @@ class SupabaseClient {
 }
 
 // Create and export instance
-const supabase = new SupabaseClient();
-window.supabaseClient = supabase;
-
-// Export for module usage
-if (typeof module !== 'undefined' && module.exports) {
-    module.exports = { SupabaseClient, supabase };
-}
+export const supabase = new SupabaseClient();

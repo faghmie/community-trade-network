@@ -305,7 +305,7 @@
     color: var(--text-disabled);
 }
 
-/* Material Expansion Panel */
+/* Material Expansion Panel - FIXED HEIGHT ISSUE */
 .material-expansion {
     background: var(--bg-card);
     border-radius: var(--border-radius);
@@ -333,9 +333,12 @@
     transition: var(--material-transition);
 }
 
+/* FIXED: Removed max-height restriction and fixed overflow */
 .material-expansion:not(.hidden) .expansion-content {
     padding: var(--space-lg);
-    max-height: 500px;
+    max-height: none; /* FIXED: Remove fixed max-height */
+    height: auto; /* FIXED: Allow auto height */
+    overflow: visible; /* FIXED: Ensure content is visible */
 }
 
 .expansion-icon {

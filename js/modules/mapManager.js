@@ -2,8 +2,10 @@
 /**
  * Map Manager - Handles interactive map display of contractors with Material Design
  */
-class MapManager {
-    constructor() {
+import { southAfricanCityCoordinates } from '../data/defaultLocations.js';
+
+export class MapManager {
+    constructor(dataModule) {
         this.map = null;
         this.markers = [];
         this.currentBounds = null;
@@ -13,6 +15,9 @@ class MapManager {
         this.allContractors = []; // Store all contractors separately
         this.mapLoadAttempts = 0;
         this.maxMapLoadAttempts = 5;
+        this.dataModule = dataModule; // Inject data module dependency
+        this.southAfricanCityCoordinates = southAfricanCityCoordinates;
+        
         this.init();
     }
 
@@ -60,6 +65,15 @@ class MapManager {
         const mapSection = document.querySelector('.map-section');
         if (mapSection) {
             mapSection.appendChild(mapContainer);
+        } else {
+            // Fallback: create map section if it doesn't exist
+            const mainElement = document.querySelector('main');
+            if (mainElement) {
+                const newMapSection = document.createElement('section');
+                newMapSection.className = 'map-section';
+                newMapSection.appendChild(mapContainer);
+                mainElement.appendChild(newMapSection);
+            }
         }
     }
 
@@ -91,6 +105,11 @@ class MapManager {
                 this.mapLoadAttempts++;
                 if (this.mapLoadAttempts < this.maxMapLoadAttempts) {
                     setTimeout(() => this.initializeMap(), 500);
+                } else {
+                    // Load Leaflet dynamically if not available
+                    this.loadLeafletJS().then(() => {
+                        this.initializeMap();
+                    });
                 }
                 return false;
             }
@@ -132,30 +151,60 @@ class MapManager {
         }
     }
 
+    // Load Leaflet JS dynamically if not available
+    loadLeafletJS() {
+        return new Promise((resolve, reject) => {
+            if (typeof L !== 'undefined') {
+                resolve();
+                return;
+            }
+
+            const script = document.createElement('script');
+            script.src = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js';
+            script.integrity = 'sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=';
+            script.crossOrigin = '';
+            script.onload = () => {
+                console.log('Leaflet JS loaded dynamically');
+                resolve();
+            };
+            script.onerror = () => {
+                console.error('Failed to load Leaflet JS');
+                reject();
+            };
+            document.head.appendChild(script);
+        });
+    }
+
     // Add Material Design styles for map elements
     addMaterialDesignStyles() {
+        // Check if styles are already added
+        if (document.getElementById('map-material-styles')) {
+            return;
+        }
+
         // Create style element for custom Material Design styling
         const style = document.createElement('style');
+        style.id = 'map-material-styles';
         style.textContent = `
             /* Material Design Map Styles */
             .leaflet-popup-content-wrapper {
-                background: var(--surface) !important;
-                color: var(--text-primary) !important;
-                border-radius: var(--border-radius-md) !important;
-                box-shadow: var(--elevation-3) !important;
-                border: 1px solid var(--border-color);
-                font-family: var(--font-family) !important;
+                background: var(--surface, #ffffff) !important;
+                color: var(--text-primary, #1a1a1a) !important;
+                border-radius: var(--border-radius-md, 8px) !important;
+                box-shadow: var(--elevation-3, 0 4px 8px rgba(0,0,0,0.15)) !important;
+                border: 1px solid var(--border-color, #e0e0e0) !important;
+                font-family: var(--font-family, 'Roboto', sans-serif) !important;
             }
 
             .leaflet-popup-tip {
-                background: var(--surface) !important;
-                border: 1px solid var(--border-color) !important;
+                background: var(--surface, #ffffff) !important;
+                border: 1px solid var(--border-color, #e0e0e0) !important;
             }
 
             .leaflet-popup-content {
                 margin: 0 !important;
                 line-height: inherit !important;
-                font-family: var(--font-family) !important;
+                font-family: var(--font-family, 'Roboto', sans-serif) !important;
             }
 
             /* Material Design Marker Styles */
@@ -168,152 +217,152 @@ class MapManager {
                 position: relative;
                 width: 40px;
                 height: 40px;
-                background: var(--surface);
+                background: var(--surface, #ffffff);
                 border: 3px solid;
-                border-radius: var(--border-radius-full);
-                box-shadow: var(--elevation-2);
+                border-radius: 50%;
+                box-shadow: var(--elevation-2, 0 2px 4px rgba(0,0,0,0.15));
                 display: flex;
                 align-items: center;
                 justify-content: center;
-                transition: all var(--transition-standard);
+                transition: all 0.2s ease;
                 cursor: pointer;
             }
 
             .marker-container:hover {
                 transform: scale(1.1);
-                box-shadow: var(--elevation-4);
+                box-shadow: var(--elevation-4, 0 8px 16px rgba(0,0,0,0.2));
             }
 
             .marker-rating {
-                color: var(--text-on-primary);
-                font-size: var(--font-size-sm);
-                font-weight: var(--font-weight-bold);
+                color: white;
+                font-size: var(--font-size-sm, 12px);
+                font-weight: var(--font-weight-bold, 600);
                 padding: 2px 6px;
-                border-radius: var(--border-radius-full);
+                border-radius: 10px;
                 line-height: 1;
                 min-width: 24px;
                 text-align: center;
-                box-shadow: var(--elevation-1);
+                box-shadow: var(--elevation-1, 0 1px 2px rgba(0,0,0,0.1));
             }
 
             /* Material Design Popup Styles */
             .map-popup {
-                padding: var(--space-md);
+                padding: var(--space-md, 16px);
                 min-width: 200px;
-                font-family: var(--font-family);
+                font-family: var(--font-family, 'Roboto', sans-serif);
             }
 
             .map-popup h3 {
-                margin: 0 0 var(--space-sm) 0;
-                font-size: var(--font-size-h6);
-                font-weight: var(--font-weight-medium);
-                color: var(--text-primary);
-                line-height: var(--line-height-tight);
+                margin: 0 0 var(--space-sm, 8px) 0;
+                font-size: var(--font-size-h6, 18px);
+                font-weight: var(--font-weight-medium, 500);
+                color: var(--text-primary, #1a1a1a);
+                line-height: var(--line-height-tight, 1.2);
             }
 
             .popup-rating {
                 display: flex;
                 align-items: center;
-                gap: var(--space-sm);
-                margin-bottom: var(--space-sm);
+                gap: var(--space-sm, 8px);
+                margin-bottom: var(--space-sm, 8px);
             }
 
             .rating-stars {
-                color: var(--warning-500);
-                font-size: var(--font-size-lg);
+                color: var(--warning-500, #f59e0b);
+                font-size: var(--font-size-lg, 18px);
                 letter-spacing: -1px;
             }
 
             .rating-value {
-                font-size: var(--font-size-body2);
-                font-weight: var(--font-weight-medium);
-                color: var(--text-secondary);
-                background: var(--surface-variant);
+                font-size: var(--font-size-body2, 14px);
+                font-weight: var(--font-weight-medium, 500);
+                color: var(--text-secondary, #666666);
+                background: var(--surface-variant, #f5f5f5);
                 padding: 2px 6px;
-                border-radius: var(--border-radius-sm);
+                border-radius: var(--border-radius-sm, 4px);
             }
 
             .popup-categories {
-                margin: 0 0 var(--space-sm) 0;
-                font-size: var(--font-size-sm);
-                color: var(--text-secondary);
-                line-height: var(--line-height-tight);
+                margin: 0 0 var(--space-sm, 8px) 0;
+                font-size: var(--font-size-sm, 12px);
+                color: var(--text-secondary, #666666);
+                line-height: var(--line-height-tight, 1.2);
             }
 
             .popup-reviews {
-                margin: 0 0 var(--space-md) 0;
-                font-size: var(--font-size-sm);
-                color: var(--text-secondary);
-                font-weight: var(--font-weight-medium);
+                margin: 0 0 var(--space-md, 16px) 0;
+                font-size: var(--font-size-sm, 12px);
+                color: var(--text-secondary, #666666);
+                font-weight: var(--font-weight-medium, 500);
             }
 
             .popup-actions {
                 display: flex;
-                gap: var(--space-sm);
-                margin-top: var(--space-md);
+                gap: var(--space-sm, 8px);
+                margin-top: var(--space-md, 16px);
             }
 
             /* Material Design Button in Popup */
             .view-details-btn {
-                background: var(--primary-color) !important;
-                color: var(--text-on-primary) !important;
+                background: var(--primary-color, #2196F3) !important;
+                color: white !important;
                 border: none !important;
-                border-radius: var(--border-radius-sm) !important;
-                padding: var(--space-sm) var(--space-md) !important;
-                font-size: var(--font-size-sm) !important;
-                font-weight: var(--font-weight-medium) !important;
+                border-radius: var(--border-radius-sm, 4px) !important;
+                padding: var(--space-sm, 8px) var(--space-md, 16px) !important;
+                font-size: var(--font-size-sm, 12px) !important;
+                font-weight: var(--font-weight-medium, 500) !important;
                 text-transform: none !important;
                 letter-spacing: 0.25px !important;
-                box-shadow: var(--elevation-1) !important;
-                transition: all var(--transition-standard) !important;
+                box-shadow: var(--elevation-1, 0 1px 2px rgba(0,0,0,0.1)) !important;
+                transition: all 0.2s ease !important;
                 cursor: pointer !important;
                 width: 100% !important;
                 text-align: center !important;
             }
 
             .view-details-btn:hover {
-                background: var(--primary-color-dark) !important;
-                box-shadow: var(--elevation-2) !important;
+                background: var(--primary-color-dark, #1976D2) !important;
+                box-shadow: var(--elevation-2, 0 2px 4px rgba(0,0,0,0.15)) !important;
                 transform: translateY(-1px);
             }
 
             /* Material Design Controls */
             .leaflet-control-zoom a {
-                background: var(--surface) !important;
-                color: var(--text-primary) !important;
-                border: 1px solid var(--border-color) !important;
-                border-radius: var(--border-radius-sm) !important;
-                box-shadow: var(--elevation-1) !important;
-                transition: all var(--transition-standard) !important;
+                background: var(--surface, #ffffff) !important;
+                color: var(--text-primary, #1a1a1a) !important;
+                border: 1px solid var(--border-color, #e0e0e0) !important;
+                border-radius: var(--border-radius-sm, 4px) !important;
+                box-shadow: var(--elevation-1, 0 1px 2px rgba(0,0,0,0.1)) !important;
+                transition: all 0.2s ease !important;
             }
 
             .leaflet-control-zoom a:hover {
-                background: var(--surface-variant) !important;
-                box-shadow: var(--elevation-2) !important;
+                background: var(--surface-variant, #f5f5f5) !important;
+                box-shadow: var(--elevation-2, 0 2px 4px rgba(0,0,0,0.15)) !important;
             }
 
             .leaflet-control-attribution {
-                background: var(--surface) !important;
-                color: var(--text-secondary) !important;
-                border: 1px solid var(--border-color) !important;
-                border-radius: var(--border-radius-sm) !important;
-                font-size: var(--font-size-xs) !important;
+                background: var(--surface, #ffffff) !important;
+                color: var(--text-secondary, #666666) !important;
+                border: 1px solid var(--border-color, #e0e0e0) !important;
+                border-radius: var(--border-radius-sm, 4px) !important;
+                font-size: var(--font-size-xs, 10px) !important;
             }
 
             /* Dark theme support for map */
             @media (prefers-color-scheme: dark) {
                 .leaflet-control-zoom a {
-                    background: var(--surface-800) !important;
-                    border-color: var(--border-color) !important;
+                    background: var(--surface-800, #424242) !important;
+                    border-color: var(--border-color, #616161) !important;
                 }
 
                 .leaflet-control-attribution {
-                    background: var(--surface-800) !important;
-                    border-color: var(--border-color) !important;
+                    background: var(--surface-800, #424242) !important;
+                    border-color: var(--border-color, #616161) !important;
                 }
 
                 .marker-container {
-                    background: var(--surface-800);
+                    background: var(--surface-800, #424242);
                 }
             }
         `;
@@ -499,13 +548,21 @@ class MapManager {
 
     // Load all contractors from data module
     loadAllContractors() {
-        if (typeof dataModule !== 'undefined') {
+        if (this.dataModule) {
+            this.allContractors = this.dataModule.getContractors();
+            this.contractors = this.allContractors;
+            if (this.isMapView) {
+                this.updateMapMarkers();
+            }
+        } else if (typeof dataModule !== 'undefined') {
+            // Fallback to global dataModule if available
             this.allContractors = dataModule.getContractors();
             this.contractors = this.allContractors;
             if (this.isMapView) {
                 this.updateMapMarkers();
             }
         } else {
+            // Retry after a short delay
             setTimeout(() => this.loadAllContractors(), 100);
         }
     }
@@ -593,7 +650,7 @@ class MapManager {
         const locationLower = location.toLowerCase();
         
         // Check against our South African city coordinates first
-        for (const [city, coords] of Object.entries(southAfricanCityCoordinates)) {
+        for (const [city, coords] of Object.entries(this.southAfricanCityCoordinates)) {
             if (locationLower.includes(city)) {
                 return coords;
             }

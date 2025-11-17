@@ -1,63 +1,81 @@
-// js/modules/data.js - Clean architecture with selective lambda functions
-class DataModule {
+// js/modules/data.js
+// ES6 Module for data orchestration - PURE DATA ONLY
+
+// Import data directly from ES6 modules
+import { defaultCategories } from '../data/defaultCategories.js';
+import { defaultContractors } from '../data/defaultContractors.js';
+import { defaultReviews } from '../data/defaultReviews.js';
+import { southAfricanProvinces } from '../data/defaultLocations.js';
+
+import { Storage } from './storage.js';
+import { ContractorManager } from './contractorManager.js';
+import { ReviewManager } from './reviewManager.js';
+import { CategoriesModule } from './categories.js';
+import { FavoritesDataManager } from './favoritesDataManager.js';
+import { StatsManager } from './statsManager.js';
+
+// Import Supabase client directly
+import { supabase } from './supabase.js';
+
+export class DataModule {
     constructor() {
         this.initialized = false;
         this.initializing = false;
         this.initPromise = null;
-        console.log('🔧 DataModule created');
+        this.storage = null;
+        this.contractorManager = null;
+        this.reviewManager = null;
+        this.categoriesModule = null;
+        this.favoritesDataManager = null;
+        this.statsManager = null;
     }
 
     async init() {
         if (this.initialized) return;
         if (this.initializing) return this.initPromise;
 
-        console.log('🔄 Initializing DataModule...');
         this.initializing = true;
 
         this.initPromise = new Promise(async (resolve, reject) => {
             try {
-                // Use global variables that are loaded via script tags
-                const utils = window.utils;
-                const defaultCategories = window.defaultCategories;
-                const defaultContractors = window.defaultContractors;
-                const defaultReviews = window.defaultReviews;
-                
-                // Use the separate location variables from dataLoader.js
-                const locationData = {
-                    southAfricanCityCoordinates: window.southAfricanCityCoordinates,
-                    southAfricanProvinces: window.southAfricanProvinces
-                };
+                // Create and initialize all dependencies internally
+                this.storage = new Storage();
+                this.contractorManager = new ContractorManager();
+                this.reviewManager = new ReviewManager();
+                this.categoriesModule = new CategoriesModule(this);
+                this.favoritesDataManager = new FavoritesDataManager();
+                this.statsManager = new StatsManager();
 
-                // Check if storage is available
-                if (typeof storage === 'undefined') {
-                    throw new Error('Storage module not available');
-                }
+                // Initialize storage with Supabase (if available)
+                // Storage module should handle Supabase not being available gracefully
+                this.storage.init(supabase);
 
-                // Initialize storage with Supabase
-                storage.init(supabase);
-
-                // Initialize all managers with proper dependencies
-                contractorManager.init(storage, defaultContractors, utils, locationData);
+                // Initialize all managers with proper dependencies and imported data
+                this.contractorManager.init(this.storage, defaultContractors);
                 
-                categoriesModule.init(storage, utils, this, defaultCategories);
+                this.categoriesModule.init(this.storage, this, defaultCategories);
                 
-                reviewManager.init(contractorManager, storage, defaultReviews, utils);
+                await this.reviewManager.init(this.contractorManager, this.storage, defaultReviews);
                 
-                statsManager.init(contractorManager, reviewManager);
+                // FIX: Handle first-time setup - save defaults only if no data exists
+                await this.handleFirstTimeSetup();
                 
-                // Initialize favorites manager
-                favoritesManager.init(storage, utils, this, null);
-
-                // Set up global event handlers
-                this.setupGlobalHandlers();
+                // Initialize favorites data manager (pure data only)
+                this.favoritesDataManager.init(this.storage);
+                
+                this.statsManager.init(this.contractorManager, this.reviewManager);
 
                 this.initialized = true;
                 this.initializing = false;
-                console.log('✅ DataModule initialized successfully');
+                
+                // Dispatch data ready event for UI modules
+                document.dispatchEvent(new CustomEvent('dataReady'));
+                
+                console.log('DataModule initialized successfully');
                 resolve();
             } catch (error) {
                 this.initializing = false;
-                console.error('❌ DataModule initialization failed:', error);
+                console.error('DataModule initialization failed:', error);
                 reject(error);
             }
         });
@@ -65,94 +83,95 @@ class DataModule {
         return this.initPromise;
     }
 
+    // FIX: Handle first-time setup properly
+    async handleFirstTimeSetup() {
+        console.log('🔧 Checking first-time setup...');
+        
+        // Check if we have any saved data
+        const savedContractors = await this.storage.load('contractors');
+        const savedReviews = await this.storage.load('reviews');
+        const savedCategories = await this.storage.load('categories');
+        
+        const hasSavedData = savedContractors && savedContractors.length > 0;
+        
+        if (!hasSavedData) {
+            console.log('🔧 First-time setup detected - saving default data');
+            
+            // Save all default data
+            await this.storage.save('contractors', defaultContractors);
+            await this.storage.save('reviews', defaultReviews);
+            await this.storage.save('categories', defaultCategories);
+            
+            console.log('🔧 Default data saved for first-time setup');
+        } else {
+            console.log('🔧 Using existing saved data');
+        }
+    }
+
     // Ensure dataModule is initialized before using it
     ensureInitialized() {
         if (!this.initialized && !this.initializing) {
-            console.warn('⚠️ DataModule not initialized, calling init()');
             return this.init();
         }
         return Promise.resolve();
     }
 
-    // Method to set uiManager for favoritesManager after main.js initialization
-    setUIManager(uiManager) {
-        favoritesManager.uiManager = uiManager;
-    }
+    // Contractor methods - pure data operations
+    getContractors = () => this.contractorManager.getAll();
+    getContractor = (id) => this.contractorManager.getById(id);
+    searchContractors = (...args) => this.contractorManager.search(...args);
+    getAllLocations = () => this.contractorManager.getAllLocations();
 
-    setupGlobalHandlers() {
-        // Make methods available globally for HTML onclick handlers
-        window.toggleFavorite = (contractorId) => this.toggleFavorite(contractorId);
-        window.handleFavoritesImport = (file) => this.handleFavoritesImport(file);
-        window.showFavoritesSection = () => this.showFavoritesSection();
-        window.dataModule = this; // Make entire module available globally
-    }
+    // Review methods - pure data operations
+    getAllReviews = () => this.reviewManager.getAllReviews();
+    getReviewsForContractor = (contractorId) => this.reviewManager.getReviewsByContractor(contractorId);
+    calculateAverageRating = (reviews) => this.reviewManager.calculateOverallRating(reviews);
+    searchReviews = (...args) => this.reviewManager.searchReviews(...args);
 
-    // Contractor methods - using lambdas for simple returns
-    getContractors = () => contractorManager.getAll();
-    getContractor = (id) => contractorManager.getById(id);
-    searchContractors = (...args) => contractorManager.search(...args);
-    getAllLocations = () => contractorManager.getAllLocations();
+    // Category methods - pure data operations
+    getCategories = () => this.categoriesModule.getCategories();
 
-    // Review methods - using lambdas for simple returns
-    getAllReviews = () => reviewManager.getAllReviews();
-    getReviewsForContractor = (contractorId) => reviewManager.getReviewsByContractor(contractorId);
-    calculateAverageRating = (reviews) => reviewManager.calculateOverallRating(reviews);
-    searchReviews = (...args) => reviewManager.searchReviews(...args);
+    // Favorites data methods - pure data operations only
+    isFavorite = (contractorId) => this.favoritesDataManager.isFavorite(contractorId);
+    getFavorites = () => this.favoritesDataManager.getFavorites();
+    getFavoritesCount = () => this.favoritesDataManager.getFavoritesCount();
+    exportFavoritesData = () => this.favoritesDataManager.exportFavorites();
 
-    // Category methods - using lambdas for simple returns
-    getCategories = () => categoriesModule.getCategories();
-
-    // Favorites methods - using lambdas for simple returns
-    isFavorite = (contractorId) => favoritesManager.isFavorite(contractorId);
-    getFavoriteContractors = () => favoritesManager.getFavoriteContractors();
-    getFavoritesCount = () => favoritesManager.getFavoritesCount();
-    exportFavorites = () => favoritesManager.exportFavorites();
-    downloadFavorites = () => favoritesManager.downloadFavorites();
-
-    // Complex methods keep regular function syntax
+    // Data mutation methods
     addContractor(data) { 
-        const result = contractorManager.create(data);
-        return result;
+        return this.contractorManager.create(data);
     }
 
     updateContractor(id, updates) { 
-        const result = contractorManager.update(id, updates);
-        return result;
+        return this.contractorManager.update(id, updates);
     }
 
     deleteContractor(id) { 
-        const result = contractorManager.delete(id);
-        return result;
+        return this.contractorManager.delete(id);
     }
 
     addReview(contractorId, data) { 
-        const result = reviewManager.addReview(contractorId, data);
-        return result;
+        return this.reviewManager.addReview(contractorId, data);
     }
 
     updateReviewStatus(...args) { 
-        const result = reviewManager.updateReviewStatus(...args);
-        return result;
+        return this.reviewManager.updateReviewStatus(...args);
     }
 
     deleteReview(...args) { 
-        const result = reviewManager.deleteReview(...args);
-        return result;
+        return this.reviewManager.deleteReview(...args);
     }
 
     addCategory(name) { 
-        const result = categoriesModule.addCategory(name);
-        return result;
+        return this.categoriesModule.addCategory(name);
     }
 
     updateCategory(oldName, newName) { 
-        const result = categoriesModule.updateCategory(oldName, newName);
-        return result;
+        return this.categoriesModule.updateCategory(oldName, newName);
     }
 
     deleteCategory(name) { 
-        const result = categoriesModule.deleteCategory(name);
-        return result;
+        return this.categoriesModule.deleteCategory(name);
     }
 
     // Update contractor category across all contractors
@@ -166,75 +185,38 @@ class DataModule {
             }
         });
         if (updated) {
-            contractorManager.save();
-            console.log(`Updated category from "${oldCategory}" to "${newCategory}" for ${updated} contractors`);
+            this.contractorManager.save();
         }
         return updated;
     }
 
-    // Stats methods
-    getStats = () => statsManager.getStats();
-    getReviewStats = () => statsManager.getReviewStats();
+    // Stats methods - pure data
+    getStats = () => this.statsManager.getStats();
+    getReviewStats = () => this.statsManager.getReviewStats();
 
-    // Favorites methods with complex logic
-    toggleFavorite(contractorId) { 
-        const isNowFavorite = favoritesManager.toggleFavorite(contractorId);
-        const contractor = contractorManager.getById(contractorId);
-        
-        if (contractor) {
-            const message = isNowFavorite ? 
-                `Added ${contractor.name} to favorites! 💖` : 
-                `Removed ${contractor.name} from favorites.`;
-            // utils is available via favoritesManager now
-            favoritesManager.utils.showNotification(message, 'success');
-        }
-        
-        return isNowFavorite;
+    // Get favorite contractors (data only - combines favorites with contractor data)
+    getFavoriteContractors() {
+        const favorites = this.favoritesDataManager.getFavorites();
+        const allContractors = this.getContractors();
+        return allContractors.filter(contractor => 
+            contractor && contractor.id && favorites.includes(contractor.id)
+        );
     }
 
-    importFavorites(jsonData) { 
-        return favoritesManager.importFavorites(jsonData);
+    // Favorites data operations (pure data - no UI)
+    toggleFavoriteData(contractorId) { 
+        return this.favoritesDataManager.toggleFavorite(contractorId);
     }
 
-    clearFavorites() { 
-        if (confirm('Are you sure you want to clear all favorites?')) {
-            const success = favoritesManager.clearFavorites();
-            if (success) {
-                favoritesManager.utils.showNotification('All favorites cleared successfully!', 'success');
-            }
-            return success;
-        }
-        return false;
+    importFavoritesData(favoritesArray) { 
+        return this.favoritesDataManager.importFavorites(favoritesArray);
     }
 
-    // Favorites import handler
-    async handleFavoritesImport(file) {
-        if (!file) return;
-        
-        try {
-            const text = await file.text();
-            const success = this.importFavorites(text);
-            
-            if (success) {
-                favoritesManager.utils.showNotification('Favorites imported successfully! 🎉', 'success');
-            } else {
-                favoritesManager.utils.showNotification('Failed to import favorites. Invalid file format.', 'error');
-            }
-        } catch (error) {
-            console.error('Error importing favorites:', error);
-            favoritesManager.utils.showNotification('Error importing favorites file.', 'error');
-        }
+    clearFavoritesData() { 
+        return this.favoritesDataManager.clearFavorites();
     }
 
-    // Show favorites section
-    showFavoritesSection = () => {
-        const favoritesSection = document.getElementById('favoritesSection');
-        if (favoritesSection) {
-            favoritesSection.scrollIntoView({ behavior: 'smooth' });
-        }
-    }
-
-    // Utility methods
+    // Utility methods - pure data transformations
     formatDate = (date) => new Date(date).toLocaleDateString('en-US', {
         year: 'numeric',
         month: 'short',
@@ -272,23 +254,47 @@ class DataModule {
         return contractors;
     }
 
-    // Optional: Manual sync trigger (for admin purposes)
+    // Data synchronization methods
     async triggerManualSync() {
-        console.log('🔄 Manual sync triggered from DataModule');
-        await storage.fullSync();
+        await this.storage.fullSync();
     }
 
-    // Optional: Manual data pull (for admin purposes)
     async triggerDataPull() {
-        console.log('⬇️ Manual data pull triggered from DataModule');
-        await storage.pullLatest();
+        await this.storage.pullLatest();
         
         // Refresh managers with new data
-        contractorManager.refresh();
-        reviewManager.refresh();
-        categoriesModule.refresh();
+        this.contractorManager.refresh();
+        this.reviewManager.refresh();
+        this.categoriesModule.refresh();
+    }
+
+    // Getter methods to access the managers if needed
+    getStorage() {
+        return this.storage;
+    }
+
+    getContractorManager() {
+        return this.contractorManager;
+    }
+
+    getReviewManager() {
+        return this.reviewManager;
+    }
+
+    getCategoriesModule() {
+        return this.categoriesModule;
+    }
+
+    getFavoritesDataManager() {
+        return this.favoritesDataManager;
+    }
+
+    getStatsManager() {
+        return this.statsManager;
+    }
+
+    // Get locations data
+    getLocationsData() {
+        return southAfricanProvinces;
     }
 }
-
-// Create singleton instance
-const dataModule = new DataModule();

@@ -1,34 +1,21 @@
 // js/modules/categories.js
-class CategoriesModule {
-    constructor() {
+// ES6 Module for category management
+
+import { generateId } from './uuid.js';
+import { showNotification } from './notifications.js';
+import { defaultCategories } from '../data/defaultCategories.js';
+
+export class CategoriesModule {
+    constructor(dataModule = null) {
         this.categories = [];
         this.listeners = [];
         this.storage = null;
-        this.utils = null;
-        this.dataModule = null;
-        this.defaultCategories = [];
+        this.dataModule = dataModule;
     }
 
-    init(storage, utils, dataModule, defaultCategories = []) {
-        console.log('🔧 CategoriesModule.init() called with:', {
-            storage: storage,
-            utils: utils,
-            dataModule: dataModule,
-            defaultCategories: defaultCategories
-        });
-        
+    init(storage = null, dataModule = null) {
         this.storage = storage;
-        this.utils = utils;
-        this.dataModule = dataModule;
-        this.defaultCategories = defaultCategories;
-        
-        console.log('🔧 CategoriesModule properties after init:', {
-            storage: this.storage,
-            utils: this.utils,
-            dataModule: this.dataModule,
-            defaultCategories: this.defaultCategories
-        });
-        
+        this.dataModule = dataModule || this.dataModule;
         this.loadCategories();
     }
 
@@ -49,30 +36,25 @@ class CategoriesModule {
     }
 
     loadCategories() {
-        console.log('🔧 CategoriesModule.loadCategories() - this.storage:', this.storage);
-        
         if (!this.storage) {
-            console.error('❌ CategoriesModule: storage is undefined!');
+            console.error('CategoriesModule: storage is undefined!');
             return;
         }
         
         const saved = this.storage.load('categories');
-        console.log('🔧 CategoriesModule.loadCategories() - saved data:', saved);
         
         if (saved && saved.length > 0) {
             this.categories = saved;
         } else {
-            // Use default categories instead of hardcoding
-            this.categories = JSON.parse(JSON.stringify(this.defaultCategories));
+            // Use imported default categories
+            this.categories = JSON.parse(JSON.stringify(defaultCategories));
             this.saveCategories();
         }
-        
-        console.log('🔧 CategoriesModule.loadCategories() - final categories:', this.categories);
     }
 
     saveCategories = () => {
         if (!this.storage) {
-            console.error('❌ CategoriesModule: storage is undefined in saveCategories!');
+            console.error('CategoriesModule: storage is undefined in saveCategories!');
             return false;
         }
         
@@ -95,18 +77,18 @@ class CategoriesModule {
 
     addCategory(categoryName) {
         if (!categoryName || categoryName.trim() === '') {
-            this.utils.showNotification('Category name cannot be empty!', 'error');
+            showNotification('Category name cannot be empty!', 'error');
             return false;
         }
 
         const trimmedCategory = categoryName.trim();
         if (this.categories.some(cat => cat.name === trimmedCategory)) {
-            this.utils.showNotification('Category already exists!', 'error');
+            showNotification('Category already exists!', 'error');
             return false;
         }
 
         const newCategory = {
-            id: this.utils.generateId(),
+            id: generateId(),
             name: trimmedCategory,
             created_at: new Date().toISOString()
         };
@@ -114,14 +96,14 @@ class CategoriesModule {
         this.categories.push(newCategory);
         const success = this.saveCategories();
         if (success) {
-            this.utils.showNotification('Category added successfully!');
+            showNotification('Category added successfully!');
         }
         return success;
     }
 
     updateCategory(oldName, newName) {
         if (!newName || newName.trim() === '') {
-            this.utils.showNotification('Category name cannot be empty!', 'error');
+            showNotification('Category name cannot be empty!', 'error');
             return false;
         }
 
@@ -129,49 +111,53 @@ class CategoriesModule {
         const category = this.categories.find(cat => cat.name === oldName);
         
         if (!category) {
-            this.utils.showNotification('Category not found!', 'error');
+            showNotification('Category not found!', 'error');
             return false;
         }
 
         if (this.categories.some(cat => cat.name === trimmedNewName && cat.id !== category.id)) {
-            this.utils.showNotification('Category already exists!', 'error');
+            showNotification('Category already exists!', 'error');
             return false;
         }
 
         // Update category name
         category.name = trimmedNewName;
         
-        // Update all contractors with this category
-        this.dataModule.updateContractorCategory(oldName, trimmedNewName);
+        // Update all contractors with this category if dataModule is available
+        if (this.dataModule && this.dataModule.updateContractorCategory) {
+            this.dataModule.updateContractorCategory(oldName, trimmedNewName);
+        }
         
         const success = this.saveCategories();
         if (success) {
-            this.utils.showNotification('Category updated successfully!');
+            showNotification('Category updated successfully!');
         }
         return success;
     }
 
     deleteCategory(categoryName) {
-        // Check if any contractors are using this category
-        const contractorsUsingCategory = this.dataModule.getContractors().filter(
-            contractor => contractor.category === categoryName
-        );
+        // Check if any contractors are using this category if dataModule is available
+        if (this.dataModule && this.dataModule.getContractors) {
+            const contractorsUsingCategory = this.dataModule.getContractors().filter(
+                contractor => contractor.category === categoryName
+            );
 
-        if (contractorsUsingCategory.length > 0) {
-            this.utils.showNotification(`Cannot delete category. ${contractorsUsingCategory.length} contractor(s) are using it.`, 'error');
-            return false;
+            if (contractorsUsingCategory.length > 0) {
+                showNotification(`Cannot delete category. ${contractorsUsingCategory.length} contractor(s) are using it.`, 'error');
+                return false;
+            }
         }
 
         const index = this.categories.findIndex(cat => cat.name === categoryName);
         if (index === -1) {
-            this.utils.showNotification('Category not found!', 'error');
+            showNotification('Category not found!', 'error');
             return false;
         }
 
         this.categories.splice(index, 1);
         const success = this.saveCategories();
         if (success) {
-            this.utils.showNotification('Category deleted successfully!');
+            showNotification('Category deleted successfully!');
         }
         return success;
     }
@@ -179,6 +165,12 @@ class CategoriesModule {
     // Get category statistics
     getCategoryStats() {
         const stats = {};
+        
+        // Only calculate stats if dataModule is available
+        if (!this.dataModule || !this.dataModule.getContractors) {
+            return stats;
+        }
+        
         const contractors = this.dataModule.getContractors();
         
         this.categories.forEach(category => {
@@ -204,6 +196,3 @@ class CategoriesModule {
         this.loadCategories();
     }
 }
-
-// Create singleton instance
-const categoriesModule = new CategoriesModule();

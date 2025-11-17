@@ -1,15 +1,80 @@
 // js/app/uiManager.js
-class UIManager {
-    constructor(cardManager) {
+// ES6 Module for UI management - Orchestrator only
+
+import { LazyLoader } from './lazyLoader.js';
+import { FavoritesManager } from './favoritesManager.js';
+import { StatsManager } from './statsManager.js';
+
+export class UIManager {
+    constructor(cardManager, dataModule, categoriesModule, reviewManager) {
         this.cardManager = cardManager;
+        this.dataModule = dataModule;
+        this.categoriesModule = categoriesModule;
+        this.reviewManager = reviewManager;
         this.elements = {};
+        
+        // Initialize specialized managers
+        this.lazyLoader = null;
+        this.favoritesManager = null;
+        this.filterManager = null;
+        this.statsManager = null;
     }
 
-    async init() {
+    async init(filterManager) {
+        this.filterManager = filterManager;
         this.cacheElements();
+        await this.setupManagers();
         this.setupCategories();
         this.setupContractorModal();
-        this.setupFavorites();
+        this.setupActionHandlers();
+        this.setupEventListeners();
+    }
+
+    async setupManagers() {
+        // Setup LazyLoader
+        try {
+            this.lazyLoader = new LazyLoader({
+                batchSize: 12,
+                placeholderCount: 8,
+                loadingDelay: 300
+            });
+            
+            this.lazyLoader.onBatchLoad((batch, currentIndex, total) => {
+                console.log(`LazyLoader: Loaded ${batch.length} contractors (${currentIndex}/${total})`);
+            });
+            
+            await this.lazyLoader.init(this.elements.contractorsGrid, this.cardManager);
+            console.log('LazyLoader initialized successfully');
+        } catch (error) {
+            console.error('Failed to initialize LazyLoader:', error);
+            this.lazyLoader = null;
+        }
+
+        // Setup FavoritesManager
+        try {
+            this.favoritesManager = new FavoritesManager(this.dataModule, this.cardManager);
+            await this.favoritesManager.init();
+            console.log('FavoritesManager initialized successfully');
+
+            // Listen to favorites manager events
+            this.favoritesManager.onFavoritesFilterApplied((detail) => {
+                this.renderContractors(detail.contractors);
+                this.statsManager.updateStats(detail.contractors);
+            });
+        } catch (error) {
+            console.error('Failed to initialize FavoritesManager:', error);
+            this.favoritesManager = null;
+        }
+
+        // Setup StatsManager
+        try {
+            this.statsManager = new StatsManager(this.dataModule, this.reviewManager);
+            await this.statsManager.init();
+            console.log('StatsManager initialized successfully');
+        } catch (error) {
+            console.error('Failed to initialize StatsManager:', error);
+            this.statsManager = null;
+        }
     }
 
     cacheElements() {
@@ -20,27 +85,18 @@ class UIManager {
             ratingFilter: document.getElementById('ratingFilter'),
             searchInput: document.getElementById('searchInput'),
             sortBy: document.getElementById('sortBy'),
-            totalContractorsCount: document.getElementById('totalContractorsCount'),
-            totalReviewsCount: document.getElementById('totalReviewsCount'),
-            averageRatingCount: document.getElementById('averageRatingCount'),
-            favoritesSection: document.getElementById('favoritesSection'),
-            favoritesGrid: document.getElementById('favoritesGrid'),
-            favoritesCount: document.querySelector('.favorites-count'),
-            favoritesNotice: document.getElementById('favoritesNotice'),
             favoritesFilter: document.getElementById('favoritesFilter'),
             contractorModal: document.getElementById('contractorModal'),
             contractorDetailsContent: document.getElementById('contractorDetails'),
-            closeContractorModal: document.querySelector('.close-contractor-modal')
+            closeContractorModal: document.querySelector('.close-contractor-modal'),
+            actionButtons: document.querySelectorAll('[data-action]')
         };
     }
 
     setupCategories() {
-        // Don't re-initialize categoriesModule - it's already initialized by dataModule
-        // Just refresh the filter dropdown
         this.refreshCategoryFilter();
         
-        // Listen for category changes
-        categoriesModule.onCategoriesChanged(() => {
+        this.categoriesModule.onCategoriesChanged(() => {
             this.refreshCategoryFilter();
         });
     }
@@ -59,33 +115,65 @@ class UIManager {
         });
     }
 
-    setupFavorites() {
-        document.addEventListener('favoritesUpdated', () => {
-            this.updateFavoritesUI();
+    setupActionHandlers() {
+        document.addEventListener('click', (e) => {
+            const button = e.target.closest('[data-action]');
+            if (button) {
+                const action = button.getAttribute('data-action');
+                e.preventDefault();
+                this.handleActionButton(action, button);
+            }
         });
-
-        const { favoritesFilter } = this.elements;
-        favoritesFilter.addEventListener('change', (e) => {
-            this.handleFavoritesFilterChange(e.target.value);
-        });
-
-        this.updateFavoritesUI();
     }
 
-    handleFavoritesFilterChange = (filterValue) => {
-        let contractors = dataModule.getContractors();
-        
-        if (filterValue === 'favorites') {
-            contractors = dataModule.getFavoriteContractors();
-        } else if (filterValue === 'non-favorites') {
-            contractors = contractors.filter(contractor => 
-                !dataModule.isFavorite(contractor.id)
-            );
+    setupEventListeners() {
+        // Listen for filter changes from FilterManager
+        if (this.filterManager) {
+            this.filterManager.onFiltersChange((filters) => {
+                const contractors = this.filterManager.applyFilters(filters);
+                this.renderContractors(contractors);
+                if (this.statsManager) {
+                    this.statsManager.updateStats(contractors);
+                }
+            });
         }
-        
-        this.renderContractors(contractors);
-        this.updateStats(contractors);
     }
+
+    handleActionButton(action, button) {
+        console.log('UIManager: Handling action:', action);
+        
+        switch (action) {
+            case 'show-favorites':
+            case 'view-favorites':
+                if (this.favoritesManager) {
+                    this.favoritesManager.showFavoritesOnly();
+                }
+                break;
+            case 'show-high-rated':
+                if (this.favoritesManager) {
+                    this.favoritesManager.showHighRated();
+                }
+                break;
+            case 'clear-filters':
+                if (this.filterManager) {
+                    this.filterManager.clearFilters();
+                }
+                break;
+            case 'export-favorites':
+            case 'import-favorites':
+                if (this.favoritesManager) {
+                    this.favoritesManager.handleActionButton(action);
+                }
+                break;
+            case 'export-data':
+                console.log('Export data action');
+                break;
+            default:
+                console.log('UIManager: Unhandled action:', action);
+        }
+    }
+
+    // === UI RENDERING METHODS ===
 
     refreshFilters() {
         this.refreshCategoryFilter();
@@ -94,40 +182,85 @@ class UIManager {
 
     refreshCategoryFilter() {
         const { categoryFilter } = this.elements;
-        const currentValue = categoryFilter.value;
+        const currentValue = categoryFilter?.value;
         
-        const categories = categoriesModule.getCategories();
+        const categories = this.categoriesModule.getCategories();
         
-        categoryFilter.innerHTML = '<option value="">All Categories</option>';
-        categories.forEach(category => {
-            const option = document.createElement('option');
-            option.value = category.name;
-            option.textContent = category.name;
-            categoryFilter.appendChild(option);
-        });
-        
-        if (categories.some(cat => cat.name === currentValue)) {
-            categoryFilter.value = currentValue;
+        if (categoryFilter) {
+            categoryFilter.innerHTML = '<option value="">All Categories</option>';
+            categories.forEach(category => {
+                const option = document.createElement('option');
+                option.value = category.name;
+                option.textContent = category.name;
+                categoryFilter.appendChild(option);
+            });
+            
+            if (categories.some(cat => cat.name === currentValue)) {
+                categoryFilter.value = currentValue;
+            }
         }
     }
 
     refreshLocationFilter() {
         const { locationFilter } = this.elements;
-        const currentValue = locationFilter.value;
-        const contractors = dataModule.getContractors();
+        const currentValue = locationFilter?.value;
+        const contractors = this.dataModule.getContractors();
         const locations = this.getUniqueLocations(contractors);
         
-        locationFilter.innerHTML = '<option value="">All Locations</option>';
+        if (locationFilter) {
+            locationFilter.innerHTML = '<option value="">All Locations</option>';
+            locations.forEach(location => {
+                const option = document.createElement('option');
+                option.value = location;
+                option.textContent = location;
+                locationFilter.appendChild(option);
+            });
+            
+            if (locations.includes(currentValue)) {
+                locationFilter.value = currentValue;
+            }
+        }
+    }
+
+    populateLocationFilter(contractors) {
+        const { locationFilter } = this.elements;
+        if (!locationFilter) return;
+
+        const locations = [...new Set(contractors.map(c => c.location).filter(Boolean))].sort();
+
+        while (locationFilter.options.length > 1) {
+            locationFilter.remove(1);
+        }
+
         locations.forEach(location => {
             const option = document.createElement('option');
             option.value = location;
-            option.textContent = location;
+            option.textContent = `📍 ${location}`;
             locationFilter.appendChild(option);
         });
-        
-        if (locations.includes(currentValue)) {
-            locationFilter.value = currentValue;
+    }
+
+    populateCategoryFilter(contractors) {
+        const { categoryFilter } = this.elements;
+        if (!categoryFilter) return;
+
+        const categories = [...new Set(contractors.map(c => c.category).filter(Boolean))].sort();
+
+        while (categoryFilter.options.length > 1) {
+            categoryFilter.remove(1);
         }
+
+        categories.forEach(category => {
+            const option = document.createElement('option');
+            option.value = category;
+            option.textContent = category;
+            categoryFilter.appendChild(option);
+        });
+    }
+
+    refreshFilterOptions(contractors) {
+        this.populateLocationFilter(contractors);
+        this.populateCategoryFilter(contractors);
     }
 
     getUniqueLocations = (contractors) => [...new Set(contractors
@@ -135,149 +268,46 @@ class UIManager {
         .filter(location => location && location.trim() !== '')
     )].sort();
 
-    renderStats = (filteredContractors = null) => {
-        const stats = filteredContractors ? 
-            this.calculateFilteredStats(filteredContractors) : 
-            dataModule.getStats();
+    // === CONTRACTOR RENDERING ===
 
-        const { totalContractorsCount, totalReviewsCount, averageRatingCount } = this.elements;
-        totalContractorsCount.textContent = stats.totalContractors;
-        totalReviewsCount.textContent = stats.totalReviews;
-        averageRatingCount.textContent = stats.averageRating;
-
-        this.updateFavoritesCount();
-    }
-
-    calculateFilteredStats(contractors) {
-        const totalContractors = contractors.length;
-        const approvedReviews = contractors.flatMap(contractor => 
-            reviewManager.getApprovedReviewsByContractor(contractor.id)
-        );
-        const totalReviews = approvedReviews.length;
-        
-        const averageRating = contractors.length > 0 ? 
-            contractors.reduce((total, contractor) => total + parseFloat(contractor.overallRating || 0), 0) / contractors.length : 0;
-
-        return {
-            totalContractors,
-            totalReviews,
-            averageRating: averageRating.toFixed(1)
-        };
-    }
-
-    renderContractors = (contractorsToRender = null) => {
-        const { contractorsGrid } = this.elements;
-        const contractors = contractorsToRender || dataModule.getContractors();
-        this.cardManager.renderContractorCards(contractors, contractorsGrid);
-    }
-
-    updateStats = (filteredContractors) => this.renderStats(filteredContractors);
-
-    updateFavoritesUI() {
-        this.updateFavoritesCount();
-        this.updateFavoriteButtons();
-        this.renderFavoritesSection();
-    }
-
-    updateFavoritesCount() {
-        const { favoritesCount } = this.elements;
-        const count = dataModule.getFavoritesCount();
-        favoritesCount.textContent = count;
-        
-        const favoritesStat = document.querySelector('.favorites-stat .stat-number');
-        if (favoritesStat) {
-            favoritesStat.textContent = count;
+    renderContractors = (contractorsToRender = null, targetGrid = null) => {
+        if (targetGrid && targetGrid !== this.elements.contractorsGrid) {
+            const contractors = contractorsToRender || this.dataModule.getContractors();
+            this.cardManager.renderContractorCards(contractors, targetGrid);
+            return;
         }
-    }
 
-    updateFavoriteButtons = () => this.cardManager.updateFavoriteButtons();
-
-    renderFavoritesSection() {
-        const { favoritesGrid, favoritesSection, favoritesNotice } = this.elements;
-        const favoriteContractors = dataModule.getFavoriteContractors();
+        const contractors = contractorsToRender || this.dataModule.getContractors();
         
-        if (favoriteContractors.length === 0) {
-            favoritesGrid.innerHTML = this.cardManager.createFavoritesEmptyState();
-            favoritesSection.classList.add('hidden');
+        console.log('UIManager: renderContractors -', {
+            contractorsCount: contractors.length,
+            lazyLoaderAvailable: !!this.lazyLoader
+        });
+
+        if (this.lazyLoader) {
+            this.lazyLoader.render(contractors);
         } else {
-            this.cardManager.renderContractorCards(favoriteContractors, favoritesGrid);
-            favoritesSection.classList.remove('hidden');
+            this.cardManager.renderContractorCards(contractors, this.elements.contractorsGrid);
         }
-
-        favoritesNotice.innerHTML = this.createFavoritesNotice();
     }
 
-    createFavoritesNotice() {
-        const favoritesCount = dataModule.getFavoritesCount();
-        return `
-            <div class="favorites-notice">
-                <p>
-                    <i class="material-icons">info</i>
-                    <strong>Your ${favoritesCount} favorite contractor${favoritesCount !== 1 ? 's are' : ' is'} stored locally in this browser.</strong>
-                    They won't be available on other devices or if you clear browser data.
-                </p>
-                <div class="favorites-actions">
-                    <button class="btn btn-secondary" onclick="dataModule.downloadFavorites()">
-                        <i class="material-icons">download</i>
-                        <span>Export Favorites</span>
-                    </button>
-                    <button class="btn btn-secondary" onclick="document.getElementById('importFavorites').click()">
-                        <i class="material-icons">upload</i>
-                        <span>Import Favorites</span>
-                    </button>
-                    <input type="file" id="importFavorites" accept=".json" class="hidden" 
-                           onchange="handleFavoritesImport(this.files[0])">
-                    ${favoritesCount > 0 ? `
-                    <button class="btn btn-error" onclick="dataModule.clearFavorites()">
-                        <i class="material-icons">delete</i>
-                        <span>Clear All</span>
-                    </button>
-                    ` : ''}
-                </div>
-            </div>
-        `;
-    }
+    // === MODAL METHODS ===
 
     showContractorModal = () => this.elements.contractorModal.style.display = 'flex';
     hideContractorModal = () => this.elements.contractorModal.style.display = 'none';
 
     updateContractorDetails(contractorId) {
-        const { contractorDetailsContent } = this.elements;
-        const contractor = dataModule.getContractor(contractorId);
+        const contractor = this.dataModule.getContractor(contractorId);
         if (contractor) {
             console.log('Updating contractor details for:', contractor.name);
         }
     }
+
+    // === LAZY LOADING CONTROL ===
+
+    setLazyLoading(enabled) {
+        if (this.lazyLoader) {
+            this.lazyLoader.setEnabled(enabled);
+        }
+    }
 }
-
-// Global functions for favorites
-const toggleFavorite = (contractorId) => {
-    const isNowFavorite = dataModule.toggleFavorite(contractorId);
-    const contractor = dataModule.getContractor(contractorId);
-    
-    if (contractor) {
-        const message = isNowFavorite ? 
-            `Added ${contractor.name} to favorites! 💖` : 
-            `Removed ${contractor.name} from favorites.`;
-        utils.showNotification(message, isNowFavorite ? 'success' : 'info');
-    }
-};
-
-// Handle favorites import
-const handleFavoritesImport = async (file) => {
-    const text = await file.text();
-    const success = dataModule.importFavorites(text);
-    
-    if (success) {
-        utils.showNotification('Favorites imported successfully! 🎉', 'success');
-    } else {
-        utils.showNotification('Failed to import favorites. Invalid file format.', 'error');
-    }
-};
-
-// Show favorites section
-const showFavoritesSection = () => {
-    const favoritesSection = document.getElementById('favoritesSection');
-    favoritesSection.classList.remove('hidden');
-    favoritesSection.scrollIntoView({ behavior: 'smooth' });
-};

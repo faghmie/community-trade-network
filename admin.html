@@ -360,36 +360,11 @@
         </div>
     </div>
 
-    <!-- Add this before your other scripts -->
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-
-    <!-- Add this after supabase CDN -->
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="js/config/supabase-credentials.js"></script>
-    <script src="js/modules/supabase.js"></script>
-
-    <!-- Core Modules - MUST LOAD AFTER supabase modules -->
-    <script src="js/modules/storage.js"></script> <!-- This needs supabaseClient -->
-
-    <!-- ES6 Data Modules Loader (REPLACES all individual data files) -->
-    <script src="js/data/dataLoader.js"></script>
-
-    <script src="js/modules/utils.js"></script>
-    <script src="js/modules/contractorManager.js"></script>
-    <script src="js/modules/reviewManager.js"></script>
-    <script src="js/modules/categories.js"></script>
-    <script src="js/modules/statsManager.js"></script>
-    <script src="js/modules/favoritesManager.js"></script> 
-    <script src="js/modules/data.js"></script>
-
-
-    <!-- Admin Feature Modules -->
-    <script src="js/modules/admin-categories.js"></script>
-    <script src="js/modules/admin-reviews.js"></script>
-
-    <!-- Admin Core Module -->
-    <script src="js/modules/admin-contractors.js"></script>
-    <script type="module" src="js/admin.js"></script>
+    <!-- ES6 Module Loading -->
+    <script type="module">
+        // Import and initialize the admin application
+        import './js/admin.js';
+    </script>
 </body>
 
 </html>

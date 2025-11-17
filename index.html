@@ -11,6 +11,17 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    
+    <!-- PWA Manifest -->
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#2196f3">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="Contractor Reviews">
+    
+    <!-- Fallback icons using emoji and data URIs to avoid 404 errors -->
+    <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' fill='%232196f3'/><text x='50' y='70' font-size='60' text-anchor='middle' fill='white'>⭐</text></svg>">
+    <link rel="icon" sizes="192x192" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' fill='%232196f3'/><text x='50' y='70' font-size='60' text-anchor='middle' fill='white'>⭐</text></svg>">
 </head>
 
 <body class="material-theme">
@@ -396,40 +407,61 @@
         </footer>
     </div>
 
-    <!-- Leaflet JS -->
+    <!-- External Libraries (non-ES6 modules) -->
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
         integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
-
-    <!-- Add this after supabase CDN -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
-    <script src="js/config/supabase-credentials.js"></script>
-    <script src="js/modules/supabase.js"></script>
+    <!-- Service Worker Registration -->
+    <script>
+        // Register Service Worker for PWA functionality
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', function() {
+                navigator.serviceWorker.register('/sw.js')
+                    .then(function(registration) {
+                        console.log('✅ Service Worker registered successfully:', registration.scope);
+                        
+                        // Check for updates
+                        registration.addEventListener('updatefound', () => {
+                            const newWorker = registration.installing;
+                            console.log('🔄 New Service Worker found:', newWorker);
+                            
+                            newWorker.addEventListener('statechange', () => {
+                                if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                                    console.log('🔄 New content is available; please refresh.');
+                                    // You could show a "Update available" notification here
+                                }
+                            });
+                        });
+                    })
+                    .catch(function(error) {
+                        console.log('❌ Service Worker registration failed:', error);
+                    });
+            });
 
-    <!-- Core Modules - MUST LOAD AFTER supabase modules -->
-    <script src="js/modules/utils.js"></script>
-    <script src="js/modules/storage.js"></script> <!-- This needs supabaseClient -->
+            // Listen for controller changes
+            navigator.serviceWorker.addEventListener('controllerchange', () => {
+                console.log('🔄 Service Worker controller changed');
+            });
+        }
 
-    <!-- ES6 Data Modules Loader (REPLACES all individual data files) -->
-    <script src="js/data/dataLoader.js"></script>
+        // Offline/Online status detection
+        window.addEventListener('online', function() {
+            console.log('✅ App is online');
+            if (window.utils && window.utils.showNotification) {
+                window.utils.showNotification('Back online - syncing data...', 'success');
+            }
+        });
 
-    <script src="js/modules/categories.js"></script>
-    <script src="js/modules/contractorManager.js"></script>
-    <script src="js/modules/reviewManager.js"></script>
-    <script src="js/modules/statsManager.js"></script>
-    <script src="js/modules/favoritesManager.js"></script>
-    <script src="js/modules/mapManager.js"></script>
-    <script src="js/modules/cardManager.js"></script>
-    <script src="js/modules/data.js"></script>
+        window.addEventListener('offline', function() {
+            console.log('⚠️ App is offline');
+            if (window.utils && window.utils.showNotification) {
+                window.utils.showNotification('You are currently offline', 'warning');
+            }
+        });
+    </script>
 
-    <!-- App Modules (LOAD BEFORE script.js) -->
-    <script src="js/app/main.js"></script>
-    <script src="js/app/uiManager.js"></script>
-    <script src="js/app/modalManager.js"></script>
-    <script src="js/app/filterManager.js"></script>
-    <script src="js/app/formManager.js"></script>
-
-    <!-- Main Script as ES6 Module (LOAD LAST) -->
+    <!-- Main ES6 Module Entry Point -->
     <script type="module" src="js/script.js"></script>
 </body>
 

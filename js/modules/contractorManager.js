@@ -1,23 +1,33 @@
 // js/modules/contractorManager.js
-class ContractorManager {
+// ES6 Module for contractor management
+
+import { generateId } from './uuid.js';
+import { defaultContractors } from '../data/defaultContractors.js';
+import { southAfricanCityCoordinates, southAfricanProvinces } from '../data/defaultLocations.js';
+
+export class ContractorManager {
     constructor() {
         this.contractors = [];
         this.storage = null;
-        this.utils = null;
-        this.locationData = null;
+        this.locationData = {
+            southAfricanCityCoordinates,
+            southAfricanProvinces
+        };
     }
 
-    init(storage, defaultContractors, utils, locationData) {
+    init(storage, defaultContractors = null) {
         this.storage = storage;
-        this.utils = utils;
-        this.locationData = locationData;
+        
+        // Use provided default contractors or fall back to imported ones
+        const contractorsToUse = defaultContractors || JSON.parse(JSON.stringify(defaultContractors));
+        
         const saved = this.storage.load('contractors');
         
         // FIX: Handle the case where storage returns the string "undefined"
         if (saved && saved !== "undefined" && saved.length > 0) {
             this.contractors = saved;
         } else {
-            this.contractors = JSON.parse(JSON.stringify(defaultContractors));
+            this.contractors = contractorsToUse;
             this.save();
         }
     }
@@ -33,7 +43,7 @@ class ContractorManager {
         const { coordinates, serviceAreas } = this.generateMapData(contractorData.location);
         
         const contractor = {
-            id: this.utils.generateId(), // Use injected utils
+            id: generateId(), // Use imported generateId
             ...contractorData,
             coordinates: coordinates,
             serviceAreas: serviceAreas,
@@ -155,6 +165,3 @@ class ContractorManager {
         }
     }
 }
-
-// Create singleton instance
-const contractorManager = new ContractorManager();

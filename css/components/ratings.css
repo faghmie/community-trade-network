@@ -360,10 +360,10 @@
     background: transparent !important;
 }
 
-/* FIXED: Rating Categories Styles - Transparent backgrounds for card usage */
+/* FIXED: Rating Categories Styles - Reduced padding to prevent cropping */
 .rating-categories {
-    margin: var(--space-xl) 0;
-    padding: var(--space-xl);
+    margin: var(--space-lg) 0;
+    padding: var(--space-md); /* REDUCED: from var(--space-xl) to var(--space-md) */
     background: transparent !important;
     border-radius: var(--border-radius-lg);
     border: none !important;
@@ -399,8 +399,8 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: var(--space-lg);
-    padding: var(--space-md) var(--space-lg);
+    margin-bottom: var(--space-md); /* REDUCED: from var(--space-lg) to var(--space-md) */
+    padding: var(--space-sm) var(--space-md); /* REDUCED: from var(--space-md) var(--space-lg) */
     background: transparent !important;
     border-radius: var(--border-radius);
     border: none !important;
@@ -413,8 +413,8 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: var(--space-lg);
-    padding: var(--space-md) var(--space-lg);
+    margin-bottom: var(--space-md); /* REDUCED: from var(--space-lg) to var(--space-md) */
+    padding: var(--space-sm) var(--space-md); /* REDUCED: from var(--space-md) var(--space-lg) */
     background: transparent !important;
     border-radius: var(--border-radius);
     border: none !important;
@@ -466,8 +466,8 @@
 /* FIXED: Responsive Rating Categories - Material Design */
 @media (max-width: 768px) {
     .rating-categories {
-        padding: var(--space-lg);
-        margin: var(--space-lg) 0;
+        padding: var(--space-sm); /* REDUCED: from var(--space-lg) to var(--space-sm) */
+        margin: var(--space-md) 0; /* REDUCED: from var(--space-lg) to var(--space-md) */
         background: transparent !important;
     }
 
@@ -475,8 +475,8 @@
     .material-rating-category {
         flex-direction: column;
         align-items: flex-start;
-        gap: var(--space-md);
-        padding: var(--space-lg);
+        gap: var(--space-sm); /* REDUCED: from var(--space-md) to var(--space-sm) */
+        padding: var(--space-md); /* REDUCED: from var(--space-lg) to var(--space-md) */
         background: transparent !important;
     }
 
@@ -600,13 +600,13 @@
     }
 
     .rating-categories {
-        padding: var(--space-md);
+        padding: var(--space-xs); /* REDUCED: from var(--space-md) to var(--space-xs) */
         background: transparent !important;
     }
 
     .rating-category,
     .material-rating-category {
-        padding: var(--space-md);
+        padding: var(--space-sm); /* REDUCED: from var(--space-md) to var(--space-sm) */
         background: transparent !important;
     }
 

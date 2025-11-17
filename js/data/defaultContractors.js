@@ -3,7 +3,7 @@
 
 export const defaultContractors = [
     {
-        id: 'a1b2c3d4-e5f6-7890-abcd-ef1234567890',
+        id: '550e8400-e29b-41d4-a716-446655440000',
         name: 'John Smith Plumbing',
         category: 'Plumbing',
         email: 'john@smithplumbing.com',
@@ -19,7 +19,7 @@ export const defaultContractors = [
         createdAt: new Date().toISOString()
     },
     {
-        id: 'd4e5f6g7-h8i9-0123-defg-456789012345',
+        id: '550e8400-e29b-41d4-a716-446655440001',
         name: 'Quality Electric LLC',
         category: 'Electrical',
         email: 'info@qualityelectric.com',
@@ -35,7 +35,7 @@ export const defaultContractors = [
         createdAt: new Date().toISOString()
     },
     {
-        id: 'f6g7h8i9-j0k1-2345-fghi-678901234567',
+        id: '550e8400-e29b-41d4-a716-446655440002',
         name: 'Dream Home Builders',
         category: 'General Contracting',
         email: 'contact@dreamhome.com',
@@ -51,7 +51,7 @@ export const defaultContractors = [
         createdAt: new Date().toISOString()
     },
     {
-        id: 'j0k1l2m3-n4o5-6789-jklm-012345678901',
+        id: '550e8400-e29b-41d4-a716-446655440003',
         name: 'Perfect Paint Pros',
         category: 'Painting',
         email: 'info@perfectpaint.com',
@@ -67,7 +67,7 @@ export const defaultContractors = [
         createdAt: new Date().toISOString()
     },
     {
-        id: 'l2m3n4o5-p6q7-8901-lmno-234567890123',
+        id: '550e8400-e29b-41d4-a716-446655440004',
         name: 'Green Thumb Landscaping',
         category: 'Landscaping',
         email: 'info@greenthumb.com',
@@ -83,7 +83,7 @@ export const defaultContractors = [
         createdAt: new Date().toISOString()
     },
     {
-        id: 'n4o5p6q7-r8s9-0123-nopq-456789012345',
+        id: '550e8400-e29b-41d4-a716-446655440005',
         name: 'Cool Breeze HVAC',
         category: 'HVAC',
         email: 'service@coolbreeze.com',
@@ -99,7 +99,7 @@ export const defaultContractors = [
         createdAt: new Date().toISOString()
     },
     {
-        id: 'q7r8s9t0-u1v2-3456-qrst-789012345678',
+        id: '550e8400-e29b-41d4-a716-446655440006',
         name: 'Master Roofing Solutions',
         category: 'Roofing',
         email: 'info@masterroofing.co.za',
@@ -115,7 +115,7 @@ export const defaultContractors = [
         createdAt: new Date().toISOString()
     },
     {
-        id: 't0u1v2w3-x4y5-6789-tuvw-012345678901',
+        id: '550e8400-e29b-41d4-a716-446655440007',
         name: 'Precision Carpentry Works',
         category: 'Carpentry',
         email: 'craft@precisioncarpentry.co.za',

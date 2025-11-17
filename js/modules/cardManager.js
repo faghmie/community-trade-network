@@ -1,7 +1,7 @@
 // js/modules/cardManager.js
+// ES6 Module for card management
 
-// Card Manager Module - Handles all card rendering and card-related components
-class CardManager {
+export class CardManager {
     constructor(dataModule, reviewManager, favoritesManager) {
         this.dataModule = dataModule;
         this.reviewManager = reviewManager;
@@ -185,6 +185,3 @@ class CardManager {
         `;
     }
 }
-
-// Remove the global instance creation - we'll inject it properly
-// const cardManager = new CardManager();

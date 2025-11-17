@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Generate PWA Icons</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .icon-preview {
+            display: inline-block;
+            margin: 10px;
+            text-align: center;
+        }
+        canvas {
+            border: 1px solid #ccc;
+        }
+    </style>
+</head>
+<body>
+    <h1>PWA Icon Generator for Contractor Reviews App</h1>
+    <p>Click the button below to generate and download all required PWA icons.</p>
+    
+    <button onclick="generateIcons()">Generate Icons</button>
+    
+    <div id="preview"></div>
+    
+    <script>
+        function generateIcons() {
+            const sizes = [72, 96, 128, 144, 152, 192, 384, 512];
+            const preview = document.getElementById('preview');
+            preview.innerHTML = '<h2>Generated Icons:</h2>';
+            
+            sizes.forEach(size => {
+                const canvas = document.createElement('canvas');
+                canvas.width = size;
+                canvas.height = size;
+                const ctx = canvas.getContext('2d');
+                
+                // Create a professional-looking icon
+                // Background
+                ctx.fillStyle = '#4f46e5';
+                ctx.fillRect(0, 0, size, size);
+                
+                // White border
+                ctx.strokeStyle = '#ffffff';
+                ctx.lineWidth = Math.max(2, size * 0.02);
+                ctx.strokeRect(0, 0, size, size);
+                
+                // Star icon in center
+                ctx.fillStyle = '#ffffff';
+                drawStar(ctx, size / 2, size / 2, size * 0.3, size * 0.15, 5);
+                
+                // Create download link
+                const link = document.createElement('a');
+                link.download = `icon-${size}x${size}.png`;
+                link.href = canvas.toDataURL();
+                link.textContent = `Download ${size}x${size}`;
+                
+                // Display preview
+                const previewDiv = document.createElement('div');
+                previewDiv.className = 'icon-preview';
+                previewDiv.innerHTML = `
+                    <div>${size}x${size}</div>
+                    <canvas width="${size}" height="${size}"></canvas>
+                    <div><a href="${link.href}" download="${link.download}">Download</a></div>
+                `;
+                
+                // Redraw for preview
+                const previewCtx = previewDiv.querySelector('canvas').getContext('2d');
+                previewCtx.fillStyle = '#4f46e5';
+                previewCtx.fillRect(0, 0, size, size);
+                previewCtx.strokeStyle = '#ffffff';
+                previewCtx.lineWidth = Math.max(2, size * 0.02);
+                previewCtx.strokeRect(0, 0, size, size);
+                previewCtx.fillStyle = '#ffffff';
+                drawStar(previewCtx, size / 2, size / 2, size * 0.3, size * 0.15, 5);
+                
+                preview.appendChild(previewDiv);
+            });
+        }
+        
+        function drawStar(ctx, cx, cy, outerRadius, innerRadius, points) {
+            ctx.beginPath();
+            for (let i = 0; i < points * 2; i++) {
+                const radius = i % 2 === 0 ? outerRadius : innerRadius;
+                const angle = (Math.PI * i) / points;
+                const x = cx + radius * Math.sin(angle);
+                const y = cy - radius * Math.cos(angle);
+                
+                if (i === 0) {
+                    ctx.moveTo(x, y);
+                } else {
+                    ctx.lineTo(x, y);
+                }
+            }
+            ctx.closePath();
+            ctx.fill();
+        }
+    </script>
+</body>
+</html>

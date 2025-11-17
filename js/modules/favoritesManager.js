@@ -1,59 +1,68 @@
-// js/modules/favoritesManager.js - Cleaned up with no backward compatibility
-class FavoritesManager {
+// js/modules/favoritesManager.js
+// ES6 Module for favorites UI management only
+
+import { showNotification } from './notifications.js';
+
+export class FavoritesManager {
     constructor() {
-        this.favorites = [];
-        this.storage = null;
-        this.utils = null;
+        this.favoritesDataManager = null;
         this.dataModule = null;
         this.uiManager = null;
+        this.initialized = false;
     }
 
-    init(storage, utils, dataModule, uiManager) {
-        this.storage = storage;
-        this.utils = utils;
+    init(favoritesDataManager, dataModule, uiManager = null) {
+        this.favoritesDataManager = favoritesDataManager;
         this.dataModule = dataModule;
         this.uiManager = uiManager;
-        const saved = this.storage.load('favorites');
-        
-        if (saved && Array.isArray(saved)) {
-            this.favorites = saved;
-        } else {
-            this.favorites = [];
-            this.save();
-        }
-        
+        this.initialized = true;
+
         // Set up event listeners for UI updates
         this.setupEventListeners();
-        
-        // Initial UI update
-        this.updateFavoritesUI();
-        
-        console.log('Favorites manager initialized with', this.favorites.length, 'favorites');
+
+        console.log('FavoritesManager (UI) initialized');
     }
 
     setupEventListeners() {
         // Listen for favorites updates and refresh the UI
         document.addEventListener('favoritesUpdated', () => {
+            console.log('Favorites updated event received');
             this.updateFavoritesUI();
+            this.showFavoritesSection();
+        });
+
+        // Listen for when data is fully loaded
+        document.addEventListener('dataReady', () => {
+            console.log('Data ready event received in FavoritesManager');
+            this.updateFavoritesUI();
+            this.showFavoritesSection();
         });
 
         // Also update UI when contractors are loaded
         document.addEventListener('contractorsUpdated', () => {
+            console.log('Contractors updated event received in FavoritesManager');
             this.updateFavoritesUI();
+            this.showFavoritesSection();
         });
     }
 
     updateFavoritesUI() {
-        const favoritesCount = this.getFavoritesCount();
-        
-        // Update favorites counter in stats (using class selector)
+        if (!this.favoritesDataManager || !this.dataModule) {
+            console.warn('FavoritesManager: Dependencies not ready for UI update');
+            return;
+        }
+
+        const favoritesCount = this.favoritesDataManager.getFavoritesCount();
+        console.log('Updating favorites UI with count:', favoritesCount);
+
+        // Update favorites counter in stats
         const favoritesCountElements = document.querySelectorAll('.favorites-count');
         favoritesCountElements.forEach(element => {
             element.textContent = favoritesCount;
             element.style.display = favoritesCount > 0 ? 'inline' : 'none';
         });
 
-        // Update favorites badge in favorites section
+        // Update favorites badge
         const favoritesBadge = document.querySelector('.favorites-badge');
         if (favoritesBadge) {
             favoritesBadge.textContent = favoritesCount;
@@ -63,19 +72,23 @@ class FavoritesManager {
         // Update favorite buttons state
         this.updateFavoriteButtons();
 
-        // Show/hide favorites section based on count
+        // Update favorites section visibility
+        this.updateFavoritesSectionVisibility();
+    }
+
+    updateFavoritesSectionVisibility() {
+        const favoritesCount = this.favoritesDataManager.getFavoritesCount();
         const favoritesSection = document.getElementById('favoritesSection');
+
         if (favoritesSection) {
             if (favoritesCount > 0) {
                 favoritesSection.classList.remove('hidden');
-                // Trigger favorites display update
-                this.showFavoritesSection();
+                console.log('Showing favorites section with', favoritesCount, 'favorites');
             } else {
                 favoritesSection.classList.add('hidden');
+                console.log('Hiding favorites section - no favorites');
             }
         }
-
-        console.log('Favorites UI updated:', favoritesCount, 'favorites');
     }
 
     updateFavoriteButtons() {
@@ -83,66 +96,118 @@ class FavoritesManager {
         favoriteButtons.forEach(button => {
             const contractorId = button.getAttribute('data-contractor-id');
             if (contractorId) {
-                if (this.isFavorite(contractorId)) {
+                if (this.favoritesDataManager.isFavorite(contractorId)) {
                     button.classList.add('favorited');
+                    button.setAttribute('aria-pressed', 'true');
+                    button.title = 'Remove from favorites';
                 } else {
                     button.classList.remove('favorited');
+                    button.setAttribute('aria-pressed', 'false');
+                    button.title = 'Add to favorites';
                 }
             }
         });
     }
 
-    save() {
-        return this.storage.save('favorites', this.favorites);
-    }
-
-    toggleFavorite(contractorId) {
-        const index = this.favorites.indexOf(contractorId);
-        let isNowFavorite = false;
-
-        if (index > -1) {
-            // Remove from favorites
-            this.favorites.splice(index, 1);
-            isNowFavorite = false;
-        } else {
-            // Add to favorites
-            this.favorites.push(contractorId);
-            isNowFavorite = true;
+    // FIXED: Made toggleFavorite async and properly handle the Promise
+    async toggleFavorite(contractorId) {
+        if (!contractorId) {
+            console.error('No contractor ID provided for toggleFavorite');
+            return false;
         }
 
-        const success = this.save();
-        if (success) {
-            this.dispatchFavoritesUpdate();
-            const action = isNowFavorite ? 'added to' : 'removed from';
-            this.utils.showNotification(`Contractor ${action} favorites!`, 'success');
-        } else {
-            this.showStorageWarning();
+        console.log('FavoritesManager: toggleFavorite called for:', contractorId);
+
+        try {
+            // Await the async operation from the data manager
+            const result = await this.favoritesDataManager.toggleFavorite(contractorId);
+            const { success, isNowFavorite } = result;
+
+            console.log('FavoritesManager: toggle result:', result);
+
+            if (success) {
+                this.dispatchFavoritesUpdate();
+
+                // Get contractor name for notification
+                let contractorName = 'Contractor';
+                try {
+                    const contractor = this.dataModule.getContractor(contractorId);
+                    if (contractor && contractor.name) {
+                        contractorName = contractor.name;
+                    }
+                } catch (error) {
+                    console.warn('Could not get contractor name for notification:', error);
+                }
+
+                const action = isNowFavorite ? 'added to' : 'removed from';
+                showNotification(`${contractorName} ${action} favorites!`, 'success');
+
+                // Immediately update the specific button
+                this.updateFavoriteButton(contractorId);
+
+                // Force update favorites section
+                this.updateFavoritesSectionVisibility();
+                if (isNowFavorite) {
+                    this.showFavoritesSection();
+                }
+
+                console.log('FavoritesManager: toggle completed successfully');
+                return isNowFavorite;
+            } else {
+                showNotification('Unable to save favorites. Your browser storage might be full.', 'error');
+                console.error('FavoritesManager: toggle failed - save error');
+                return false;
+            }
+        } catch (error) {
+            console.error('FavoritesManager: toggleFavorite error:', error);
+            showNotification('Error updating favorites. Please try again.', 'error');
+            return false;
         }
-        
-        return isNowFavorite;
     }
 
-    isFavorite(contractorId) {
-        return this.favorites.includes(contractorId);
+    updateFavoriteButton(contractorId) {
+        const button = document.querySelector(`.favorite-btn[data-contractor-id="${contractorId}"]`);
+        if (button && this.favoritesDataManager) {
+            if (this.favoritesDataManager.isFavorite(contractorId)) {
+                button.classList.add('favorited');
+                button.setAttribute('aria-pressed', 'true');
+                button.title = 'Remove from favorites';
+            } else {
+                button.classList.remove('favorited');
+                button.setAttribute('aria-pressed', 'false');
+                button.title = 'Add to favorites';
+            }
+        }
     }
 
     getFavoriteContractors() {
-        const allContractors = this.dataModule.getContractors();
-        return allContractors.filter(contractor => 
-            this.favorites.includes(contractor.id)
-        );
+        if (!this.dataModule || !this.favoritesDataManager) {
+            console.warn('FavoritesManager: Dependencies not ready for getFavoriteContractors');
+            return [];
+        }
+
+        try {
+            const allContractors = this.dataModule.getContractors();
+            const favorites = this.favoritesDataManager.getFavorites();
+            return allContractors.filter(contractor =>
+                contractor && contractor.id && favorites.includes(contractor.id)
+            );
+        } catch (error) {
+            console.error('Error getting favorite contractors:', error);
+            return [];
+        }
     }
 
     getFavoritesCount() {
-        return this.favorites.length;
+        return this.favoritesDataManager ? this.favoritesDataManager.getFavoritesCount() : 0;
     }
 
     // Event system for UI updates
     dispatchFavoritesUpdate() {
         const event = new CustomEvent('favoritesUpdated', {
-            detail: { 
-                favorites: this.favorites,
-                count: this.favorites.length 
+            detail: {
+                favorites: this.favoritesDataManager.getFavorites(),
+                count: this.favoritesDataManager.getFavoritesCount()
             }
         });
         document.dispatchEvent(event);
@@ -150,23 +215,38 @@ class FavoritesManager {
 
     // Show favorites section with actual favorites
     showFavoritesSection() {
+        if (!this.dataModule || !this.favoritesDataManager) {
+            console.warn('FavoritesManager: Dependencies not ready for showFavoritesSection');
+            return;
+        }
+
         const favoritesSection = document.getElementById('favoritesSection');
         const favoritesGrid = document.getElementById('favoritesGrid');
         const favoritesNotice = document.getElementById('favoritesNotice');
-        
-        if (!favoritesSection || !favoritesGrid) return;
+
+        if (!favoritesSection || !favoritesGrid) {
+            console.warn('Favorites section elements not found');
+            return;
+        }
 
         const favoriteContractors = this.getFavoriteContractors();
-        
+        console.log('Showing favorites section with', favoriteContractors.length, 'contractors');
+
         if (favoriteContractors.length > 0) {
             // Hide notice, show grid
             if (favoritesNotice) {
                 favoritesNotice.style.display = 'none';
             }
             favoritesGrid.style.display = 'grid';
-            
-            // Render favorite contractors
-            this.uiManager.renderContractors(favoriteContractors, favoritesGrid);
+
+            // Render favorite contractors if uiManager is available
+            if (this.uiManager && this.uiManager.renderContractors) {
+                this.uiManager.renderContractors(favoriteContractors, favoritesGrid);
+            } else {
+                console.warn('UIManager not available for rendering favorites');
+            }
+
+            favoritesSection.classList.remove('hidden');
         } else {
             // Show notice, hide grid
             if (favoritesNotice) {
@@ -179,16 +259,21 @@ class FavoritesManager {
                 `;
             }
             favoritesGrid.style.display = 'none';
+            favoritesSection.classList.add('hidden');
         }
-        
-        favoritesSection.classList.remove('hidden');
     }
 
     // Export functionality for user backup
     exportFavorites() {
+        if (!this.favoritesDataManager || !this.dataModule) {
+            console.warn('FavoritesManager: Dependencies not ready for exportFavorites');
+            return JSON.stringify({ error: 'Data not ready' }, null, 2);
+        }
+
         const favoriteContractors = this.getFavoriteContractors();
+        const favorites = this.favoritesDataManager.exportFavorites();
         const data = {
-            favorites: this.favorites,
+            favorites: favorites,
             favoriteContractors: favoriteContractors.map(c => ({
                 id: c.id,
                 name: c.name,
@@ -202,21 +287,20 @@ class FavoritesManager {
     }
 
     // Import functionality
-    importFavorites(jsonData) {
+    async importFavorites(jsonData) {
         try {
             const data = JSON.parse(jsonData);
             if (data.favorites && Array.isArray(data.favorites)) {
-                this.favorites = data.favorites;
-                const success = this.save();
+                const success = await this.favoritesDataManager.importFavorites(data.favorites);
                 if (success) {
                     this.dispatchFavoritesUpdate();
-                    this.utils.showNotification('Favorites imported successfully!', 'success');
+                    showNotification('Favorites imported successfully!', 'success');
                     return true;
                 }
             }
         } catch (e) {
             console.error('Invalid favorites data');
-            this.utils.showNotification('Invalid favorites file format', 'error');
+            showNotification('Invalid favorites file format', 'error');
         }
         return false;
     }
@@ -231,41 +315,34 @@ class FavoritesManager {
         a.download = `contractor-favorites-${new Date().toISOString().split('T')[0]}.json`;
         a.click();
         URL.revokeObjectURL(url);
-        
-        this.utils.showNotification('Favorites exported successfully!', 'success');
+
+        showNotification('Favorites exported successfully!', 'success');
     }
 
     // Handle file import
     handleFavoritesImport(file) {
         if (!file) return;
-        
+
         const reader = new FileReader();
-        reader.onload = (e) => {
-            const success = this.importFavorites(e.target.result);
+        reader.onload = async (e) => {
+            const success = await this.importFavorites(e.target.result);
             if (!success) {
-                this.utils.showNotification('Failed to import favorites', 'error');
+                showNotification('Failed to import favorites', 'error');
             }
         };
         reader.readAsText(file);
     }
 
-    // Show storage warning
-    showStorageWarning() {
-        this.utils.showNotification('Unable to save favorites. Your browser storage might be full.', 'error');
-    }
-
     // Clear all favorites
-    clearFavorites() {
+    async clearFavorites() {
         if (confirm('Are you sure you want to clear all favorites?')) {
-            this.favorites = [];
-            const success = this.save();
+            const success = await this.favoritesDataManager.clearFavorites();
             if (success) {
                 this.dispatchFavoritesUpdate();
-                this.utils.showNotification('All favorites cleared successfully!', 'success');
+                showNotification('All favorites cleared successfully!', 'success');
             }
+            return success;
         }
+        return false;
     }
 }
-
-// Create singleton instance
-const favoritesManager = new FavoritesManager();

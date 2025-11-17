@@ -1,6 +1,11 @@
 import AuthManager from './modules/auth.js';
 import AdminAuthModule from './modules/admin-auth.js';
 import TabsModule from './modules/tabs.js';
+import { DataModule } from './modules/data.js';
+import { CategoriesModule } from './modules/categories.js';
+import AdminCategoriesModule from './modules/admin-categories.js';
+import AdminContractorsModule from './modules/admin-contractors.js';
+import AdminReviewsModule from './modules/admin-reviews.js';
 
 // Modern Admin Dashboard with Authentication
 class AdminModule {
@@ -11,15 +16,32 @@ class AdminModule {
         this.adminCategoriesModule = null;
         this.adminReviewsModule = null;
         this.tabsModule = null;
+        this.dataModule = null;
+        this.categoriesModule = null;
     }
 
     async init() {
-        // Wait for data to be loaded before initializing authentication
-        await window.dataReady;
-        
-        // Initialize authentication module
-        this.authModule = new AdminAuthModule();
-        await this.authModule.init(this);
+        try {
+            // Initialize core modules first
+            await this.initializeCoreModules();
+
+            // Initialize authentication module
+            this.authModule = new AdminAuthModule();
+            await this.authModule.init(this);
+        } catch (error) {
+            console.error('Error initializing admin module:', error);
+        }
+    }
+
+    async initializeCoreModules() {
+        // Initialize data module
+        this.dataModule = new DataModule();
+        await this.dataModule.init(); // Ensure we await this
+
+        // Initialize categories module with storage from dataModule
+        this.categoriesModule = new CategoriesModule(this.dataModule);
+        const storage = this.dataModule.getStorage();
+        await this.categoriesModule.init(storage, this.dataModule);
     }
 
     async showAdminContent() {
@@ -27,53 +49,59 @@ class AdminModule {
         const adminContent = document.getElementById('adminContent');
         if (loginSection) loginSection.style.display = 'none';
         if (adminContent) adminContent.style.display = 'block';
-        
+
         this.authModule.updateUserInfo();
-        
+
         // Initialize admin modules after authentication
         if (!this.modulesInitialized) {
             await this.initializeAdminModules();
             this.modulesInitialized = true;
         }
-        
+
         this.bindEvents();
         this.renderDashboard();
     }
 
     async initializeAdminModules() {
         try {
-            // Ensure dataModule is fully initialized first
-            await dataModule.init();
-            
             console.log('✅ dataModule fully initialized, creating admin modules');
 
-            // Get location data for contractors module
-            const locationData = {
-                southAfricanCityCoordinates: window.southAfricanCityCoordinates,
-                southAfricanProvinces: window.southAfricanProvinces
-            };
-
             // Create instances with dependency injection
-            this.adminCategoriesModule = new AdminCategoriesModule(dataModule);
-            this.adminContractorsModule = new AdminContractors(dataModule, categoriesModule, utils, locationData);
-            this.adminReviewsModule = new AdminReviewsModule(dataModule);
-            
+            this.adminCategoriesModule = new AdminCategoriesModule(this.dataModule);
+            this.adminContractorsModule = new AdminContractorsModule(
+                this.dataModule,
+                this.categoriesModule,
+                this.getLocationData()
+            );
+            this.adminReviewsModule = new AdminReviewsModule(this.dataModule);
+
             // Initialize tabs module
             this.tabsModule = new TabsModule();
             this.tabsModule.init();
-            
+
             // Register tab change callbacks
             this.registerTabCallbacks();
-            
+
             // Initialize admin modules
             this.adminCategoriesModule.init();
             this.adminContractorsModule.init();
             this.adminReviewsModule.init();
-            
+
             console.log('✅ All admin modules initialized successfully');
         } catch (error) {
             console.error('Error initializing admin modules:', error);
         }
+    }
+
+    getLocationData() {
+        // Use the new method from dataModule to get location data
+        const locationData = this.dataModule.getLocationsData();
+        
+        // Fallback to window globals (for backward compatibility)
+        return {
+            southAfricanProvinces: locationData || window.southAfricanProvinces || {},
+            southAfricanCityCoordinates: window.southAfricanCityCoordinates || {}
+        };
     }
 
     registerTabCallbacks() {
@@ -93,7 +121,7 @@ class AdminModule {
 
     bindEvents() {
         console.log('Binding admin events...');
-        
+
         // Modal close events
         document.addEventListener('click', (e) => {
             if (e.target.classList.contains('close')) {
@@ -170,10 +198,10 @@ class AdminModule {
 
     renderDashboard() {
         this.renderStats();
-        
+
         // Render current tab content
         const currentTab = this.tabsModule.getCurrentTab();
-        switch(currentTab) {
+        switch (currentTab) {
             case 'contractors-tab':
                 this.adminContractorsModule.renderContractorsTable();
                 break;
@@ -187,23 +215,23 @@ class AdminModule {
     }
 
     renderStats() {
-        const contractors = dataModule.getContractors();
-        
+        const contractors = this.dataModule.getContractors();
+
         const totalReviews = contractors ? contractors.reduce((total, contractor) => {
             const reviews = contractor.reviews || [];
             return total + reviews.length;
         }, 0) : 0;
 
-        const averageRating = contractors && contractors.length > 0 ? 
+        const averageRating = contractors && contractors.length > 0 ?
             contractors.reduce((total, contractor) => {
                 const rating = parseFloat(contractor.rating) || 0;
                 return total + rating;
             }, 0) / contractors.length : 0;
 
-        const categories = dataModule.getCategories();
+        const categories = this.dataModule.getCategories();
         const totalCategories = categories ? categories.length : 0;
-        
-        const reviewStats = dataModule.getReviewStats();
+
+        const reviewStats = this.dataModule.getReviewStats();
         const pendingReviews = reviewStats ? reviewStats.pendingReviews : 0;
 
         // Update stats elements
@@ -298,7 +326,7 @@ const adminModule = new AdminModule();
 window.adminModule = adminModule;
 
 // Initialize admin when page loads
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', function () {
     console.log('🚀 Admin page loaded - initializing authentication...');
     adminModule.init();
 });
