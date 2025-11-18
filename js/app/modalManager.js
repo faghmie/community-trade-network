@@ -1,91 +1,93 @@
-// js/app/modalManager.js - REFACTORED
-// Main modal orchestrator - combines all modal functionality
-
-import { BaseModalManager } from './modals/baseModalManager.js';
+// js/app/modalManager.js - SIMPLIFIED WITH DIRECT CALLBACK
 import { ContractorModalManager } from './modals/contractorModalManager.js';
 import { ReviewModalManager } from './modals/reviewModalManager.js';
 
 export class ModalManager {
-    constructor(dataModule, reviewManager, cardManager) {
+    constructor(dataModule, reviewManager, cardManager, onReviewSubmitCallback = null) {
+        console.log('🔧 ModalManager: Constructor called');
         this.dataModule = dataModule;
         this.reviewManager = reviewManager;
         this.cardManager = cardManager;
         
-        // Initialize specialized modal managers
-        this.baseModalManager = new BaseModalManager();
-        this.contractorModalManager = new ContractorModalManager(dataModule, reviewManager, cardManager, this.baseModalManager);
-        this.reviewModalManager = new ReviewModalManager(dataModule, reviewManager, this.baseModalManager);
+        console.log('🔧 Creating modal managers...');
         
-        this.eventHandlers = {
-            onReviewRequest: null,
-            onReviewSubmit: null
-        };
+        // Create review modal with direct callback to main app
+        this.reviewModalManager = new ReviewModalManager(
+            dataModule, 
+            reviewManager,
+            onReviewSubmitCallback // Pass direct callback from main app
+        );
+        
+        // Pass reviewModalManager reference to contractorModalManager
+        this.contractorModalManager = new ContractorModalManager(
+            dataModule, 
+            reviewManager, 
+            cardManager,
+            this.reviewModalManager // Pass the reference for direct communication
+        );
+        
+        console.log('🔧 ModalManager: ContractorModalManager created:', !!this.contractorModalManager);
+        console.log('🔧 ModalManager: ReviewModalManager created:', !!this.reviewModalManager);
+        
+        // No longer need event handlers since we use direct callbacks
     }
 
-    async init(dataModule, favoritesManager) {
-        this.baseModalManager.cacheElements();
-        this.baseModalManager.bindEvents();
-        await this.bindSpecializedEvents();
+    async init() {
+        console.log('🔧 ModalManager: Initializing...');
+        // No need to bind events anymore - using direct callbacks
+        console.log('🔧 ModalManager: Initialization complete');
     }
 
-    async bindSpecializedEvents() {
-        // Bind contractor modal events
-        this.contractorModalManager.bindContractorModalEvents((contractorId) => {
-            if (this.eventHandlers.onReviewRequest) {
-                this.eventHandlers.onReviewRequest(contractorId);
-            }
-        });
-
-        // FIXED: Use the new onReviewSubmit method instead of bindReviewFormEvents
-        this.reviewModalManager.onReviewSubmit((reviewData, contractorId) => {
-            if (this.eventHandlers.onReviewSubmit) {
-                // Ensure contractor ID is included in the review data
-                const completeReviewData = {
-                    ...reviewData,
-                    contractorId: contractorId || reviewData.contractorId
-                };
-                this.eventHandlers.onReviewSubmit(completeReviewData);
-            }
-        });
-    }
-
-    // Event handler registration
-    onReviewRequest(callback) {
-        this.eventHandlers.onReviewRequest = callback;
-    }
-
-    onReviewSubmit(callback) {
-        this.eventHandlers.onReviewSubmit = callback;
-    }
-
-    // Public API - delegate to specialized managers
+    // Public API with fallbacks
     openContractorModal(contractorId) {
-        this.contractorModalManager.openContractorModal(contractorId);
+        console.log('🔧 ModalManager: Opening contractor modal for:', contractorId);
+        if (this.contractorModalManager && typeof this.contractorModalManager.open === 'function') {
+            this.contractorModalManager.open(contractorId);
+        } else if (this.contractorModalManager && typeof this.contractorModalManager.openContractorModal === 'function') {
+            this.contractorModalManager.openContractorModal(contractorId);
+        } else {
+            console.error('❌ No open method found on contractorModalManager');
+        }
     }
 
     openReviewModal(contractorId = null) {
-        this.reviewModalManager.openReviewModal(contractorId);
+        console.log('🔧 ModalManager: Opening review modal for contractor:', contractorId);
+        if (this.reviewModalManager && typeof this.reviewModalManager.open === 'function') {
+            this.reviewModalManager.open(contractorId);
+        } else if (this.reviewModalManager && typeof this.reviewModalManager.openReviewModal === 'function') {
+            this.reviewModalManager.openReviewModal(contractorId);
+        } else {
+            console.error('❌ No open method found on reviewModalManager');
+        }
     }
 
     closeContractorModal() {
-        this.baseModalManager.closeContractorModal();
+        console.log('🔧 ModalManager: Closing contractor modal');
+        if (this.contractorModalManager && typeof this.contractorModalManager.close === 'function') {
+            this.contractorModalManager.close();
+        } else if (this.contractorModalManager && typeof this.contractorModalManager.closeContractorModal === 'function') {
+            this.contractorModalManager.closeContractorModal();
+        }
     }
 
     closeReviewModal() {
-        this.baseModalManager.closeReviewModal();
-        this.reviewModalManager.resetForm();
+        console.log('🔧 ModalManager: Closing review modal');
+        if (this.reviewModalManager && typeof this.reviewModalManager.close === 'function') {
+            this.reviewModalManager.close();
+        } else if (this.reviewModalManager && typeof this.reviewModalManager.closeReviewModal === 'function') {
+            this.reviewModalManager.closeReviewModal();
+        } else if (this.reviewModalManager && typeof this.reviewModalManager.resetForm === 'function') {
+            this.reviewModalManager.resetForm();
+        }
     }
 
     closeAllModals() {
-        this.baseModalManager.closeAllModals();
-        this.reviewModalManager.resetForm();
+        console.log('🔧 ModalManager: Closing all modals');
+        this.closeContractorModal();
+        this.closeReviewModal();
     }
 
     // Utility methods for external access
-    getBaseManager() {
-        return this.baseModalManager;
-    }
-
     getContractorManager() {
         return this.contractorModalManager;
     }
@@ -94,18 +96,23 @@ export class ModalManager {
         return this.reviewModalManager;
     }
 
-    // Compatibility methods for existing code
-    showModalLoading(modalType) {
-        const modalElement = this.baseModalManager.elements[modalType];
-        if (modalElement) {
-            this.baseModalManager.showModalLoading(modalElement);
+    // Cleanup method
+    destroy() {
+        console.log('🔧 ModalManager: Cleaning up');
+        if (this.contractorModalManager && typeof this.contractorModalManager.destroy === 'function') {
+            this.contractorModalManager.destroy();
+        }
+        if (this.reviewModalManager && typeof this.reviewModalManager.destroy === 'function') {
+            this.reviewModalManager.destroy();
         }
     }
 
+    // Compatibility methods
+    showModalLoading(modalType) {
+        console.warn('showModalLoading may not be supported with independent modals');
+    }
+
     showModalError(modalType, message) {
-        const modalElement = this.baseModalManager.elements[modalType];
-        if (modalElement) {
-            this.baseModalManager.showModalError(modalElement, message);
-        }
+        console.warn('showModalError may not be supported with independent modals');
     }
 }

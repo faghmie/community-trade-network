@@ -8,28 +8,50 @@ export class BaseModalManager {
     }
 
     cacheElements() {
+        console.log('BaseModalManager: Caching modal elements');
+        
         this.elements = {
             reviewModal: document.getElementById('reviewModal'),
             contractorModal: document.getElementById('contractorModal'),
-            closeModal: document.getElementById('closeModal'),
+            // FIXED: Handle potential duplicate close buttons
+            closeModal: document.getElementById('closeModal') || document.querySelector('.close-contractor-modal'),
             closeContractorModal: document.querySelector('.close-contractor-modal')
         };
+
+        console.log('BaseModalManager: Cached elements:', {
+            reviewModal: !!this.elements.reviewModal,
+            contractorModal: !!this.elements.contractorModal,
+            closeModal: !!this.elements.closeModal,
+            closeContractorModal: !!this.elements.closeContractorModal
+        });
     }
 
     bindEvents() {
         const { closeModal, closeContractorModal } = this.elements;
         
+        console.log('BaseModalManager: Binding events', {
+            closeModal: !!closeModal,
+            closeContractorModal: !!closeContractorModal
+        });
+        
         if (closeModal) {
-            closeModal.addEventListener('click', () => this.closeReviewModal());
+            closeModal.addEventListener('click', () => {
+                console.log('Close modal button clicked');
+                this.closeReviewModal();
+            });
         }
         
         if (closeContractorModal) {
-            closeContractorModal.addEventListener('click', () => this.closeContractorModal());
+            closeContractorModal.addEventListener('click', () => {
+                console.log('Close contractor modal button clicked');
+                this.closeContractorModal();
+            });
         }
 
         // Close modals when clicking outside (Material Design backdrop)
         window.addEventListener('click', (e) => {
             if (e.target.classList.contains('modal') || e.target.classList.contains('material-modal')) {
+                console.log('Backdrop clicked, closing modals');
                 this.closeAllModals();
             }
         });
@@ -37,13 +59,21 @@ export class BaseModalManager {
         // ESC key to close modals
         document.addEventListener('keydown', (e) => {
             if (e.key === 'Escape') {
+                console.log('ESC key pressed, closing modals');
                 this.closeAllModals();
             }
         });
+
+        console.log('BaseModalManager: Events bound successfully');
     }
 
     openModal(modalElement) {
-        if (!modalElement) return;
+        if (!modalElement) {
+            console.error('BaseModalManager: Cannot open modal - element not found');
+            return;
+        }
+
+        console.log('BaseModalManager: Opening modal', modalElement.id);
 
         // Close other modals first
         this.closeAllModals();
@@ -61,25 +91,33 @@ export class BaseModalManager {
         if (firstInput) {
             setTimeout(() => firstInput.focus(), 100);
         }
+
+        console.log('BaseModalManager: Modal opened successfully');
     }
 
     closeModal(modalElement) {
         if (modalElement) {
+            console.log('BaseModalManager: Closing modal', modalElement.id);
             modalElement.style.display = 'none';
             modalElement.setAttribute('aria-hidden', 'true');
             modalElement.classList.remove('modal-visible');
+        } else {
+            console.warn('BaseModalManager: Cannot close modal - element not found');
         }
     }
 
     closeReviewModal() {
+        console.log('BaseModalManager: Closing review modal');
         this.closeModal(this.elements.reviewModal);
     }
 
     closeContractorModal() {
+        console.log('BaseModalManager: Closing contractor modal');
         this.closeModal(this.elements.contractorModal);
     }
 
     closeAllModals() {
+        console.log('BaseModalManager: Closing all modals');
         this.closeContractorModal();
         this.closeReviewModal();
     }

@@ -12,7 +12,7 @@ import { ContractorManager } from './contractorManager.js';
 import { ReviewManager } from './reviewManager.js';
 import { CategoriesModule } from './categories.js';
 import { FavoritesDataManager } from './favoritesDataManager.js';
-import { StatsManager } from './statsManager.js';
+import { StatsDataManager } from './statsDataManager.js';
 
 // Import Supabase client directly
 import { supabase } from './supabase.js';
@@ -44,21 +44,21 @@ export class DataModule {
                 this.reviewManager = new ReviewManager();
                 this.categoriesModule = new CategoriesModule(this);
                 this.favoritesDataManager = new FavoritesDataManager();
-                this.statsManager = new StatsManager();
+                this.statsManager = new StatsDataManager();
 
                 // Initialize storage with Supabase (if available)
-                // Storage module should handle Supabase not being available gracefully
                 this.storage.init(supabase);
 
-                // Initialize all managers with proper dependencies and imported data
-                this.contractorManager.init(this.storage, defaultContractors);
-                
-                this.categoriesModule.init(this.storage, this, defaultCategories);
-                
-                await this.reviewManager.init(this.contractorManager, this.storage, defaultReviews);
-                
-                // FIX: Handle first-time setup - save defaults only if no data exists
+                // FIX: Handle first-time setup BEFORE initializing managers
                 await this.handleFirstTimeSetup();
+                
+                // Initialize all managers with proper dependencies
+                // DON'T pass default data - managers should load from storage
+                this.contractorManager.init(this.storage);
+                
+                this.categoriesModule.init(this.storage, this);
+                
+                await this.reviewManager.init(this.contractorManager, this.storage);
                 
                 // Initialize favorites data manager (pure data only)
                 this.favoritesDataManager.init(this.storage);
@@ -83,7 +83,7 @@ export class DataModule {
         return this.initPromise;
     }
 
-    // FIX: Handle first-time setup properly
+    // FIX: Handle first-time setup properly - centralized data initialization
     async handleFirstTimeSetup() {
         console.log('🔧 Checking first-time setup...');
         
@@ -92,16 +92,22 @@ export class DataModule {
         const savedReviews = await this.storage.load('reviews');
         const savedCategories = await this.storage.load('categories');
         
-        const hasSavedData = savedContractors && savedContractors.length > 0;
+        // FIX: Check if we need to load default categories specifically
+        // This allows Supabase categories to load while still having default fallback
+        const hasCategories = savedCategories && savedCategories.length > 0;
         
-        if (!hasSavedData) {
-            console.log('🔧 First-time setup detected - saving default data');
-            
-            // Save all default data
+        if (!hasCategories) {
+            console.log('🔧 No categories found - loading default categories');
+            await this.storage.save('categories', defaultCategories, { syncToSupabase: false });
+        }
+        
+        // Only load default contractors and reviews if no data exists at all
+        const hasAnyData = savedContractors && savedContractors.length > 0;
+        
+        if (!hasAnyData) {
+            console.log('🔧 First-time setup detected - saving default contractors and reviews');
             await this.storage.save('contractors', defaultContractors);
             await this.storage.save('reviews', defaultReviews);
-            await this.storage.save('categories', defaultCategories);
-            
             console.log('🔧 Default data saved for first-time setup');
         } else {
             console.log('🔧 Using existing saved data');
@@ -135,11 +141,14 @@ export class DataModule {
     isFavorite = (contractorId) => this.favoritesDataManager.isFavorite(contractorId);
     getFavorites = () => this.favoritesDataManager.getFavorites();
     getFavoritesCount = () => this.favoritesDataManager.getFavoritesCount();
-    exportFavoritesData = () => this.favoritesDataManager.exportFavorites();
+    // REMOVED: exportFavoritesData - no longer needed
 
     // Data mutation methods
     addContractor(data) { 
-        return this.contractorManager.create(data);
+        console.log('🔧 DataModule.addContractor(): Adding contractor...');
+        const result = this.contractorManager.create(data);
+        console.log('🔧 DataModule.addContractor(): Result:', result);
+        return result;
     }
 
     updateContractor(id, updates) { 
@@ -204,17 +213,12 @@ export class DataModule {
     }
 
     // Favorites data operations (pure data - no UI)
-    toggleFavoriteData(contractorId) { 
+    toggleFavorite(contractorId) { 
         return this.favoritesDataManager.toggleFavorite(contractorId);
     }
 
-    importFavoritesData(favoritesArray) { 
-        return this.favoritesDataManager.importFavorites(favoritesArray);
-    }
-
-    clearFavoritesData() { 
-        return this.favoritesDataManager.clearFavorites();
-    }
+    // REMOVED: importFavorites - no longer needed
+    // REMOVED: clearFavorites - no longer needed
 
     // Utility methods - pure data transformations
     formatDate = (date) => new Date(date).toLocaleDateString('en-US', {
@@ -256,16 +260,64 @@ export class DataModule {
 
     // Data synchronization methods
     async triggerManualSync() {
-        await this.storage.fullSync();
+        if (this.storage && this.storage.forceRefreshAll) {
+            return await this.storage.forceRefreshAll();
+        }
+        return null;
     }
 
     async triggerDataPull() {
-        await this.storage.pullLatest();
+        // Force refresh all data from Supabase
+        if (this.storage && this.storage.forceRefreshAll) {
+            const result = await this.storage.forceRefreshAll();
+            
+            // Refresh managers with new data
+            if (this.contractorManager && this.contractorManager.refresh) {
+                this.contractorManager.refresh();
+            }
+            if (this.reviewManager && this.reviewManager.refresh) {
+                this.reviewManager.refresh();
+            }
+            if (this.categoriesModule && this.categoriesModule.refresh) {
+                this.categoriesModule.refresh();
+            }
+            
+            return result;
+        }
+        return null;
+    }
+
+    // Debug method to check category loading
+    async debugCategoryLoading() {
+        console.log('🔍 Debugging category loading...');
         
-        // Refresh managers with new data
-        this.contractorManager.refresh();
-        this.reviewManager.refresh();
-        this.categoriesModule.refresh();
+        // Check localStorage directly
+        const localCategories = localStorage.getItem('categories');
+        console.log('📁 LocalStorage categories:', localCategories);
+        
+        // Check storage load
+        const storageCategories = await this.storage.load('categories');
+        console.log('📦 Storage loaded categories:', storageCategories);
+        
+        // Check categories module
+        const moduleCategories = this.categoriesModule.getCategories();
+        console.log('📊 Categories module categories:', moduleCategories);
+        
+        // Check Supabase directly if available
+        if (supabase && supabase.initialized) {
+            try {
+                const supabaseCategories = await supabase.getAllCategories();
+                console.log('☁️ Supabase categories:', supabaseCategories);
+            } catch (error) {
+                console.error('❌ Error fetching from Supabase:', error);
+            }
+        }
+        
+        return {
+            localStorage: localCategories,
+            storage: storageCategories,
+            module: moduleCategories
+        };
     }
 
     // Getter methods to access the managers if needed

@@ -1,7 +1,7 @@
-// js/modules/statsManager.js
-// ES6 Module for statistics management
+// js/modules/statsDataManager.js
+// ES6 Module for statistics data management
 
-export class StatsManager {
+export class StatsDataManager {
     constructor() {
         this.contractorManager = null;
         this.reviewManager = null;

@@ -1,198 +1,207 @@
-// js/modules/categories.js
-// ES6 Module for category management
-
-import { generateId } from './uuid.js';
-import { showNotification } from './notifications.js';
-import { defaultCategories } from '../data/defaultCategories.js';
+// js/modules/categories.js - ES6 Module for category management (Pure Data Class)
+import { generateUUID } from './uuid.js';
 
 export class CategoriesModule {
-    constructor(dataModule = null) {
-        this.categories = [];
-        this.listeners = [];
-        this.storage = null;
+    constructor(dataModule) {
         this.dataModule = dataModule;
+        this.storage = null;
+        this.categories = [];
+        this.initialized = false;
     }
 
-    init(storage = null, dataModule = null) {
+    async init(storage, dataModule) {
         this.storage = storage;
-        this.dataModule = dataModule || this.dataModule;
-        this.loadCategories();
+        this.dataModule = dataModule;
+        
+        // Load categories from storage
+        await this.loadCategories();
+        this.initialized = true;
+        
+        console.log('✅ CategoriesModule initialized with categories:', this.categories.length);
     }
 
-    // Add event listener for category changes
-    onCategoriesChanged(callback) {
-        this.listeners.push(callback);
-    }
-
-    // Notify all listeners that categories have changed
-    notifyCategoriesChanged() {
-        this.listeners.forEach(callback => {
-            try {
-                callback();
-            } catch (error) {
-                console.error('Error in categories changed listener:', error);
+    async loadCategories() {
+        try {
+            // Use storage.load() which handles Supabase sync
+            const loadedCategories = await this.storage.load('categories');
+            
+            if (loadedCategories && loadedCategories.length > 0) {
+                this.categories = loadedCategories;
+                console.log('✅ CategoriesModule: Loaded categories from storage:', this.categories.length);
+            } else {
+                console.warn('⚠️ CategoriesModule: No categories found in storage');
+                this.categories = [];
             }
-        });
-    }
-
-    loadCategories() {
-        if (!this.storage) {
-            console.error('CategoriesModule: storage is undefined!');
-            return;
-        }
-        
-        const saved = this.storage.load('categories');
-        
-        if (saved && saved.length > 0) {
-            this.categories = saved;
-        } else {
-            // Use imported default categories
-            this.categories = JSON.parse(JSON.stringify(defaultCategories));
-            this.saveCategories();
+        } catch (error) {
+            console.error('❌ CategoriesModule: Error loading categories:', error);
+            this.categories = [];
         }
     }
 
-    saveCategories = () => {
-        if (!this.storage) {
-            console.error('CategoriesModule: storage is undefined in saveCategories!');
-            return false;
-        }
-        
-        const success = this.storage.save('categories', this.categories);
-        if (success) {
-            this.notifyCategoriesChanged();
-        }
-        return success;
+    // Refresh categories from storage
+    async refresh() {
+        console.log('🔄 CategoriesModule: Refreshing categories...');
+        await this.loadCategories();
+        return this.categories;
     }
 
-    getCategories = () => this.categories
-        .slice()
-        .sort((a, b) => a.name.localeCompare(b.name));
+    getCategories() {
+        return this.categories;
+    }
 
-    getCategoryNames = () => this.categories.map(cat => cat.name);
+    getCategoryByName(name) {
+        return this.categories.find(cat => cat.name === name);
+    }
 
-    getCategoryById = (id) => this.categories.find(cat => cat.id === id);
-
-    getCategoryByName = (name) => this.categories.find(cat => cat.name === name);
-
-    addCategory(categoryName) {
-        if (!categoryName || categoryName.trim() === '') {
-            showNotification('Category name cannot be empty!', 'error');
-            return false;
+    async addCategory(name) {
+        if (!name || name.trim() === '') {
+            throw new Error('Category name cannot be empty');
         }
 
-        const trimmedCategory = categoryName.trim();
-        if (this.categories.some(cat => cat.name === trimmedCategory)) {
-            showNotification('Category already exists!', 'error');
-            return false;
+        // Check if category already exists
+        const existingCategory = this.getCategoryByName(name);
+        if (existingCategory) {
+            throw new Error(`Category "${name}" already exists`);
         }
 
+        // Create new category with UUID
         const newCategory = {
-            id: generateId(),
-            name: trimmedCategory,
+            id: generateUUID(),
+            name: name.trim(),
             created_at: new Date().toISOString()
         };
 
+        // Add to local array
         this.categories.push(newCategory);
-        const success = this.saveCategories();
+
+        // Save to storage (with Supabase sync for admin)
+        const success = await this.storage.save('categories', this.categories);
+        
         if (success) {
-            showNotification('Category added successfully!');
+            console.log('✅ Category added:', newCategory);
+            return newCategory;
+        } else {
+            // Rollback on failure
+            this.categories = this.categories.filter(cat => cat.id !== newCategory.id);
+            throw new Error('Failed to save category');
         }
-        return success;
     }
 
-    updateCategory(oldName, newName) {
+    async updateCategory(oldName, newName) {
         if (!newName || newName.trim() === '') {
-            showNotification('Category name cannot be empty!', 'error');
-            return false;
+            throw new Error('Category name cannot be empty');
         }
 
-        const trimmedNewName = newName.trim();
-        const category = this.categories.find(cat => cat.name === oldName);
-        
-        if (!category) {
-            showNotification('Category not found!', 'error');
-            return false;
+        const categoryIndex = this.categories.findIndex(cat => cat.name === oldName);
+        if (categoryIndex === -1) {
+            throw new Error(`Category "${oldName}" not found`);
         }
 
-        if (this.categories.some(cat => cat.name === trimmedNewName && cat.id !== category.id)) {
-            showNotification('Category already exists!', 'error');
-            return false;
+        // Check if new name already exists (and it's not the same category)
+        const existingCategory = this.getCategoryByName(newName);
+        if (existingCategory && existingCategory.name !== oldName) {
+            throw new Error(`Category "${newName}" already exists`);
         }
 
-        // Update category name
-        category.name = trimmedNewName;
+        // Update the category
+        const oldCategory = { ...this.categories[categoryIndex] };
+        this.categories[categoryIndex] = {
+            ...oldCategory,
+            name: newName.trim()
+        };
+
+        // Save to storage
+        const success = await this.storage.save('categories', this.categories);
         
-        // Update all contractors with this category if dataModule is available
-        if (this.dataModule && this.dataModule.updateContractorCategory) {
-            this.dataModule.updateContractorCategory(oldName, trimmedNewName);
-        }
-        
-        const success = this.saveCategories();
         if (success) {
-            showNotification('Category updated successfully!');
+            console.log('✅ Category updated:', oldName, '→', newName);
+            return this.categories[categoryIndex];
+        } else {
+            // Rollback on failure
+            this.categories[categoryIndex] = oldCategory;
+            throw new Error('Failed to update category');
         }
-        return success;
     }
 
-    deleteCategory(categoryName) {
-        // Check if any contractors are using this category if dataModule is available
-        if (this.dataModule && this.dataModule.getContractors) {
-            const contractorsUsingCategory = this.dataModule.getContractors().filter(
-                contractor => contractor.category === categoryName
-            );
-
-            if (contractorsUsingCategory.length > 0) {
-                showNotification(`Cannot delete category. ${contractorsUsingCategory.length} contractor(s) are using it.`, 'error');
-                return false;
-            }
+    async deleteCategory(name) {
+        const categoryIndex = this.categories.findIndex(cat => cat.name === name);
+        if (categoryIndex === -1) {
+            throw new Error(`Category "${name}" not found`);
         }
 
-        const index = this.categories.findIndex(cat => cat.name === categoryName);
-        if (index === -1) {
-            showNotification('Category not found!', 'error');
-            return false;
+        // Check if category is used by any contractors
+        const contractors = this.dataModule.getContractors();
+        const contractorsUsingCategory = contractors.filter(contractor => 
+            contractor.category === name
+        );
+
+        if (contractorsUsingCategory.length > 0) {
+            throw new Error(`Cannot delete category "${name}" - it is used by ${contractorsUsingCategory.length} contractor(s)`);
         }
 
-        this.categories.splice(index, 1);
-        const success = this.saveCategories();
+        // Remove category
+        const deletedCategory = this.categories.splice(categoryIndex, 1)[0];
+
+        // Save to storage
+        const success = await this.storage.save('categories', this.categories);
+        
         if (success) {
-            showNotification('Category deleted successfully!');
+            console.log('✅ Category deleted:', name);
+            return deletedCategory;
+        } else {
+            // Rollback on failure
+            this.categories.splice(categoryIndex, 0, deletedCategory);
+            throw new Error('Failed to delete category');
         }
-        return success;
+    }
+
+    // Check if category exists
+    categoryExists(name) {
+        return this.categories.some(cat => cat.name === name);
+    }
+
+    // Get category count
+    getCategoryCount() {
+        return this.categories.length;
+    }
+
+    // Get categories for dropdown/select (formatted for UI)
+    getCategoriesForDropdown() {
+        return this.categories.map(category => ({
+            value: category.name,
+            text: category.name
+        }));
+    }
+
+    // Validate category name
+    validateCategoryName(name) {
+        if (!name || name.trim() === '') {
+            return { valid: false, message: 'Category name is required' };
+        }
+        
+        if (name.length > 50) {
+            return { valid: false, message: 'Category name must be less than 50 characters' };
+        }
+        
+        return { valid: true };
     }
 
     // Get category statistics
     getCategoryStats() {
+        const contractors = this.dataModule.getContractors();
         const stats = {};
         
-        // Only calculate stats if dataModule is available
-        if (!this.dataModule || !this.dataModule.getContractors) {
-            return stats;
-        }
-        
-        const contractors = this.dataModule.getContractors();
-        
         this.categories.forEach(category => {
-            const categoryContractors = contractors.filter(c => c.category === category.name);
-            const approvedReviews = categoryContractors.flatMap(c => 
-                c.reviews ? c.reviews.filter(r => r.status === 'approved') : []
+            const categoryContractors = contractors.filter(contractor => 
+                contractor.category === category.name
             );
             
             stats[category.name] = {
-                id: category.id,
                 count: categoryContractors.length,
-                totalReviews: approvedReviews.length,
-                averageRating: categoryContractors.length > 0 ? 
-                    parseFloat((categoryContractors.reduce((sum, c) => sum + parseFloat(c.overallRating || 0), 0) / categoryContractors.length).toFixed(1)) : 0
+                contractors: categoryContractors
             };
         });
         
         return stats;
-    }
-
-    // Refresh categories data from storage
-    refresh() {
-        this.loadCategories();
     }
 }

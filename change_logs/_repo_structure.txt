@@ -1,54 +1,67 @@
 .
 |-- change_logs
-|   |-- 2025_11_13.md
-|   |-- 2025_11_14_01.md
-|   |-- 2025_11_14_02.md
-|   |-- 2025_11_14_03.md
-|   |-- 2025_11_15_01.md
-|   |-- 2025_11_15_02.md
-|   |-- 2025_11_15_03.md
-|   |-- 2025_11_15_04.md
-|   |-- 2025_11_15_05.md
-|   |-- 2025_11_15_06.md
-|   |-- 2025_11_15_07.md
-|   |-- 2025_11_15_08.md
-|   |-- 2025_11_15_09.md
-|   |-- 2025_11_15_10.md
-|   |-- 2025_11_16_01.md
-|   |-- 2025_11_16_02.md
-|   |-- 2025_11_16_03.md
-|   |-- 2025_11_16_04.md
-|   |-- 2025_11_16_05.md
-|   |-- 2025_11_16_06.md
-|   |-- 2025_11_16_07.md
-|   |-- 2025_11_16_08.md
-|   |-- 2025_11_16_09.md
-|   |-- 2025_11_16_10.md
-|   |-- 2025_11_16_11.md
-|   |-- 2025_11_16_12.md
-|   |-- 2025_11_16_13.md
-|   |-- 2025_11_17_01.md
-|   |-- 2025_11_17_02.md
-|   |-- 2025_11_17_03.md
-|   |-- _better_coding_prompt.md
-|   |-- _END_of_day_status_prompt.md
-|   |-- _repo_structure.txt
-|   `-- _START_of_day_prompt.md
+|   |-- archive
+|   |   |-- 2025_11_13.md
+|   |   |-- 2025_11_14_01.md
+|   |   |-- 2025_11_14_02.md
+|   |   |-- 2025_11_14_03.md
+|   |   |-- 2025_11_15_01.md
+|   |   |-- 2025_11_15_02.md
+|   |   |-- 2025_11_15_03.md
+|   |   |-- 2025_11_15_04.md
+|   |   |-- 2025_11_15_05.md
+|   |   |-- 2025_11_15_06.md
+|   |   |-- 2025_11_15_07.md
+|   |   |-- 2025_11_15_08.md
+|   |   |-- 2025_11_15_09.md
+|   |   |-- 2025_11_15_10.md
+|   |   |-- 2025_11_16_01.md
+|   |   |-- 2025_11_16_02.md
+|   |   |-- 2025_11_16_03.md
+|   |   |-- 2025_11_16_04.md
+|   |   |-- 2025_11_16_05.md
+|   |   |-- 2025_11_16_06.md
+|   |   |-- 2025_11_16_07.md
+|   |   |-- 2025_11_16_08.md
+|   |   |-- 2025_11_16_09.md
+|   |   |-- 2025_11_16_10.md
+|   |   |-- 2025_11_16_11.md
+|   |   |-- 2025_11_16_12.md
+|   |   |-- 2025_11_16_13.md
+|   |   |-- 2025_11_17_01.md
+|   |   |-- 2025_11_17_02.md
+|   |   |-- 2025_11_17_03.md
+|   |   |-- 2025_11_17_04.md
+|   |   |-- 2025_11_17_05.md
+|   |   |-- 2025_11_17_06.md
+|   |   |-- 2025_11_17_07.md
+|   |   |-- 2025_11_17_08.md
+|   |   |-- 2025_11_17_09.md
+|   |   |-- 2025_11_17_10.md
+|   |   `-- 2025_11_17_11.md
+|   |-- 2025_11_18_01.md
+|   |-- 2025_11_18_02.md
+|   |-- 2025_11_18_03.md
+|   |-- _coding_prompt.md
+|   |-- _project_structure.md
+|   `-- _repo_structure.txt
 |-- css
 |   |-- base
 |   |   |-- reset.css
 |   |   `-- variables.css
 |   |-- components
 |   |   |-- auth.css
+|   |   |-- bottom-nav.css
+|   |   |-- bottom-sheet.css
 |   |   |-- buttons.css
 |   |   |-- cards.css
-|   |   |-- compact-filters.css
 |   |   |-- contractor-details.css
 |   |   |-- dashboard.css
 |   |   |-- forms.css
 |   |   |-- map.css
 |   |   |-- material.css
 |   |   |-- modals.css
+|   |   |-- notifications.css
 |   |   |-- ratings.css
 |   |   |-- stats-cards.css
 |   |   |-- tables.css
@@ -72,9 +85,12 @@
 |   |   |   |-- baseModalManager.js
 |   |   |   |-- contractorModalManager.js
 |   |   |   `-- reviewModalManager.js
+|   |   |-- favoritesManager.js
 |   |   |-- filterManager.js
+|   |   |-- lazyLoader.js
 |   |   |-- main.js
 |   |   |-- modalManager.js
+|   |   |-- statsManager.js
 |   |   `-- uiManager.js
 |   |-- config
 |   |   `-- supabase-credentials.js
@@ -95,11 +111,10 @@
 |   |   |-- contractorManager.js
 |   |   |-- data.js
 |   |   |-- favoritesDataManager.js
-|   |   |-- favoritesManager.js
 |   |   |-- mapManager.js
 |   |   |-- notifications.js
 |   |   |-- reviewManager.js
-|   |   |-- statsManager.js
+|   |   |-- statsDataManager.js
 |   |   |-- storage.js
 |   |   |-- supabase.js
 |   |   |-- tabs.js
@@ -116,6 +131,8 @@
 |-- manifest.json
 |-- postgresql_supabase_setup.sql
 |-- rate-my-contractor-product-requirements.md
-`-- sw.js
+|-- start_server.sh
+|-- sw.js
+`-- unsaved file 1
 
-12 directories, 107 files
+13 directories, 123 files

@@ -20,8 +20,8 @@ export class LazyLoader {
         this.elements = {};
         
         // Callbacks
-        this.onBatchLoad = null;
-        this.onLoadingStateChange = null;
+        this._onBatchLoadCallback = null;
+        this._onLoadingStateChangeCallback = null;
     }
 
     async init(containerElement, cardManager) {
@@ -109,8 +109,8 @@ export class LazyLoader {
             this.updateLazyLoadingTrigger();
 
             // Notify about batch load
-            if (this.onBatchLoad) {
-                this.onBatchLoad(batch, this.currentIndex, this.allContractors.length);
+            if (this._onBatchLoadCallback) {
+                this._onBatchLoadCallback(batch, this.currentIndex, this.allContractors.length);
             }
 
             console.log(`LazyLoader: Loaded ${batch.length} contractors (${endIndex}/${this.allContractors.length})`);
@@ -137,8 +137,8 @@ export class LazyLoader {
             this.hideLoadingIndicator();
         }
 
-        if (this.onLoadingStateChange) {
-            this.onLoadingStateChange(isLoading);
+        if (this._onLoadingStateChangeCallback) {
+            this._onLoadingStateChangeCallback(isLoading);
         }
     }
 
@@ -244,14 +244,14 @@ export class LazyLoader {
         this.config = { ...this.config, ...newConfig };
     }
 
-    // Event callbacks
-    onBatchLoad(callback) {
-        this.onBatchLoad = callback;
+    // Event callbacks - renamed to avoid naming conflicts
+    setOnBatchLoad(callback) {
+        this._onBatchLoadCallback = callback;
         return this;
     }
 
-    onLoadingStateChange(callback) {
-        this.onLoadingStateChange = callback;
+    setOnLoadingStateChange(callback) {
+        this._onLoadingStateChangeCallback = callback;
         return this;
     }
 

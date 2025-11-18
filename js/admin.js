@@ -22,6 +22,8 @@ class AdminModule {
 
     async init() {
         try {
+            console.log('🔧 AdminModule: Starting initialization...');
+            
             // Initialize core modules first
             await this.initializeCoreModules();
 
@@ -34,17 +36,25 @@ class AdminModule {
     }
 
     async initializeCoreModules() {
+        console.log('🔧 AdminModule: Initializing core modules...');
+        
         // Initialize data module
         this.dataModule = new DataModule();
         await this.dataModule.init(); // Ensure we await this
+
+        console.log('🔧 AdminModule: DataModule initialized, contractors count:', this.dataModule.getContractors().length);
 
         // Initialize categories module with storage from dataModule
         this.categoriesModule = new CategoriesModule(this.dataModule);
         const storage = this.dataModule.getStorage();
         await this.categoriesModule.init(storage, this.dataModule);
+        
+        console.log('🔧 AdminModule: Core modules initialized');
     }
 
     async showAdminContent() {
+        console.log('🔧 AdminModule: Showing admin content...');
+        
         const loginSection = document.getElementById('loginSection');
         const adminContent = document.getElementById('adminContent');
         if (loginSection) loginSection.style.display = 'none';
@@ -64,7 +74,8 @@ class AdminModule {
 
     async initializeAdminModules() {
         try {
-            console.log('✅ dataModule fully initialized, creating admin modules');
+            console.log('🔧 AdminModule: Initializing admin modules...');
+            console.log('🔧 AdminModule: dataModule contractors count:', this.dataModule.getContractors().length);
 
             // Create instances with dependency injection
             this.adminCategoriesModule = new AdminCategoriesModule(this.dataModule);
@@ -73,7 +84,7 @@ class AdminModule {
                 this.categoriesModule,
                 this.getLocationData()
             );
-            this.adminReviewsModule = new AdminReviewsModule(this.dataModule);
+            this.adminReviewsModule = new AdminReviewsModule(this.dataModule); // FIXED: Use new class
 
             // Initialize tabs module
             this.tabsModule = new TabsModule();
@@ -85,7 +96,7 @@ class AdminModule {
             // Initialize admin modules
             this.adminCategoriesModule.init();
             this.adminContractorsModule.init();
-            this.adminReviewsModule.init();
+            await this.adminReviewsModule.init(); // FIXED: Await initialization
 
             console.log('✅ All admin modules initialized successfully');
         } catch (error) {
@@ -107,6 +118,7 @@ class AdminModule {
     registerTabCallbacks() {
         // Register refresh callbacks for each tab
         this.tabsModule.onTabChange('contractors-tab', () => {
+            console.log('🔧 AdminModule: Contractors tab activated, rendering table...');
             this.adminContractorsModule.renderContractorsTable();
         });
 
@@ -115,12 +127,12 @@ class AdminModule {
         });
 
         this.tabsModule.onTabChange('reviews-tab', () => {
-            this.adminReviewsModule.renderReviews();
+            this.adminReviewsModule.renderReviews(); // FIXED: Use correct method name
         });
     }
 
     bindEvents() {
-        console.log('Binding admin events...');
+        console.log('🔧 AdminModule: Binding admin events...');
 
         // Modal close events
         document.addEventListener('click', (e) => {
@@ -193,38 +205,51 @@ class AdminModule {
             });
         }
 
-        console.log('Admin events bound successfully');
+        // Listen for data updates to refresh stats
+        document.addEventListener('adminDataUpdated', () => {
+            console.log('🔧 AdminModule: Admin data updated event received');
+            this.refreshDashboard();
+        });
+
+        console.log('🔧 AdminModule: Admin events bound successfully');
     }
 
     renderDashboard() {
+        console.log('🔧 AdminModule: Rendering dashboard...');
+        console.log('🔧 AdminModule: Current contractors count:', this.dataModule.getContractors().length);
+        
         this.renderStats();
 
         // Render current tab content
         const currentTab = this.tabsModule.getCurrentTab();
+        console.log('🔧 AdminModule: Current tab:', currentTab);
+        
         switch (currentTab) {
             case 'contractors-tab':
+                console.log('🔧 AdminModule: Rendering contractors table...');
                 this.adminContractorsModule.renderContractorsTable();
                 break;
             case 'categories-tab':
                 this.adminCategoriesModule.renderCategories();
                 break;
             case 'reviews-tab':
-                this.adminReviewsModule.renderReviews();
+                this.adminReviewsModule.renderReviews(); // FIXED: Use correct method name
                 break;
         }
     }
 
     renderStats() {
         const contractors = this.dataModule.getContractors();
+        console.log('🔧 AdminModule: renderStats - contractors count:', contractors.length);
 
         const totalReviews = contractors ? contractors.reduce((total, contractor) => {
-            const reviews = contractor.reviews || [];
+            const reviews = this.dataModule.getReviewsForContractor(contractor.id) || [];
             return total + reviews.length;
         }, 0) : 0;
 
         const averageRating = contractors && contractors.length > 0 ?
             contractors.reduce((total, contractor) => {
-                const rating = parseFloat(contractor.rating) || 0;
+                const rating = parseFloat(contractor.overallRating) || 0;
                 return total + rating;
             }, 0) / contractors.length : 0;
 
@@ -240,6 +265,8 @@ class AdminModule {
         this.updateElementText('averageRating', averageRating.toFixed(1));
         this.updateElementText('totalCategories', totalCategories);
         this.updateElementText('pendingReviews', pendingReviews);
+        
+        console.log('🔧 AdminModule: Stats updated - contractors:', contractors ? contractors.length : 0);
     }
 
     updateElementText(elementId, text) {
@@ -290,16 +317,17 @@ class AdminModule {
         this.adminCategoriesModule.deleteCategory(categoryName);
     }
 
-    approveReview(contractorId, reviewId) {
-        this.adminReviewsModule.approveReview(contractorId, reviewId);
+    // FIXED: Updated review method signatures to match new AdminReviewsModule
+    approveReview(reviewId) {
+        this.adminReviewsModule.approveReview(reviewId);
     }
 
-    rejectReview(contractorId, reviewId) {
-        this.adminReviewsModule.rejectReview(contractorId, reviewId);
+    rejectReview(reviewId) {
+        this.adminReviewsModule.rejectReview(reviewId);
     }
 
-    deleteReview(contractorId, reviewId) {
-        this.adminReviewsModule.deleteReview(contractorId, reviewId);
+    deleteReview(reviewId) {
+        this.adminReviewsModule.deleteReview(reviewId);
     }
 
     viewReview(contractorId, reviewId) {
@@ -317,6 +345,36 @@ class AdminModule {
     filterReviews() {
         this.adminReviewsModule.filterReviews();
     }
+
+    // DEBUG: Expose category debugging method
+    debugCategoryLoading() {
+        if (this.dataModule && this.dataModule.debugCategoryLoading) {
+            return this.dataModule.debugCategoryLoading();
+        } else {
+            console.error('❌ DataModule not available or debugCategoryLoading method missing');
+            return null;
+        }
+    }
+
+    // DEBUG: Force refresh categories from Supabase
+    async forceRefreshCategories() {
+        console.log('🔄 Forcing category refresh from Supabase...');
+        
+        if (this.dataModule && this.dataModule.triggerDataPull) {
+            const result = await this.dataModule.triggerDataPull();
+            console.log('✅ Force refresh result:', result);
+            
+            // Refresh categories display
+            if (this.adminCategoriesModule && this.adminCategoriesModule.renderCategories) {
+                this.adminCategoriesModule.renderCategories();
+            }
+            
+            return result;
+        } else {
+            console.error('❌ DataModule not available or triggerDataPull method missing');
+            return null;
+        }
+    }
 }
 
 // Create and initialize global instance
@@ -324,6 +382,10 @@ const adminModule = new AdminModule();
 
 // Make adminModule available globally for HTML onclick handlers
 window.adminModule = adminModule;
+
+// DEBUG: Expose dataModule globally for debugging
+window.debugCategoryLoading = () => adminModule.debugCategoryLoading();
+window.forceRefreshCategories = () => adminModule.forceRefreshCategories();
 
 // Initialize admin when page loads
 document.addEventListener('DOMContentLoaded', function () {

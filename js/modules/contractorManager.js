@@ -2,7 +2,6 @@
 // ES6 Module for contractor management
 
 import { generateId } from './uuid.js';
-import { defaultContractors } from '../data/defaultContractors.js';
 import { southAfricanCityCoordinates, southAfricanProvinces } from '../data/defaultLocations.js';
 
 export class ContractorManager {
@@ -15,30 +14,43 @@ export class ContractorManager {
         };
     }
 
-    init(storage, defaultContractors = null) {
+    async init(storage) {
         this.storage = storage;
         
-        // Use provided default contractors or fall back to imported ones
-        const contractorsToUse = defaultContractors || JSON.parse(JSON.stringify(defaultContractors));
+        // Load contractors from storage - dataModule handles default data setup
+        const saved = await this.storage.load('contractors');
         
-        const saved = this.storage.load('contractors');
+        console.log('🔧 ContractorManager.init(): Loading contractors from storage...');
+        console.log('🔧 Saved data from storage:', saved);
         
-        // FIX: Handle the case where storage returns the string "undefined"
+        // FIX: Only use data from storage, dataModule handles defaults
         if (saved && saved !== "undefined" && saved.length > 0) {
             this.contractors = saved;
+            console.log('🔧 Loaded contractors from storage:', this.contractors.length);
         } else {
-            this.contractors = contractorsToUse;
-            this.save();
+            // If no data in storage, start with empty array
+            // dataModule will handle populating with defaults
+            this.contractors = [];
+            console.log('🔧 No contractors in storage, starting with empty array');
         }
     }
 
-    save = () => this.storage.save('contractors', this.contractors);
+    save = () => {
+        console.log('🔧 ContractorManager.save(): Saving contractors to storage...');
+        console.log('🔧 Current contractors count:', this.contractors.length);
+        const result = this.storage.save('contractors', this.contractors);
+        console.log('🔧 Save result:', result);
+        return result;
+    }
 
     getAll = () => this.contractors;
 
     getById = (id) => this.contractors.find(contractor => contractor.id === id);
 
     create(contractorData) {
+        console.log('🔧 ContractorManager.create(): Creating new contractor...');
+        console.log('🔧 Contractor data:', contractorData);
+        
         // Generate coordinates and service areas based on location
         const { coordinates, serviceAreas } = this.generateMapData(contractorData.location);
         
@@ -53,7 +65,12 @@ export class ContractorManager {
             reviews: [],
             createdAt: new Date().toISOString()
         };
+        
+        console.log('🔧 Created contractor object:', contractor);
+        
         this.contractors.push(contractor);
+        console.log('🔧 Contractors array after push:', this.contractors.length);
+        
         this.save();
         return contractor;
     }
@@ -157,8 +174,8 @@ export class ContractorManager {
     }
 
     // Refresh contractor data from storage
-    refresh() {
-        const saved = this.storage.load('contractors');
+    async refresh() {
+        const saved = await this.storage.load('contractors');
         // FIX: Also handle "undefined" string in refresh method
         if (saved && saved !== "undefined" && saved.length > 0) {
             this.contractors = saved;

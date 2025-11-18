@@ -1,6 +1,5 @@
-// js/app/main.js
+// js/app/main.js - CLEANED UP WITH PROPER SEPARATION OF CONCERNS
 import { showNotification } from '../modules/notifications.js';
-import { FavoritesManager } from '../modules/favoritesManager.js';
 import { CardManager } from '../modules/cardManager.js';
 import { UIManager } from './uiManager.js';
 import { ModalManager } from './modalManager.js';
@@ -14,7 +13,6 @@ export class ContractorReviewApp {
         this.modalManager = null;
         this.filterManager = null;
         this.mapManager = null;
-        this.favoritesManager = null;
         this.cardManager = null;
         
         this.currentContractor = null;
@@ -53,16 +51,17 @@ export class ContractorReviewApp {
     }
 
     async createManagers() {
-        // Wait for favorites data manager to be ready
-        const favoritesDataManager = this.dataModule.getFavoritesDataManager();
-        if (favoritesDataManager && !favoritesDataManager.initialized) {
-            console.log('🔄 Initializing FavoritesDataManager...');
-            await favoritesDataManager.init(this.dataModule.storage);
-        }
-        
         // Create card manager
-        this.cardManager = new CardManager(this.dataModule, this.dataModule.getReviewManager());
+        this.cardManager = new CardManager(
+            this.dataModule, 
+            this.dataModule.getReviewManager()
+        );
         console.log('✅ CardManager created');
+
+        // Create filter manager
+        this.filterManager = new FilterManager();
+        await this.filterManager.init(this.dataModule);
+        console.log('✅ FilterManager created');
 
         // Create UI manager
         this.uiManager = new UIManager(
@@ -71,73 +70,68 @@ export class ContractorReviewApp {
             this.dataModule.getCategoriesModule(),
             this.dataModule.getReviewManager()
         );
+        await this.uiManager.init(this.filterManager);
         console.log('✅ UIManager created');
 
-        // Create modal manager
-        this.modalManager = new ModalManager(this.dataModule, this.dataModule.getReviewManager(), this.cardManager);
-        console.log('✅ ModalManager created');
-
-        // Create filter manager
-        this.filterManager = new FilterManager();
-        console.log('✅ FilterManager created');
+        // Create modal manager with direct callback for review submission
+        this.modalManager = new ModalManager(
+            this.dataModule, 
+            this.dataModule.getReviewManager(), 
+            this.cardManager,
+            (reviewData, contractorId) => {
+                // Direct callback from ReviewModalManager
+                console.log('🔧 Main App: Received review submission via direct callback');
+                this.handleReviewSubmit({
+                    ...reviewData,
+                    contractorId: contractorId || reviewData.contractorId
+                });
+            }
+        );
+        await this.modalManager.init();
+        console.log('✅ ModalManager created and initialized');
 
         // Create map manager
         this.mapManager = new MapManager(this.dataModule);
         console.log('✅ MapManager created');
-
-        // Create favorites manager
-        this.favoritesManager = new FavoritesManager();
-        this.favoritesManager.init(
-            favoritesDataManager,
-            this.dataModule,
-            this.uiManager
-        );
-        console.log('✅ FavoritesManager initialized');
-
-        // Initialize all UI managers
-        await this.uiManager.init(this.dataModule, this.favoritesManager);
-        await this.modalManager.init(this.dataModule, this.favoritesManager);
-        await this.filterManager.init(this.dataModule, this.favoritesManager);
     }
 
     setupManagers() {
-        // When filters change, update UI
-        this.filterManager.onFiltersChange((filters) => {
-            this.filteredContractors = this.filterManager.applyFilters(filters);
+        // When filters change, update UI - FIXED: Properly handle filtered contractors
+        this.filterManager.onFiltersChange((filters, filteredContractors) => {
+            console.log('🔧 Main App: Filters changed, filtered contractors:', filteredContractors?.length);
+            
+            // Use the filtered contractors provided by FilterManager, or apply filters if not provided
+            this.filteredContractors = filteredContractors || this.filterManager.applyFilters(filters);
+            
+            console.log('🔧 Main App: Rendering', this.filteredContractors.length, 'contractors');
+            
+            // Render the filtered contractors
             this.uiManager.renderContractors(this.filteredContractors);
-            this.uiManager.updateStats(this.filteredContractors);
             
             // Track if favorites filter is active
-            this.isFavoritesFilterActive = filters.favoritesOnly || false;
+            this.isFavoritesFilterActive = filters.favorites === 'favorites';
             
             // Update map markers if in map view
             if (this.currentView === 'map') {
+                console.log('🔧 Main App: Updating map with filtered contractors');
                 this.mapManager.updateContractors(this.filteredContractors);
             }
-        });
-
-        // When modal actions occur
-        this.modalManager.onReviewRequest((contractorId) => {
-            this.currentContractor = contractorId;
-            this.modalManager.openReviewModal(contractorId);
-        });
-
-        // When review form is submitted
-        this.modalManager.onReviewSubmit((reviewData) => {
-            this.handleReviewSubmit(reviewData);
+            
+            // Update stats
+            if (this.uiManager.statsManager) {
+                this.uiManager.statsManager.updateStats(this.filteredContractors);
+            }
         });
 
         // Handle favorites updates
         document.addEventListener('favoritesUpdated', () => {
-            this.uiManager.updateStats(this.filteredContractors);
-            
+            console.log('🔧 Main App: Favorites updated event received');
             // Only reapply filters if favorites filter is currently active
             if (this.isFavoritesFilterActive) {
                 console.log('Favorites updated and favorites filter is active - refreshing filters');
                 this.filterManager.applyCurrentFilters();
             } else {
-                console.log('Favorites updated but favorites filter not active - updating UI only');
-                this.updateFavoriteButtons();
+                console.log('Favorites updated but favorites filter not active - UI will update automatically');
             }
         });
 
@@ -146,30 +140,27 @@ export class ContractorReviewApp {
             this.handleMapMarkerClick(event.detail.contractorId);
         });
 
-        // Listen for view changes from mapManager
-        document.addEventListener('viewToggle', (event) => {
-            this.currentView = event.detail.view;
+        // Listen for view changes from filterManager
+        this.filterManager.onViewChange((view) => {
+            console.log('🔧 Main App: View changed to:', view);
+            this.currentView = view;
             this.handleViewChange();
         });
 
         // Listen for data updates
         document.addEventListener('contractorsUpdated', () => {
+            console.log('🔧 Main App: Contractors updated, refreshing dashboard');
             this.renderDashboard();
         });
 
         document.addEventListener('reviewsUpdated', () => {
-            this.uiManager.updateStats(this.filteredContractors);
-        });
-
-        // Listen for storage initialization events
-        document.addEventListener('storageReady', () => {
-            console.log('Storage ready event received - refreshing favorites');
-            this.refreshFavoritesData();
+            console.log('🔧 Main App: Reviews updated');
+            // Stats are handled by StatsManager via UIManager
         });
 
         // Listen for map initialization events
         document.addEventListener('mapInitialized', () => {
-            console.log('Map initialized event received');
+            console.log('🔧 Main App: Map initialized event received');
             if (this.currentView === 'map') {
                 this.handleViewChange();
             }
@@ -184,7 +175,6 @@ export class ContractorReviewApp {
         window.dataModule = this.dataModule;
         window.modalManager = this.modalManager;
         window.mapManager = this.mapManager;
-        window.favoritesManager = this.favoritesManager;
 
         // Make app methods available globally for HTML onclick handlers
         window.toggleFavorite = (contractorId) => this.toggleFavorite(contractorId);
@@ -201,35 +191,9 @@ export class ContractorReviewApp {
         window.handleSearchKeyPress = (event) => this.handleSearchKeyPress(event);
         window.exportData = () => this.exportData();
         window.closeModal = (modalId) => this.closeModal(modalId);
-        window.showFavoritesSection = () => this.showFavoritesSection();
-        window.handleFavoritesImport = (file) => this.handleFavoritesImport(file);
         window.showMapView = () => this.showMapView();
         window.showListView = () => this.showListView();
         window.refreshMap = () => this.refreshMap();
-    }
-
-    // Helper method to refresh favorites data
-    async refreshFavoritesData() {
-        if (this.favoritesManager && this.favoritesManager.dataManager) {
-            try {
-                await this.favoritesManager.dataManager.refresh();
-                console.log('Favorites data refreshed from storage');
-                
-                // Update UI to reflect current favorites state
-                this.updateFavoriteButtons();
-                this.favoritesManager.showFavoritesSection();
-                
-            } catch (error) {
-                console.error('Error refreshing favorites data:', error);
-            }
-        }
-    }
-
-    // Helper method to update favorite buttons without reapplying filters
-    updateFavoriteButtons() {
-        if (this.favoritesManager) {
-            this.favoritesManager.updateFavoriteButtons();
-        }
     }
 
     handleViewChange() {
@@ -264,10 +228,9 @@ export class ContractorReviewApp {
             if (mapContainer) mapContainer.classList.add('hidden');
             if (contractorList) contractorList.classList.remove('hidden');
             
-            // Show favorites section only if there are favorites
-            if (favoritesSection && this.favoritesManager) {
-                const hasFavorites = this.favoritesManager.getFavoritesCount() > 0;
-                favoritesSection.classList.toggle('hidden', !hasFavorites);
+            // The favorites section is always hidden in the new design
+            if (favoritesSection) {
+                favoritesSection.classList.add('hidden');
             }
         }
     }
@@ -277,8 +240,8 @@ export class ContractorReviewApp {
     }
 
     renderDashboard() {
-        this.uiManager.refreshFilters();
-        this.uiManager.renderStats();
+        // FIXED: Call refreshAllFilters on FilterManager instead of refreshFilters on UIManager
+        this.filterManager.refreshAllFilters();
         this.uiManager.renderContractors();
         
         // Initialize map data but don't show it unless in map view
@@ -287,11 +250,6 @@ export class ContractorReviewApp {
         
         // Ensure correct view is displayed
         this.handleViewChange();
-        
-        // Update favorites section
-        if (this.favoritesManager) {
-            this.favoritesManager.showFavoritesSection();
-        }
     }
 
     handleReviewSubmit(reviewData) {
@@ -316,23 +274,14 @@ export class ContractorReviewApp {
 
     // Favorites management
     async toggleFavorite(contractorId) {
-        if (!this.favoritesManager) {
-            console.error('FavoritesManager not initialized');
+        if (!this.dataModule || !this.uiManager?.favoritesManager) {
+            console.error('DataModule or FavoritesManager not initialized');
             return false;
         }
-        return await this.favoritesManager.toggleFavorite(contractorId);
-    }
-
-    showFavoritesSection() {
-        if (this.favoritesManager) {
-            this.favoritesManager.showFavoritesSection();
-        }
-    }
-
-    handleFavoritesImport(file) {
-        if (this.favoritesManager && file) {
-            this.favoritesManager.handleFavoritesImport(file);
-        }
+        
+        // Use FavoritesManager to handle the toggle with proper UI updates
+        const success = await this.uiManager.favoritesManager.toggleFavorite(contractorId);
+        return success;
     }
 
     // Map view management
@@ -369,15 +318,22 @@ export class ContractorReviewApp {
     }
 
     // COMPACT FILTER METHODS
-    toggleAdvancedFilters = () => this.filterManager.toggleAdvancedFilters();
+    toggleAdvancedFilters = () => {
+        // REMOVED: This method is no longer needed since advanced filters are always visible
+        console.log('toggleAdvancedFilters called but advanced filters are now always visible');
+    };
     clearFilters = () => this.filterManager.clearFilters();
     showFavoritesOnly = () => {
         this.isFavoritesFilterActive = true;
-        this.filterManager.showFavoritesOnly();
+        if (this.uiManager.favoritesManager) {
+            this.uiManager.favoritesManager.showFavoritesOnly();
+        }
     };
     showHighRated = () => {
         this.isFavoritesFilterActive = false;
-        this.filterManager.showHighRated();
+        if (this.uiManager.favoritesManager) {
+            this.uiManager.favoritesManager.showHighRated();
+        }
     };
     resetToDefault = () => {
         this.isFavoritesFilterActive = false;
@@ -399,12 +355,12 @@ export class ContractorReviewApp {
     exportData() {
         const contractors = this.dataModule.getContractors();
         const reviews = this.dataModule.getAllReviews();
-        const favorites = this.favoritesManager ? this.favoritesManager.exportFavorites() : 'No favorites';
+        const favoritesCount = this.dataModule.getFavoritesCount();
         
         const exportData = {
             contractors: contractors,
             reviews: reviews,
-            favorites: favorites,
+            favoritesCount: favoritesCount,
             exportDate: new Date().toISOString(),
             totalContractors: contractors.length,
             totalReviews: reviews.length
@@ -424,18 +380,20 @@ export class ContractorReviewApp {
 
     // Get app status for debugging
     getAppStatus() {
-        const favoritesDataManager = this.dataModule.getFavoritesDataManager();
         return {
             contractors: this.dataModule.getContractors().length,
             reviews: this.dataModule.getAllReviews().length,
-            favorites: this.favoritesManager ? this.favoritesManager.getFavoritesCount() : 0,
+            favorites: this.dataModule.getFavoritesCount(),
             filteredContractors: this.filteredContractors.length,
             currentContractor: this.currentContractor,
             currentView: this.currentView,
             mapInitialized: this.mapManager ? this.mapManager.isReady() : false,
             dataModuleInitialized: this.dataModule.initialized,
-            favoritesManagerInitialized: !!this.favoritesManager,
-            favoritesDataManagerInitialized: favoritesDataManager ? favoritesDataManager.initialized : false,
+            uiManagerInitialized: !!this.uiManager,
+            filterManagerInitialized: !!this.filterManager,
+            favoritesManagerAvailable: !!this.uiManager?.favoritesManager,
+            lazyLoaderAvailable: !!this.uiManager?.lazyLoader,
+            statsManagerAvailable: !!this.uiManager?.statsManager,
             isFavoritesFilterActive: this.isFavoritesFilterActive
         };
     }

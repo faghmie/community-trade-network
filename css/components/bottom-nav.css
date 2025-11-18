@@ -1,0 +1,179 @@
+/* css/components/bottom-nav.css */
+/* Material Design Bottom Navigation Styles */
+
+.bottom-nav {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: var(--bg-card);
+    border-top: 1px solid var(--border-light);
+    box-shadow: var(--elevation-4);
+    z-index: var(--z-fixed);
+    padding: var(--space-xs) 0;
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    height: var(--bottom-navigation-height);
+}
+
+.bottom-nav-content {
+    display: flex;
+    align-items: center;
+    justify-content: space-around;
+    max-width: var(--container-max-width);
+    margin: 0 auto;
+    padding: 0 var(--space-sm);
+    height: 100%;
+}
+
+.bottom-nav-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: var(--space-xs) var(--space-sm);
+    text-decoration: none;
+    color: var(--text-secondary);
+    border-radius: var(--border-radius-sm);
+    transition: var(--material-transition);
+    position: relative;
+    min-width: 56px;
+    flex: 1;
+    max-width: 80px;
+    height: 100%;
+}
+
+.bottom-nav-item:hover {
+    background-color: rgba(0, 0, 0, 0.04);
+    color: var(--text-primary);
+}
+
+/* FIXED: Changed from [data-active="true"] to .active class */
+.bottom-nav-item.active {
+    color: var(--primary-color);
+}
+
+.bottom-nav-item.active::before {
+    content: '';
+    position: absolute;
+    top: -2px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 24px;
+    height: 2px;
+    background-color: var(--primary-color);
+    border-radius: var(--border-radius-full);
+}
+
+.bottom-nav-item i {
+    font-size: var(--font-size-xl);
+    margin-bottom: var(--space-xxs);
+    transition: var(--material-transition);
+}
+
+.bottom-nav-item.active i {
+    transform: translateY(-1px);
+}
+
+.bottom-nav-label {
+    font-size: var(--font-size-xs);
+    font-weight: var(--font-weight-medium);
+    line-height: 1.2;
+    text-align: center;
+    transition: var(--material-transition);
+}
+
+.bottom-nav-item.active .bottom-nav-label {
+    font-weight: var(--font-weight-bold);
+}
+
+.bottom-nav-badge {
+    position: absolute;
+    top: 4px;
+    right: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 16px;
+    height: 16px;
+    padding: 0 var(--space-xs);
+    background-color: var(--accent-color);
+    color: var(--text-on-primary);
+    border-radius: 8px;
+    font-size: var(--font-size-xs);
+    font-weight: var(--font-weight-bold);
+    line-height: 1;
+}
+
+/* Active state ripple effect */
+.bottom-nav-item::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    background: var(--material-ripple-color);
+    border-radius: var(--border-radius-full);
+    transform: translate(-50%, -50%);
+    transition: width var(--transition-long), height var(--transition-long);
+}
+
+.bottom-nav-item:active::after {
+    width: 200px;
+    height: 200px;
+}
+
+/* Ensure content has padding to avoid bottom nav overlap */
+.container {
+    padding-bottom: var(--bottom-navigation-height);
+}
+
+/* Dark theme support */
+@media (prefers-color-scheme: dark) {
+    .bottom-nav {
+        background: var(--surface);
+        border-top-color: var(--border-color);
+    }
+    
+    .bottom-nav-item:hover {
+        background-color: rgba(255, 255, 255, 0.04);
+    }
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+    .bottom-nav {
+        border-top-width: 2px;
+    }
+    
+    .bottom-nav-item.active::before {
+        height: 3px;
+    }
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+    .bottom-nav-item,
+    .bottom-nav-item i,
+    .bottom-nav-label,
+    .bottom-nav-item::after {
+        transition: none;
+    }
+    
+    .bottom-nav-item:active::after {
+        width: 0;
+        height: 0;
+    }
+}
+
+/* Print styles - hide bottom nav when printing */
+@media print {
+    .bottom-nav {
+        display: none !important;
+    }
+    
+    .container {
+        padding-bottom: 0;
+    }
+}

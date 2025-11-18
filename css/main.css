@@ -5,6 +5,7 @@
 @import url('components/buttons.css');
 @import url('components/cards.css');
 @import url('components/modals.css');
+@import url('components/notifications.css');
 @import url('components/forms.css');
 @import url('components/tables.css');
 @import url('components/tabs.css');
@@ -13,9 +14,10 @@
 @import url('components/dashboard.css');
 @import url('components/utilities.css');
 @import url('components/contractor-details.css');
-@import url('components/compact-filters.css');
 @import url('components/stats-cards.css');
 @import url('components/auth.css'); /* NEW: Authentication styles */
+@import url('components/bottom-nav.css');
+@import url('./components/bottom-sheet.css'); /* NEW: Bottom sheet styles */
 @import url('layout.css');
 
 /* Global Material Design Base Styles */

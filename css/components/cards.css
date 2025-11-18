@@ -1,6 +1,6 @@
-/* Material Design Card System with Enhanced Favorites */
+/* Material Design Card System with Enhanced Favorites & Mobile Responsiveness */
 
-/* Base Card Styles - Material Design */
+/* Base Card Styles - Material Design with Mobile First */
 .card {
     background: var(--bg-card);
     border-radius: var(--border-radius);
@@ -9,6 +9,7 @@
     transition: var(--material-transition);
     position: relative;
     border: 1px solid transparent;
+    min-height: 120px; /* Ensure minimum touch target */
 }
 
 .card:hover {
@@ -16,15 +17,16 @@
     transform: translateY(-2px);
 }
 
+/* Mobile-First Card Layout */
 .card-header {
-    padding: var(--space-md) var(--space-lg);
+    padding: var(--space-sm) var(--space-md);
     border-bottom: 1px solid var(--border-light);
     position: relative;
     background: var(--bg-card);
 }
 
 .card-body {
-    padding: var(--space-md) var(--space-lg);
+    padding: var(--space-sm) var(--space-md);
     display: flex;
     flex-direction: column;
     gap: var(--space-xs);
@@ -33,23 +35,28 @@
 }
 
 .card-footer {
-    padding: var(--space-md) var(--space-lg);
+    padding: var(--space-sm) var(--space-md);
     border-top: 1px solid var(--border-light);
-    background-color: var(--surface-50);
+    background-color: var(--surface);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: var(--space-sm);
+    min-height: 52px; /* Consistent touch target */
 }
 
-/* Contractor Card - Enhanced Material Design */
+/* Contractor Card - Mobile First Design */
 .contractor-card {
     cursor: pointer;
     position: relative;
     height: 100%;
     display: flex;
     flex-direction: column;
-    /* ENHANCED: Ensure cards stand out with proper Material Design */
     background: var(--bg-card);
     border-radius: var(--border-radius);
     box-shadow: var(--elevation-1);
     transition: var(--material-transition);
+    min-height: 140px; /* Minimum touch target for mobile */
 }
 
 .contractor-card:hover {
@@ -57,13 +64,15 @@
     transform: translateY(-2px);
 }
 
+/* Enhanced Touch Targets for Mobile */
 .contractor-card .contractor-name {
-    font-size: var(--font-size-lg);
+    font-size: var(--font-size-base); /* Start smaller for mobile */
     font-weight: var(--font-weight-medium);
     color: var(--text-primary);
     margin: 0;
     line-height: var(--line-height-tight);
     background: transparent !important;
+    min-height: 1.5em; /* Ensure consistent line height */
 }
 
 .contractor-card .contractor-category {
@@ -74,6 +83,7 @@
     align-items: center;
     gap: var(--space-xs);
     background: transparent !important;
+    min-height: 1.4em;
 }
 
 .contractor-card .contractor-location {
@@ -84,9 +94,10 @@
     align-items: center;
     gap: var(--space-xs);
     background: transparent !important;
+    min-height: 1.4em;
 }
 
-/* FIXED: Ultra Compact Rating Display - Force transparent backgrounds on ALL containers */
+/* Enhanced Mobile-Friendly Rating Display */
 .contractor-card .rating-display {
     display: flex;
     align-items: center;
@@ -97,6 +108,7 @@
     line-height: 1;
     background: transparent !important;
     border: none !important;
+    flex-wrap: wrap; /* Allow wrapping on small screens */
 }
 
 .contractor-card .rating-stars {
@@ -107,6 +119,7 @@
     margin: 0;
     padding: 0;
     border: none !important;
+    flex-shrink: 0; /* Prevent stars from shrinking */
 }
 
 .contractor-card .rating-star {
@@ -132,6 +145,7 @@
     margin: 0;
     background: transparent !important;
     border: none !important;
+    flex-shrink: 0;
 }
 
 .contractor-card .review-count {
@@ -141,36 +155,10 @@
     margin: 0;
     background: transparent !important;
     border: none !important;
+    flex-shrink: 0;
 }
 
-/* FIXED: Remove any potential rating container backgrounds with !important */
-.rating-container,
-.rating-wrapper,
-.stars-container,
-.rating-display-container,
-.rating-box,
-.rating-area,
-.star-container,
-.stars-wrapper {
-    background: transparent !important;
-    border: none !important;
-    padding: 0 !important;
-    margin: 0 !important;
-    box-shadow: none !important;
-}
-
-/* FIXED: Specific container classes that might be used */
-.contractor-rating,
-.rating-display-wrapper,
-.card-rating-container {
-    background: transparent !important;
-    border: none !important;
-    padding: 0 !important;
-    margin: 0 !important;
-    box-shadow: none !important;
-}
-
-/* Enhanced Favorite Button - Material Design */
+/* Enhanced Favorite Button - Mobile Optimized */
 .favorite-btn {
     position: absolute;
     top: var(--space-sm);
@@ -178,8 +166,8 @@
     background: var(--bg-card);
     border: 2px solid var(--surface-300);
     border-radius: var(--border-radius-full);
-    width: 40px;
-    height: 40px;
+    width: 44px; /* Larger touch target */
+    height: 44px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -190,6 +178,9 @@
     z-index: 10;
     backdrop-filter: blur(10px);
     box-shadow: var(--elevation-1);
+    /* Ensure proper touch interaction */
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
 }
 
 .favorite-btn:hover {
@@ -200,8 +191,11 @@
     box-shadow: var(--elevation-2);
 }
 
-/* Favorited State - Material Design */
+.favorite-btn:active {
+    transform: scale(0.95); /* Touch feedback */
+}
 
+/* Favorited State - Material Design */
 .favorite-btn.favorited {
     background: linear-gradient(135deg, var(--accent-color), var(--accent-400));
     border-color: var(--accent-color);
@@ -231,14 +225,76 @@
     }
 }
 
-/* Favorites Section - Material Design */
+/* Enhanced Card Footer Actions - Mobile Optimized */
+.contractor-card .card-footer {
+    background-color: var(--surface);
+    padding: var(--space-sm) var(--space-md);
+    border-top: 1px solid var(--border-light);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: var(--space-sm);
+    min-height: 56px; /* Larger touch target */
+}
+
+.contractor-card .card-footer .btn {
+    min-height: 40px; /* Better touch target */
+    padding: var(--space-xs) var(--space-sm);
+    border-radius: var(--border-radius-sm);
+    font-size: var(--font-size-sm);
+    font-weight: var(--font-weight-medium);
+    text-transform: none;
+    letter-spacing: var(--letter-spacing-normal);
+    transition: var(--material-transition);
+    flex: 1;
+    max-width: 140px;
+    /* Touch optimization */
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+}
+
+.contractor-card .card-footer .btn-primary {
+    background-color: var(--primary-color);
+    color: var(--text-on-primary);
+    border: none;
+    box-shadow: var(--elevation-1);
+}
+
+.contractor-card .card-footer .btn-primary:hover {
+    background-color: var(--primary-color-dark);
+    box-shadow: var(--elevation-2);
+}
+
+.contractor-card .card-footer .btn-primary:active {
+    background-color: var(--primary-color-darker);
+    box-shadow: var(--elevation-1);
+    transform: translateY(1px); /* Touch feedback */
+}
+
+.contractor-card .card-footer .btn-secondary {
+    background-color: transparent;
+    color: var(--primary-color);
+    border: 1px solid var(--border-color);
+}
+
+.contractor-card .card-footer .btn-secondary:hover {
+    background-color: rgba(0, 0, 0, 0.04);
+    border-color: var(--primary-color);
+}
+
+.contractor-card .card-footer .btn-secondary:active {
+    background-color: rgba(0, 0, 0, 0.08);
+    transform: translateY(1px); /* Touch feedback */
+}
+
+/* Favorites Section - Mobile Optimized */
 .favorites-section {
-    margin: var(--space-xl) 0;
-    padding: var(--space-xl);
-    background: var(--bg-surface); /* CHANGED: Use surface variant for container */
+    margin: var(--space-lg) 0;
+    padding: var(--space-lg);
+    background: var(--bg-surface);
     border-radius: var(--border-radius-lg);
     border-left: 4px solid var(--accent-color);
-    box-shadow: var(--elevation-1); /* CHANGED: Subtler shadow for container */
+    box-shadow: var(--elevation-1);
     animation: materialSlideIn 0.5s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
@@ -249,16 +305,19 @@
     margin-bottom: var(--space-lg);
     padding-bottom: var(--space-md);
     border-bottom: 1px solid var(--border-light);
+    flex-wrap: wrap; /* Allow wrapping on mobile */
+    gap: var(--space-sm);
 }
 
 .favorites-section .section-header h2 {
     color: var(--accent-color);
     margin: 0;
-    font-size: var(--font-size-xxl);
+    font-size: var(--font-size-xl); /* Start smaller */
     font-weight: var(--font-weight-medium);
     display: flex;
     align-items: center;
     gap: var(--space-md);
+    flex-wrap: wrap;
 }
 
 .favorites-badge {
@@ -269,91 +328,18 @@
     font-size: var(--font-size-sm);
     font-weight: var(--font-weight-medium);
     box-shadow: var(--elevation-1);
-}
-
-/* Favorites Notice - Material Design */
-.favorites-notice {
-    background: linear-gradient(135deg, var(--warning-500), var(--warning-color));
-    color: var(--text-primary);
-    border-radius: var(--border-radius);
-    padding: var(--space-lg);
-    margin-bottom: var(--space-lg);
-    font-size: var(--font-size-sm);
-    box-shadow: var(--elevation-1);
-    border-left: 4px solid var(--warning-600);
-}
-
-.favorites-notice p {
-    margin: 0 0 var(--space-sm) 0;
-    line-height: var(--line-height-normal);
-    display: flex;
+    min-height: 24px; /* Consistent height */
+    display: inline-flex;
     align-items: center;
-    gap: var(--space-sm);
 }
 
-.favorites-notice p:last-child {
-    margin-bottom: 0;
-}
-
-.favorites-actions {
-    display: flex;
-    gap: var(--space-sm);
-    margin-top: var(--space-md);
-    flex-wrap: wrap;
-}
-
-.favorites-actions .material-button {
-    font-size: var(--font-size-sm);
-    padding: var(--space-sm) var(--space-md);
-}
-
-/* No Favorites State - Material Design */
-.no-favorites {
-    text-align: center;
-    padding: var(--space-xxl);
-    color: var(--text-secondary);
-    background: var(--surface-50);
-    border-radius: var(--border-radius);
-    border: 2px dashed var(--border-color);
-}
-
-.no-favorites .material-icons {
-    font-size: 3rem;
-    color: var(--surface-400);
-    margin-bottom: var(--space-md);
-}
-
-.no-favorites p {
-    margin: 0 0 var(--space-md) 0;
-    font-size: var(--font-size-lg);
-    color: var(--text-secondary);
-}
-
-.no-favorites p:last-child {
-    margin-bottom: 0;
-    font-size: var(--font-size-sm);
-    color: var(--text-disabled);
-}
-
-/* Enhanced Contractor Card with Favorites */
-.contractor-card.favorited {
-    border: 2px solid rgba(233, 30, 99, 0.1);
-    background: linear-gradient(135deg, var(--bg-card), var(--surface-50));
-    box-shadow: var(--elevation-2);
-}
-
-.contractor-card.favorited:hover {
-    border-color: rgba(233, 30, 99, 0.2);
-    box-shadow: var(--elevation-3);
-}
-
-/* Contractor List Section - NEW: Proper container styling */
+/* Contractor List Section - Mobile Optimized */
 .contractor-list {
-    margin: var(--space-xl) 0;
-    padding: var(--space-xl);
-    background: var(--bg-surface); /* CHANGED: Use surface variant for container */
+    margin: var(--space-lg) 0;
+    padding: var(--space-lg);
+    background: var(--bg-surface);
     border-radius: var(--border-radius-lg);
-    box-shadow: var(--elevation-1); /* CHANGED: Subtler shadow for container */
+    box-shadow: var(--elevation-1);
     border: 1px solid var(--border-light);
 }
 
@@ -361,81 +347,74 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-    margin-bottom: var(--space-xl);
+    margin-bottom: var(--space-lg);
     padding-bottom: var(--space-md);
     border-bottom: 1px solid var(--border-light);
+    flex-wrap: wrap; /* Allow wrapping on mobile */
+    gap: var(--space-sm);
 }
 
 .contractor-list .section-header h2 {
     color: var(--text-primary);
     margin: 0;
-    font-size: var(--font-size-xxl);
+    font-size: var(--font-size-xl); /* Start smaller */
     font-weight: var(--font-weight-medium);
     display: flex;
     align-items: center;
     gap: var(--space-md);
+    flex-wrap: wrap;
 }
 
-/* Favorite Filter Styles */
-.favorites-filter {
-    background: var(--surface-50);
-    padding: var(--space-lg);
-    border-radius: var(--border-radius);
-    margin-bottom: var(--space-lg);
-    border-left: 4px solid var(--primary-color);
-}
-
-.favorites-filter .material-select {
-    background: var(--bg-white);
-    border: 2px solid var(--border-color);
-    border-radius: var(--border-radius);
-    padding: var(--space-sm) var(--space-md);
-    font-size: var(--font-size-sm);
-    transition: var(--material-transition);
-}
-
-.favorites-filter .material-select:focus {
-    border-color: var(--primary-color);
-    box-shadow: 0 0 0 3px rgba(33, 150, 243, 0.1);
-    outline: none;
-}
-
-/* Empty States */
-.no-results, .no-favorites {
-    text-align: center;
-    padding: var(--space-xxl);
-    color: var(--text-secondary);
-    background: var(--surface-50);
-    border-radius: var(--border-radius);
-}
-
-.no-results p, .no-favorites p {
-    margin: 0;
-    line-height: var(--line-height-relaxed);
-}
-
-.no-results .material-icons, .no-favorites .material-icons {
-    font-size: 4rem;
-    color: var(--surface-300);
-    margin-bottom: var(--space-lg);
-}
-
-/* Material Design Animations */
-@keyframes materialSlideIn {
-    from {
-        opacity: 0;
-        transform: translateY(-20px);
+/* Enhanced Mobile Responsiveness */
+@media (min-width: 480px) {
+    .contractor-card .contractor-name {
+        font-size: var(--font-size-lg);
     }
-    to {
-        opacity: 1;
+    
+    .card-header,
+    .card-body,
+    .card-footer {
+        padding: var(--space-sm) var(--space-lg);
+    }
+    
+    .favorites-section,
+    .contractor-list {
+        padding: var(--space-xl);
+        margin: var(--space-xl) 0;
+    }
+    
+    .favorites-section .section-header h2,
+    .contractor-list .section-header h2 {
+        font-size: var(--font-size-xxl);
+    }
+}
+
+@media (min-width: 768px) {
+    .contractor-card {
+        min-height: 160px; /* More space for desktop */
+    }
+    
+    .favorite-btn {
+        width: 40px;
+        height: 40px;
+    }
+    
+    .contractor-card .card-footer .btn {
+        min-height: 36px;
+        font-size: var(--font-size-sm);
+    }
+}
+
+@media (min-width: 1024px) {
+    .contractor-card:hover .card-footer .btn {
         transform: translateY(0);
     }
 }
 
-/* FIXED: Responsive Design with minimal padding and transparent backgrounds */
-@media (max-width: 768px) {
+/* Small Mobile Devices (320px - 479px) */
+@media (max-width: 479px) {
     .card-body, .card-header, .card-footer {
-        padding: var(--space-sm) var(--space-md);
+        padding: var(--space-xs) var(--space-sm);
     }
     
     .contractor-card .rating-display {
@@ -456,20 +435,17 @@
     }
     
     .favorite-btn {
-        width: 36px;
-        height: 36px;
+        width: 40px;
+        height: 40px;
         top: var(--space-xs);
         right: var(--space-xs);
     }
     
-    .favorite-btn::before {
-        font-size: 1.1rem;
-    }
-    
     .favorites-section,
     .contractor-list {
-        padding: var(--space-lg);
-        margin: var(--space-lg) 0;
+        padding: var(--space-md);
+        margin: var(--space-md) 0;
+        border-radius: var(--border-radius);
     }
     
     .favorites-actions {
@@ -479,6 +455,7 @@
     .favorites-actions .material-button {
         width: 100%;
         justify-content: center;
+        min-height: 44px; /* Better touch targets */
     }
     
     .favorites-notice {
@@ -488,13 +465,38 @@
     .no-favorites {
         padding: var(--space-xl);
     }
-}
-
-@media (max-width: 480px) {
-    .card-body, .card-header, .card-footer {
+    
+    .contractor-card .card-footer {
         padding: var(--space-xs) var(--space-sm);
+        min-height: 60px; /* Larger touch area */
+        flex-direction: column;
+        gap: var(--space-xs);
     }
     
+    .contractor-card .card-footer .btn {
+        min-height: 40px;
+        padding: var(--space-xs) var(--space-sm);
+        font-size: var(--font-size-sm);
+        width: 100%;
+        max-width: none;
+    }
+    
+    /* Stack section headers vertically on very small screens */
+    .favorites-section .section-header,
+    .contractor-list .section-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: var(--space-sm);
+    }
+    
+    .favorites-section .section-header h2,
+    .contractor-list .section-header h2 {
+        font-size: var(--font-size-lg);
+    }
+}
+
+/* Ultra-Compact Mobile Layout */
+@media (max-width: 360px) {
     .contractor-card .rating-display {
         flex-wrap: wrap;
         gap: 2px;
@@ -510,23 +512,18 @@
     
     .contractor-card .contractor-name {
         font-size: var(--font-size-base);
+        line-height: 1.3;
     }
     
     .contractor-card .contractor-category,
     .contractor-card .contractor-location {
         font-size: var(--font-size-xs);
-    }
-    
-    .favorites-section .section-header,
-    .contractor-list .section-header {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: var(--space-sm);
+        line-height: 1.3;
     }
     
     .favorite-btn {
-        width: 32px;
-        height: 32px;
+        width: 36px;
+        height: 36px;
     }
     
     .favorites-notice p {
@@ -537,7 +534,50 @@
         font-size: var(--font-size-xs);
         padding: var(--space-xxs) var(--space-sm);
     }
+    
+    .card-body {
+        gap: var(--space-xxs);
+    }
 }
+
+/* Landscape Mobile Optimization */
+@media (max-height: 500px) and (orientation: landscape) {
+    .contractor-card {
+        min-height: 120px;
+    }
+    
+    .card-body {
+        padding: var(--space-xs) var(--space-sm);
+    }
+    
+    .contractor-card .contractor-name {
+        font-size: var(--font-size-sm);
+    }
+    
+    .contractor-card .contractor-category,
+    .contractor-card .contractor-location {
+        font-size: var(--font-size-xs);
+    }
+    
+    .favorite-btn {
+        width: 36px;
+        height: 36px;
+    }
+}
+
+/* Material Design Animations */
+@keyframes materialSlideIn {
+    from {
+        opacity: 0;
+        transform: translateY(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* ... rest of the existing styles (print, high contrast, reduced motion, dark theme, card variants) remain unchanged ... */
 
 /* Print Styles */
 @media print {
@@ -559,6 +599,10 @@
     .card {
         box-shadow: var(--elevation-0);
         border: 1px solid var(--border-color);
+    }
+    
+    .contractor-card .card-footer {
+        background: var(--bg-white) !important;
     }
 }
 
@@ -582,6 +626,10 @@
     .card {
         border: 1px solid var(--border-dark);
     }
+    
+    .contractor-card .card-footer {
+        border-top-width: 2px;
+    }
 }
 
 /* Reduced Motion Support */
@@ -603,6 +651,14 @@
     }
     
     .card:hover {
+        transform: none;
+    }
+    
+    .contractor-card .card-footer .btn {
+        transition: none;
+    }
+    
+    .contractor-card .card-footer .btn:active {
         transform: none;
     }
 }
@@ -636,6 +692,14 @@
     
     .no-results, .no-favorites {
         background: var(--surface-800);
+    }
+    
+    .contractor-card .card-footer .btn-secondary:hover {
+        background-color: rgba(255, 255, 255, 0.08);
+    }
+    
+    .contractor-card .card-footer .btn-secondary:active {
+        background-color: rgba(255, 255, 255, 0.16);
     }
 }
 

@@ -37,7 +37,7 @@ export class ReviewManager {
                 // DON'T save here - let the main app handle first-time setup
             }
 
-            // Update all contractor stats after loading reviews
+            // Update all contractor stats after loading reviews (only approved reviews)
             this.updateAllContractorStats();
             this.initialized = true;
             console.log('📝 ReviewManager initialized with', this.reviews.length, 'reviews');
@@ -79,8 +79,18 @@ export class ReviewManager {
     }
 
     getApprovedReviewsByContractor = (contractorId) => {
-        const reviews = this.reviews.filter(review => review.contractor_id === contractorId && review.status === 'approved');
+        const reviews = this.reviews.filter(review => 
+            review.contractor_id === contractorId && review.status === 'approved'
+        );
         console.log(`📋 Getting approved reviews for contractor ${contractorId}:`, reviews.length);
+        return reviews;
+    }
+
+    getPendingReviewsByContractor = (contractorId) => {
+        const reviews = this.reviews.filter(review => 
+            review.contractor_id === contractorId && review.status === 'pending'
+        );
+        console.log(`📋 Getting pending reviews for contractor ${contractorId}:`, reviews.length);
         return reviews;
     }
 
@@ -119,7 +129,7 @@ export class ReviewManager {
             projectType: reviewData.projectType,
             comment: reviewData.comment,
             date: new Date().toISOString(),
-            status: 'pending'
+            status: 'pending' // All new reviews start as pending
         };
 
         console.log('➕ Created review object:', review);
@@ -128,11 +138,14 @@ export class ReviewManager {
         console.log('➕ Reviews array after push:', this.reviews.length);
 
         await this.save();
-        this.updateContractorStats(contractorId);
+        
+        // IMPORTANT: Do NOT update contractor stats for pending reviews
+        // Contractor stats should only reflect approved reviews
+        // this.updateContractorStats(contractorId); // REMOVED
 
-        showNotification('Review submitted successfully! It will be visible after approval.', 'success');
+        showNotification('Review submitted successfully! It will be visible after approval by our team.', 'success');
 
-        console.log('✅ Review added successfully');
+        console.log('✅ Review added successfully (pending moderation)');
         return review;
     }
 
@@ -145,9 +158,14 @@ export class ReviewManager {
             return false;
         }
 
+        const oldStatus = review.status;
         review.status = status;
         await this.save();
-        this.updateContractorStats(review.contractor_id);
+        
+        // Only update contractor stats if status changed to/from approved
+        if (oldStatus === 'approved' || status === 'approved') {
+            this.updateContractorStats(review.contractor_id);
+        }
 
         showNotification(`Review ${status} successfully!`, 'success');
         console.log('✅ Review status updated');
@@ -164,9 +182,14 @@ export class ReviewManager {
         }
 
         const review = this.reviews[index];
+        const wasApproved = review.status === 'approved';
         this.reviews.splice(index, 1);
         await this.save();
-        this.updateContractorStats(review.contractor_id);
+        
+        // Only update contractor stats if the deleted review was approved
+        if (wasApproved) {
+            this.updateContractorStats(review.contractor_id);
+        }
 
         showNotification('Review deleted successfully!', 'success');
         console.log('✅ Review deleted');
@@ -202,21 +225,23 @@ export class ReviewManager {
             return;
         }
 
+        // CRITICAL FIX: Only use approved reviews for contractor statistics
         const approvedReviews = this.getApprovedReviewsByContractor(contractorId);
 
         contractor.reviewCount = approvedReviews.length;
         contractor.overallRating = this.calculateOverallRating(approvedReviews);
 
-        console.log(`📊 Contractor ${contractorId} stats:`, {
+        console.log(`📊 Contractor ${contractorId} stats (approved reviews only):`, {
             reviewCount: contractor.reviewCount,
-            overallRating: contractor.overallRating
+            overallRating: contractor.overallRating,
+            approvedReviewsCount: approvedReviews.length
         });
 
         this.contractorManager.save();
     }
 
     updateAllContractorStats() {
-        console.log('📊 Updating stats for all contractors');
+        console.log('📊 Updating stats for all contractors (approved reviews only)');
         const contractors = this.contractorManager.getAll();
         contractors.forEach(contractor => {
             this.updateContractorStats(contractor.id);
@@ -231,6 +256,7 @@ export class ReviewManager {
     }
 
     getCategoryAverage(contractorId, category) {
+        // CRITICAL FIX: Only use approved reviews for category averages
         const approvedReviews = this.getApprovedReviewsByContractor(contractorId);
 
         if (approvedReviews.length === 0) return 0;
@@ -262,10 +288,14 @@ export class ReviewManager {
     debug() {
         console.log('🐛 ReviewManager Debug:');
         console.log('Total reviews:', this.reviews.length);
-        console.log('Reviews:', this.reviews);
-        console.log('Pending reviews:', this.getPendingReviewsCount());
-
-        const allReviews = this.getAllReviews();
-        console.log('Enhanced reviews for display:', allReviews);
+        
+        const approved = this.reviews.filter(r => r.status === 'approved').length;
+        const pending = this.reviews.filter(r => r.status === 'pending').length;
+        const rejected = this.reviews.filter(r => r.status === 'rejected').length;
+        
+        console.log('Approved reviews:', approved);
+        console.log('Pending reviews:', pending);
+        console.log('Rejected reviews:', rejected);
+        console.log('All reviews:', this.reviews);
     }
 }

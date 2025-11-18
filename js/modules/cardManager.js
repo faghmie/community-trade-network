@@ -2,15 +2,13 @@
 // ES6 Module for card management
 
 export class CardManager {
-    constructor(dataModule, reviewManager, favoritesManager) {
+    constructor(dataModule, reviewManager) {
         this.dataModule = dataModule;
         this.reviewManager = reviewManager;
-        this.favoritesManager = favoritesManager;
         
         console.log('🔧 CardManager initialized with dependencies:', {
             hasDataModule: !!dataModule,
-            hasReviewManager: !!reviewManager,
-            hasFavoritesManager: !!favoritesManager
+            hasReviewManager: !!reviewManager
         });
     }
 
@@ -121,24 +119,8 @@ export class CardManager {
             this.createContractorCard(contractor)
         ).join('');
 
-        // Update favorite buttons after rendering
-        this.updateFavoriteButtons();
-    }
-
-    /**
-     * Update all favorite buttons state in the DOM
-     */
-    updateFavoriteButtons() {
-        const favoriteButtons = document.querySelectorAll('.favorite-btn');
-        favoriteButtons.forEach(button => {
-            const contractorId = button.getAttribute('data-contractor-id');
-            if (contractorId) {
-                const isFavorite = this.dataModule.isFavorite(contractorId);
-                button.classList.toggle('favorited', isFavorite);
-                button.innerHTML = `<i class="material-icons">${isFavorite ? 'favorite' : 'favorite_border'}</i>`;
-                button.title = isFavorite ? 'Remove from favorites' : 'Add to favorites';
-            }
-        });
+        // Note: Favorite button updates are now handled by FavoritesManager via events
+        // The buttons will update when the favoritesUpdated event is dispatched
     }
 
     /**

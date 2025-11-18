@@ -1,168 +1,5 @@
-/* Material Design Utility and Notification Styles */
-
-/* Material Design Notifications - FIXED Z-INDEX */
-.notification {
-    position: fixed;
-    top: calc(var(--app-bar-height, 64px) + var(--space-lg)); /* Position below top banner */
-    right: var(--space-lg);
-    padding: var(--space-md) var(--space-lg);
-    background: var(--surface-900);
-    color: var(--text-on-primary);
-    border-radius: var(--border-radius-lg);
-    box-shadow: var(--elevation-8); /* Increased elevation for prominence */
-    /* FIXED: Use the new notification-specific z-index */
-    z-index: var(--z-notification, 1400);
-    animation: materialSlideInRight 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    max-width: 400px;
-    word-wrap: break-word;
-    border-left: 4px solid var(--success-color);
-    display: flex;
-    align-items: flex-start;
-    gap: var(--space-md);
-    font-family: var(--font-family);
-    /* FIXED: Enhanced stacking context */
-    isolation: isolate;
-    transform: translateZ(0); /* Hardware acceleration */
-    will-change: transform, opacity;
-}
-
-.notification-content {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    gap: var(--space-xs);
-}
-
-.notification-title {
-    font-weight: var(--font-weight-medium);
-    font-size: var(--font-size-base);
-    margin: 0;
-}
-
-.notification-message {
-    font-size: var(--font-size-sm);
-    color: rgba(255, 255, 255, 0.9);
-    margin: 0;
-    line-height: var(--line-height-normal);
-}
-
-.notification-close {
-    background: none;
-    border: none;
-    color: rgba(255, 255, 255, 0.7);
-    cursor: pointer;
-    padding: var(--space-xs);
-    border-radius: var(--border-radius-full);
-    transition: var(--material-transition);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-shrink: 0;
-}
-
-.notification-close:hover {
-    background: rgba(255, 255, 255, 0.1);
-    color: rgba(255, 255, 255, 0.9);
-}
-
-.notification-success {
-    background: var(--success-color);
-    border-left-color: var(--success-700);
-}
-
-.notification-error {
-    background: var(--error-color);
-    border-left-color: var(--error-700);
-}
-
-.notification-warning {
-    background: var(--warning-color);
-    border-left-color: var(--warning-700);
-    color: var(--text-primary);
-}
-
-.notification-warning .notification-message {
-    color: rgba(0, 0, 0, 0.8);
-}
-
-.notification-warning .notification-close {
-    color: rgba(0, 0, 0, 0.7);
-}
-
-.notification-warning .notification-close:hover {
-    background: rgba(0, 0, 0, 0.1);
-    color: rgba(0, 0, 0, 0.9);
-}
-
-.notification-info {
-    background: var(--primary-color);
-    border-left-color: var(--primary-700);
-}
-
-/* FIXED: Notification positioning for different screen sizes */
-@media (max-width: 768px) {
-    .notification {
-        top: calc(var(--app-bar-height, 64px) + var(--space-md)); /* Account for top banner */
-        right: var(--space-md);
-        left: var(--space-md);
-        max-width: none;
-        width: auto;
-    }
-}
-
-@media (max-width: 480px) {
-    .notification {
-        top: calc(var(--app-bar-height, 64px) + var(--space-sm)); /* Account for top banner */
-        right: var(--space-sm);
-        left: var(--space-sm);
-        padding: var(--space-sm) var(--space-md);
-    }
-}
-
-/* Notification Animations */
-@keyframes materialSlideInRight {
-    from {
-        opacity: 0;
-        transform: translateX(100%) scale(0.9);
-    }
-    to {
-        opacity: 1;
-        transform: translateX(0) scale(1);
-    }
-}
-
-@keyframes materialSlideOutRight {
-    from {
-        opacity: 1;
-        transform: translateX(0) scale(1);
-    }
-    to {
-        opacity: 0;
-        transform: translateX(100%) scale(0.9);
-    }
-}
-
-.notification.hiding {
-    animation: materialSlideOutRight 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-/* Toast Variant */
-.notification.toast {
-    min-width: 300px;
-    max-width: 500px;
-}
-
-.notification.snackbar {
-    bottom: var(--space-lg);
-    top: auto;
-    left: 50%;
-    right: auto;
-    transform: translateX(-50%);
-    min-width: 300px;
-    text-align: center;
-    /* FIXED: Ensure snackbar also uses proper z-index */
-    z-index: var(--z-notification, 1400);
-}
+/* css/components/utilities.css */
+/* Material Design Utility Classes - Pure Utilities Only */
 
 /* Hidden utility class */
 .hidden {
@@ -587,9 +424,9 @@
 
 /* FIXED: Higher z-index values for critical overlays */
 .z-modal { z-index: var(--z-modal); }
-.z-snackbar { z-index: var(--z-notification); } /* Updated to use notification z-index */
+.z-snackbar { z-index: var(--z-notification); }
 .z-tooltip { z-index: var(--z-tooltip); }
-.z-notification { z-index: var(--z-notification); } /* NEW: Specific utility class */
+.z-notification { z-index: var(--z-notification); }
 
 /* Opacity utilities */
 .opacity-0 { opacity: 0; }
@@ -628,18 +465,10 @@
     .break-inside-avoid {
         break-inside: avoid;
     }
-
-    .notification {
-        display: none !important;
-    }
 }
 
 /* Reduced motion support */
 @media (prefers-reduced-motion: reduce) {
-    .notification {
-        animation: none;
-    }
-    
     * {
         animation-duration: 0.01ms !important;
         animation-iteration-count: 1 !important;
@@ -649,10 +478,6 @@
 
 /* High contrast mode support */
 @media (prefers-contrast: high) {
-    .notification {
-        border-width: 2px;
-    }
-    
     .border {
         border-width: 2px;
     }

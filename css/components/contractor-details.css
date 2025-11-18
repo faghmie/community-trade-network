@@ -1,71 +1,208 @@
-/* Material Design Contractor Details Modal Styles */
-.contractor-details {
-    /* FIXED: Remove max-height and overflow to prevent double scrollbars */
-    /* Let the modal-body handle scrolling instead */
-    padding: var(--space-md);
+/* Contractor Details Modal Styles - ALL CONTRACTOR SPECIFIC STYLES */
+
+/* Contractor Modal Specific Width - REMOVED, using fullscreen instead */
+/* .modal-content.contractor-modal {
+    max-width: 900px;
+    width: 95%;
 }
 
+@media (max-width: 768px) {
+    .modal-content.contractor-modal {
+        max-width: 95%;
+        width: 95%;
+    }
+} */
+
+/* Contractor Details Content */
+.contractor-details {
+    padding: var(--space-md);
+    margin: 0 auto;
+}
+
+/* ===== ENHANCED CONTRACTOR HEADER - ADMIN STYLE ===== */
 .contractor-header {
-    margin-bottom: var(--space-lg);
-    padding-bottom: var(--space-md);
-    border-bottom: 1px solid var(--border-light);
+    background: var(--surface);
+    border-radius: var(--border-radius-xl);
+    padding: var(--space-xl);
+    box-shadow: var(--elevation-1);
+    margin-bottom: var(--space-xl);
+    border: 1px solid var(--border-light);
+    position: relative;
+    overflow: hidden;
+}
+
+.contractor-header::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(135deg, var(--primary-500), var(--accent-500));
+}
+
+.contractor-header-content {
+    display: flex;
+    align-items: center;
+    gap: var(--space-lg);
+}
+
+.avatar-circle {
+    width: 80px;
+    height: 80px;
+    border-radius: var(--border-radius-full);
+    background: linear-gradient(135deg, var(--primary-500), var(--accent-500));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-on-primary);
+    font-size: var(--font-size-xxxl);
+    font-weight: var(--font-weight-bold);
+    box-shadow: var(--elevation-2);
+    flex-shrink: 0;
+}
+
+.contractor-main-info {
+    flex: 1;
 }
 
 .contractor-header .contractor-name {
     margin: 0 0 var(--space-sm) 0;
-    color: var(--primary-color);
+    color: var(--text-primary);
     font-size: var(--font-size-xxl);
     font-weight: var(--font-weight-medium);
     line-height: var(--line-height-tight);
 }
 
-.contractor-category {
-    margin: 0;
-    color: var(--text-secondary);
-    font-style: italic;
-    font-size: var(--font-size-lg);
+.contractor-meta {
+    display: flex;
+    align-items: center;
+    gap: var(--space-lg);
+    flex-wrap: wrap;
+}
+
+.contractor-category,
+.contractor-rating-badge,
+.contractor-reviews-count {
     display: flex;
     align-items: center;
     gap: var(--space-xs);
-}
-
-.contractor-info-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: var(--space-md);
-    margin-bottom: var(--space-lg);
-}
-
-.contractor-info-grid .info-item {
-    padding: var(--space-lg);
-    background: var(--surface-50);
-    border-radius: var(--border-radius);
-    border-left: 4px solid var(--primary-color);
-    box-shadow: var(--elevation-1);
-    transition: var(--material-transition);
-}
-
-.contractor-info-grid .info-item:hover {
-    box-shadow: var(--elevation-2);
-    transform: translateY(-2px);
-}
-
-.info-label {
-    color: var(--text-primary);
-    font-weight: var(--font-weight-medium);
-    font-size: var(--font-size-sm);
-    margin-bottom: var(--space-xs);
-    display: block;
-}
-
-.info-value {
-    color: var(--text-secondary);
     font-size: var(--font-size-base);
-    line-height: var(--line-height-normal);
+    font-weight: var(--font-weight-medium);
+    color: var(--text-secondary);
+}
+
+.contractor-rating-badge {
+    background: var(--warning-100);
+    color: var(--warning-800);
+    padding: var(--space-xs) var(--space-sm);
+    border-radius: var(--border-radius-lg);
+    font-weight: var(--font-weight-bold);
+}
+
+/* ===== CONTACT INFORMATION SECTION - ADMIN CARD STYLE ===== */
+.contact-info-section {
+    margin-bottom: var(--space-xl);
+}
+
+.section-title {
+    margin: 0 0 var(--space-lg) 0;
+    font-size: var(--font-size-xl);
+    font-weight: var(--font-weight-medium);
+    color: var(--text-primary);
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+}
+
+.section-title::before {
+    content: '';
+    width: 4px;
+    height: 24px;
+    background: linear-gradient(135deg, var(--primary-500), var(--accent-500));
+    border-radius: var(--border-radius-full);
+}
+
+.contact-info-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: var(--space-lg);
+}
+
+.contact-item {
+    background: var(--surface);
+    border-radius: var(--border-radius-xl);
+    padding: var(--space-xl);
+    box-shadow: var(--elevation-1);
+    border: 1px solid var(--border-light);
+    position: relative;
+    overflow: hidden;
+}
+
+.contact-item::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: linear-gradient(135deg, var(--primary-500), var(--primary-300));
+}
+
+/* REMOVED: Hover effects on contact items */
+/* .contact-item:hover {
+    box-shadow: var(--elevation-3);
+    transform: translateY(-2px);
+    border-color: var(--border-light);
+}
+
+.contact-item:hover::before {
+    transform: scaleX(1);
+} */
+
+.contact-item-content {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--space-md);
+}
+
+.contact-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: var(--border-radius-full);
+    background: var(--primary-50);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--primary-500);
+    font-size: 1.5rem;
+    flex-shrink: 0;
+}
+
+.contact-details {
+    flex: 1;
+    min-width: 0;
+}
+
+.contact-label {
+    display: block;
+    color: var(--text-secondary);
+    font-size: var(--font-size-sm);
+    font-weight: var(--font-weight-medium);
+    margin-bottom: var(--space-xs);
+    text-transform: uppercase;
+    letter-spacing: var(--letter-spacing-wide);
+}
+
+.contact-value {
+    display: block;
+    color: var(--text-primary);
+    font-size: var(--font-size-base);
+    font-weight: var(--font-weight-medium);
 }
 
 .website-link {
-    color: var(--primary-color);
+    color: var(--primary-500);
     text-decoration: none;
     font-weight: var(--font-weight-medium);
     transition: var(--material-transition);
@@ -75,92 +212,105 @@
 }
 
 .website-link:hover {
-    color: var(--primary-700);
+    color: var(--primary-600);
     text-decoration: underline;
 }
 
-.rating-value {
-    color: var(--warning-color);
-    font-weight: var(--font-weight-bold);
+/* ===== RATINGS BREAKDOWN SECTION - ADMIN CARD STYLE ===== */
+.ratings-breakdown-section {
+    margin-bottom: var(--space-xl);
+}
+
+.ratings-grid {
     display: flex;
-    align-items: center;
-    gap: var(--space-xs);
-}
-
-.category-ratings-section {
-    margin-bottom: var(--space-lg);
-    padding: var(--space-xl);
-    background: var(--surface-50);
-    border-radius: var(--border-radius-lg);
-    border: 1px solid var(--border-light);
-    box-shadow: var(--elevation-1);
-}
-
-.section-title {
-    margin: 0 0 var(--space-lg) 0;
-    color: var(--text-primary);
-    font-size: var(--font-size-xl);
-    font-weight: var(--font-weight-medium);
-    display: flex;
-    align-items: center;
-    gap: var(--space-sm);
-}
-
-.category-ratings-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    flex-direction: column;
     gap: var(--space-md);
 }
 
-.category-rating-item {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: var(--space-lg);
-    background: var(--bg-card);
-    border-radius: var(--border-radius);
+.rating-item {
+    background: var(--surface);
+    border-radius: var(--border-radius-xl);
+    padding: var(--space-xl);
     box-shadow: var(--elevation-1);
-    transition: var(--material-transition);
     border: 1px solid var(--border-light);
+    position: relative;
+    overflow: hidden;
 }
 
-.category-rating-item:hover {
-    box-shadow: var(--elevation-2);
-    transform: translateY(-1px);
+.rating-item::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: linear-gradient(135deg, var(--accent-500), var(--accent-300));
 }
 
-.category-label {
+/* REMOVED: Hover effects on rating items */
+/* .rating-item:hover {
+    box-shadow: var(--elevation-3);
+    transform: translateY(-2px);
+    border-color: var(--border-light);
+}
+
+.rating-item:hover::before {
+    transform: scaleX(1);
+} */
+
+.rating-item-content {
+    display: flex;
+    align-items: center;
+    gap: var(--space-lg);
+}
+
+.rating-info {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    min-width: 200px;
+    gap: var(--space-md);
+}
+
+.rating-label {
     color: var(--text-primary);
     font-weight: var(--font-weight-medium);
     font-size: var(--font-size-base);
 }
 
-.category-rating-display {
-    display: flex;
-    align-items: center;
-    gap: var(--space-md);
-}
-
-.category-rating-display .stars {
-    color: var(--warning-color);
-    font-size: var(--font-size-lg);
-    letter-spacing: 2px;
-}
-
-.category-rating-display .rating-value {
+.rating-value {
+    color: var(--warning-600);
     font-weight: var(--font-weight-bold);
-    color: var(--primary-color);
     font-size: var(--font-size-lg);
     min-width: 40px;
     text-align: center;
 }
 
-/* ===== MINIMALIST COMMENTS SECTION WITH HORIZONTAL LINES ===== */
-.reviews-section {
-    margin-top: var(--space-xl);
+.rating-bar {
+    flex: 1;
+    height: 8px;
+    background: var(--surface-200);
+    border-radius: 4px;
+    overflow: hidden;
+    min-width: 100px;
 }
 
-.reviews-section-header {
+.rating-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--warning-500), var(--warning-300));
+    border-radius: 4px;
+}
+
+.rating-stars {
+    min-width: 120px;
+}
+
+/* ===== MODERN REVIEWS SECTION - ADMIN STYLE ===== */
+.reviews-section {
+    margin-bottom: var(--space-xl);
+}
+
+.reviews-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -171,52 +321,71 @@
 
 .reviews-count {
     color: var(--text-secondary);
-    font-size: var(--font-size-sm);
-    font-weight: var(--font-weight-normal);
+    font-size: var(--font-size-base);
+    font-weight: var(--font-weight-medium);
+    background: var(--surface-100);
+    padding: var(--space-xs) var(--space-sm);
+    border-radius: var(--border-radius-lg);
 }
 
 .reviews-list {
     display: flex;
     flex-direction: column;
-    gap: 0; /* Remove gap since we're using borders */
+    gap: var(--space-lg);
 }
 
-/* Clean Comment Design with Horizontal Lines - No Hover Effects */
+/* Modern Review Item - Admin Card Style */
 .review-item {
-    background: transparent;
-    padding: var(--space-lg) 0;
-    border: none;
-    border-bottom: 1px solid var(--border-light);
-    /* REMOVED: transition and hover effects to prevent clickable appearance */
+    background: var(--surface);
+    border-radius: var(--border-radius-xl);
+    padding: var(--space-xl);
+    box-shadow: var(--elevation-1);
+    border: 1px solid var(--border-light);
     position: relative;
+    overflow: hidden;
 }
 
-.review-item:last-child {
-    border-bottom: none;
+.review-item::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: linear-gradient(135deg, var(--success-500), var(--success-300));
 }
 
-/* REMOVED: .review-item:hover styles entirely */
+/* REMOVED: Hover effects on review items */
+/* .review-item:hover {
+    box-shadow: var(--elevation-3);
+    transform: translateY(-2px);
+    border-color: var(--border-light);
+}
 
-/* Compact Review Header */
+.review-item:hover::before {
+    transform: scaleX(1);
+} */
+
 .review-header {
     display: flex;
     align-items: flex-start;
     gap: var(--space-md);
-    margin-bottom: var(--space-md);
+    margin-bottom: var(--space-lg);
 }
 
 .reviewer-avatar {
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
-    background: linear-gradient(135deg, var(--primary-color), var(--primary-600));
+    width: 48px;
+    height: 48px;
+    border-radius: var(--border-radius-full);
+    background: linear-gradient(135deg, var(--primary-500), var(--accent-500));
     display: flex;
     align-items: center;
     justify-content: center;
-    color: white;
-    font-weight: var(--font-weight-medium);
+    color: var(--text-on-primary);
+    font-weight: var(--font-weight-bold);
     font-size: var(--font-size-lg);
     flex-shrink: 0;
+    box-shadow: var(--elevation-1);
 }
 
 .reviewer-info {
@@ -224,7 +393,7 @@
     min-width: 0;
 }
 
-.reviewer-name-rating {
+.reviewer-main {
     display: flex;
     align-items: center;
     gap: var(--space-md);
@@ -243,8 +412,6 @@
     display: flex;
     align-items: center;
     gap: var(--space-xs);
-    color: var(--warning-color);
-    font-weight: var(--font-weight-medium);
 }
 
 .review-meta {
@@ -257,121 +424,109 @@
 .review-date {
     font-size: var(--font-size-sm);
     color: var(--text-secondary);
+    display: flex;
+    align-items: center;
+    gap: var(--space-xs);
 }
 
 .project-type {
-    background: var(--primary-50);
-    color: var(--primary-color);
+    background: var(--primary-100);
+    color: var(--primary-700);
     padding: var(--space-xs) var(--space-sm);
-    border-radius: 12px;
+    border-radius: var(--border-radius-lg);
     font-size: var(--font-size-xs);
     font-weight: var(--font-weight-medium);
-    border: 1px solid var(--primary-100);
+    border: 1px solid var(--primary-200);
+    display: flex;
+    align-items: center;
+    gap: var(--space-xs);
 }
 
-/* Clean Comment Body */
+/* Review Category Ratings */
+.review-category-ratings {
+    margin-bottom: var(--space-lg);
+    padding: var(--space-md);
+    background: var(--surface-50);
+    border-radius: var(--border-radius);
+    border-left: 3px solid var(--primary-500);
+}
+
+.category-ratings-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: var(--space-sm);
+}
+
+.category-rating-mini {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-xs);
+    align-items: center;
+    text-align: center;
+}
+
+.category-rating-mini .category-label {
+    font-size: var(--font-size-xs);
+    color: var(--text-secondary);
+    font-weight: var(--font-weight-medium);
+}
+
+/* Review Content */
+.review-content {
+    margin-top: var(--space-md);
+}
+
 .review-comment {
     line-height: var(--line-height-relaxed);
     color: var(--text-primary);
     margin: 0;
     font-size: var(--font-size-base);
-    padding: 0;
-    background: transparent;
-    border-left: none;
-}
-
-/* Category Ratings Preview - More Subtle */
-.category-ratings-preview {
-    font-size: var(--font-size-sm);
-    color: var(--text-secondary);
-    margin: var(--space-sm) 0;
-    padding: var(--space-sm) var(--space-md);
-    background: var(--surface-50);
-    border-radius: var(--border-radius-sm);
-    border-left: 2px solid var(--accent-color);
-    line-height: var(--line-height-normal);
-}
-
-/* Status Badges - More Subtle */
-.review-status {
-    display: inline-flex;
-    align-items: center;
-    gap: var(--space-xs);
-    padding: var(--space-xs) var(--space-sm);
-    border-radius: 8px;
-    font-size: var(--font-size-xs);
-    font-weight: var(--font-weight-medium);
-}
-
-.review-status.approved {
-    background: var(--success-50);
-    color: var(--success-700);
-    border: 1px solid var(--success-200);
-}
-
-.review-status.pending {
-    background: var(--warning-50);
-    color: var(--warning-700);
-    border: 1px solid var(--warning-200);
-}
-
-.review-status.rejected {
-    background: var(--error-50);
-    color: var(--error-700);
-    border: 1px solid var(--error-200);
-}
-
-/* Empty State */
-.no-reviews {
-    text-align: center;
-    color: var(--text-secondary);
     font-style: italic;
+    padding-left: var(--space-md);
+    border-left: 3px solid var(--primary-200);
+}
+
+/* No Reviews State - Admin Empty State Style */
+.no-reviews-state {
+    text-align: center;
     padding: var(--space-xxl);
-    background: var(--surface-50);
-    border-radius: var(--border-radius);
+    color: var(--text-secondary);
+    background: var(--surface);
+    border-radius: var(--border-radius-xl);
+    box-shadow: var(--elevation-1);
     border: 2px dashed var(--border-color);
 }
 
-.no-reviews .material-icons {
-    font-size: 3rem;
-    color: var(--surface-300);
-    margin-bottom: var(--space-md);
-    display: block;
+.no-reviews-icon {
+    font-size: 4rem;
+    margin-bottom: var(--space-lg);
+    opacity: 0.5;
+    background: linear-gradient(135deg, var(--primary-500), var(--accent-500));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
 }
 
+.no-reviews-content h4 {
+    margin: 0 0 var(--space-sm) 0;
+    color: var(--text-primary);
+    font-size: var(--font-size-xl);
+    font-weight: var(--font-weight-medium);
+}
+
+.no-reviews-content p {
+    margin: 0;
+    color: var(--text-secondary);
+    font-size: var(--font-size-base);
+}
+
+/* ===== ACTION BUTTONS ===== */
 .modal-actions {
     display: flex;
     justify-content: center;
-    gap: var(--space-md);
     margin-top: var(--space-xl);
     padding-top: var(--space-lg);
     border-top: 1px solid var(--border-light);
-}
-
-/* Enhanced Rating Display */
-.enhanced-rating {
-    display: flex;
-    align-items: center;
-    gap: var(--space-sm);
-}
-
-.enhanced-rating .stars {
-    position: relative;
-}
-
-.enhanced-rating .stars-background {
-    color: var(--surface-300);
-    position: absolute;
-    top: 0;
-    left: 0;
-    z-index: 1;
-}
-
-.enhanced-rating .stars-foreground {
-    color: var(--warning-color);
-    position: relative;
-    z-index: 2;
-    overflow: hidden;
 }
 
 /* ===== RESPONSIVE DESIGN ===== */
@@ -380,34 +535,50 @@
         padding: var(--space-sm);
     }
 
-    .contractor-info-grid {
-        grid-template-columns: 1fr;
-        gap: var(--space-sm);
-    }
-
-    .contractor-info-grid .info-item {
-        padding: var(--space-md);
-    }
-
-    .category-ratings-grid {
-        grid-template-columns: 1fr;
-        gap: var(--space-sm);
-    }
-
-    .category-rating-item {
+    .contractor-header-content {
         flex-direction: column;
-        align-items: flex-start;
+        text-align: center;
         gap: var(--space-md);
-        padding: var(--space-md);
     }
 
-    .category-rating-display {
-        align-self: stretch;
+    .contractor-meta {
+        justify-content: center;
+        gap: var(--space-md);
+    }
+
+    .avatar-circle {
+        width: 64px;
+        height: 64px;
+        font-size: var(--font-size-xxl);
+    }
+
+    .contact-info-grid {
+        grid-template-columns: 1fr;
+        gap: var(--space-sm);
+    }
+
+    .contact-item {
+        padding: var(--space-lg);
+    }
+
+    .contact-item-content {
+        flex-direction: column;
+        text-align: center;
+        gap: var(--space-md);
+    }
+
+    .rating-item-content {
+        flex-direction: column;
+        align-items: stretch;
+        gap: var(--space-md);
+    }
+
+    .rating-info {
+        min-width: auto;
         justify-content: space-between;
     }
 
-    /* Mobile Comments Optimization */
-    .reviews-section-header {
+    .reviews-header {
         flex-direction: column;
         align-items: flex-start;
         gap: var(--space-sm);
@@ -416,93 +587,50 @@
     .review-header {
         flex-direction: column;
         align-items: flex-start;
-        gap: var(--space-sm);
+        gap: var(--space-md);
     }
 
-    .reviewer-avatar {
-        width: 32px;
-        height: 32px;
-        font-size: var(--font-size-base);
-    }
-
-    .reviewer-name-rating {
+    .reviewer-main {
         flex-direction: column;
         align-items: flex-start;
-        gap: var(--space-xs);
+        gap: var(--space-sm);
     }
 
     .review-meta {
         gap: var(--space-sm);
     }
 
-    .review-comment {
-        font-size: var(--font-size-sm);
-    }
-
-    .modal-actions {
-        flex-direction: column;
-        gap: var(--space-sm);
-    }
-
-    .category-ratings-section {
-        padding: var(--space-lg);
-    }
-
-    .review-item {
-        padding: var(--space-md) 0;
-    }
-}
-
-@media (max-width: 480px) {
-    .contractor-header .contractor-name {
-        font-size: var(--font-size-xl);
-    }
-
-    .contractor-category {
-        font-size: var(--font-size-base);
-    }
-
-    .section-title {
-        font-size: var(--font-size-lg);
-    }
-
-    .review-item {
-        padding: var(--space-sm) 0;
-    }
-
-    .modal-actions .btn {
-        flex: 1;
-        min-width: 120px;
-    }
-
-    .category-rating-display {
-        flex-direction: column;
-        gap: var(--space-sm);
-        align-items: flex-start;
-    }
-
-    .category-rating-display .rating-value {
-        min-width: auto;
+    .category-ratings-grid {
+        grid-template-columns: 1fr;
     }
 }
 
 /* ===== DARK THEME SUPPORT ===== */
 @media (prefers-color-scheme: dark) {
-    .contractor-info-grid .info-item,
-    .category-ratings-section,
-    .category-rating-item,
-    .category-ratings-preview,
-    .no-reviews {
-        background: var(--surface-800);
-        border-color: var(--surface-600);
-    }
-
+    .contact-item,
+    .rating-item,
     .review-item {
-        background: transparent;
-        border-bottom-color: var(--surface-600);
+        background: var(--surface-variant);
     }
 
-    /* REMOVED: .review-item:hover styles for dark theme */
+    .contractor-rating-badge {
+        background: var(--warning-900);
+        color: var(--warning-200);
+    }
+
+    .contact-icon {
+        background: var(--primary-900);
+        color: var(--primary-200);
+    }
+
+    .rating-bar {
+        background: var(--surface-700);
+    }
+
+    .review-category-ratings {
+        background: var(--surface-700);
+        border-left-color: var(--primary-600);
+    }
 
     .project-type {
         background: var(--primary-900);
@@ -510,80 +638,7 @@
         border-color: var(--primary-700);
     }
 
-    .review-status.approved {
-        background: var(--success-900);
-        color: var(--success-200);
-        border-color: var(--success-700);
-    }
-
-    .review-status.pending {
-        background: var(--warning-900);
-        color: var(--warning-200);
-        border-color: var(--warning-700);
-    }
-
-    .review-status.rejected {
-        background: var(--error-900);
-        color: var(--error-200);
-        border-color: var(--error-700);
-    }
-}
-
-/* ===== HIGH CONTRAST MODE SUPPORT ===== */
-@media (prefers-contrast: high) {
-    .contractor-info-grid .info-item,
-    .category-ratings-section,
-    .category-rating-item,
-    .review-item {
-        border-width: 2px;
-    }
-
-    .contractor-header {
-        border-bottom-width: 2px;
-    }
-
-    .modal-actions {
-        border-top-width: 2px;
-    }
-}
-
-/* ===== REDUCED MOTION SUPPORT ===== */
-@media (prefers-reduced-motion: reduce) {
-    .contractor-info-grid .info-item,
-    .category-rating-item,
-    .review-item {
-        transition: none;
-    }
-
-    .contractor-info-grid .info-item:hover,
-    .category-rating-item:hover,
-    .review-item:hover {
-        transform: none;
-    }
-}
-
-/* ===== PRINT STYLES ===== */
-@media print {
-    .contractor-details {
-        /* FIXED: Remove conflicting overflow in print mode */
-        overflow: visible;
-    }
-
-    .contractor-info-grid .info-item,
-    .category-ratings-section,
-    .category-rating-item,
-    .review-item {
-        box-shadow: none;
-        border: 1px solid #000;
-        break-inside: avoid;
-    }
-
-    .modal-actions {
-        display: none;
-    }
-
-    .website-link {
-        color: #000;
-        text-decoration: underline;
+    .reviews-count {
+        background: var(--surface-700);
     }
 }

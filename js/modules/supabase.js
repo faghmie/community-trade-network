@@ -137,12 +137,12 @@ export class SupabaseClient {
         }
 
         try {
-            // For categories, all data goes in the data column
+            // For categories, ALL data goes in the data column - no top-level fields except id
             const { id, created_at, ...categoryData } = category;
             
             const doc = {
                 id: id,
-                data: categoryData,
+                data: categoryData,  // All category data goes here
                 created_at: created_at || new Date().toISOString()
             };
 
@@ -217,11 +217,15 @@ export class SupabaseClient {
 
             if (error) throw error;
 
-            return (data || []).map(row => ({
+            // Categories should have all data in the data column
+            const categories = (data || []).map(row => ({
                 id: row.id,
-                ...row.data,
+                ...row.data,  // All category properties come from data
                 created_at: row.created_at
             }));
+
+            console.log(`📥 Supabase: Loaded ${categories.length} categories`);
+            return categories;
         } catch (error) {
             console.error('Error fetching categories from Supabase:', error);
             return [];

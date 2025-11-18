@@ -42,12 +42,12 @@
     gap: var(--space-sm);
 }
 
-/* Hero Section */
+/* Hero Section - MOBILE OPTIMIZED */
 .hero-section {
     background: linear-gradient(135deg, var(--primary-500) 0%, var(--primary-700) 100%);
     color: var(--text-on-primary);
-    padding: var(--space-xxl) var(--space-xl);
-    margin-bottom: var(--space-xl);
+    padding: var(--space-xl) var(--space-lg);
+    margin-bottom: var(--space-lg);
     border-radius: var(--border-radius-lg);
     box-shadow: var(--elevation-2);
 }
@@ -59,14 +59,14 @@
 }
 
 .hero-title {
-    font-size: var(--font-size-xxxl);
+    font-size: var(--font-size-xxl);
     font-weight: var(--font-weight-light);
-    margin: 0 0 var(--space-md) 0;
+    margin: 0 0 var(--space-sm) 0;
     line-height: var(--line-height-tight);
 }
 
 .hero-subtitle {
-    font-size: var(--font-size-lg);
+    font-size: var(--font-size-base);
     font-weight: var(--font-weight-regular);
     margin: 0;
     opacity: 0.9;
@@ -374,18 +374,50 @@
     flex-wrap: wrap;
 }
 
+/* FIXED: Filter Chip Styles - Enhanced with proper Material Design */
 .filter-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-xs);
     padding: var(--space-sm) var(--space-md);
-    background: var(--surface-100);
+    background: var(--surface-200);
     border: 1px solid var(--border-color);
     border-radius: 16px;
     font-size: var(--font-size-sm);
+    font-weight: var(--font-weight-medium);
+    color: var(--text-secondary);
     cursor: pointer;
     transition: var(--material-transition);
+    text-decoration: none;
+    user-select: none;
+    white-space: nowrap;
 }
 
 .filter-chip:hover {
-    background: var(--surface-200);
+    background: var(--surface-300);
+    border-color: var(--surface-400);
+    color: var(--text-primary);
+}
+
+.filter-chip:active {
+    transform: translateY(1px);
+}
+
+/* FIXED: Active state for filter chips */
+.filter-chip.active {
+    background: var(--primary-color);
+    color: var(--text-on-primary);
+    border-color: var(--primary-color);
+    box-shadow: var(--elevation-1);
+}
+
+.filter-chip.active:hover {
+    background: var(--primary-color-dark);
+    border-color: var(--primary-color-dark);
+}
+
+.filter-chip i {
+    font-size: var(--font-size-sm);
 }
 
 .filter-toggle {
@@ -417,20 +449,28 @@
     box-shadow: var(--elevation-1);
 }
 
-/* Section Headers */
+/* Section Headers - UPDATED with subtitle support */
 .section-header {
     display: flex;
-    align-items: center;
+    align-items: flex-start; /* Changed from center to flex-start for better alignment */
     justify-content: space-between;
     margin-bottom: var(--space-lg);
     padding-bottom: var(--space-md);
     border-bottom: 1px solid var(--border-light);
 }
 
+.section-header-content {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-xs);
+    flex: 1;
+}
+
 .section-title {
     display: flex;
     align-items: center;
     gap: var(--space-md);
+    margin: 0;
 }
 
 .section-title h2 {
@@ -438,6 +478,13 @@
     font-size: var(--font-size-xxl);
     font-weight: var(--font-weight-medium);
     color: var(--text-primary);
+}
+
+.section-subtitle {
+    font-size: var(--font-size-sm);
+    color: var(--text-secondary);
+    font-weight: var(--font-weight-regular);
+    margin: 0;
 }
 
 /* Material Form */
@@ -534,19 +581,39 @@
     margin-top: var(--space-xs);
 }
 
-/* Responsive Design */
+/* NEW: Quick Filters Section - Specific styling for the filter chips below stats */
+.quick-filters-section {
+    margin: var(--space-lg) 0;
+    padding: 0 var(--space-lg);
+}
+
+.quick-filters-section .filter-chips {
+    display: flex;
+    gap: var(--space-md);
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+/* Responsive Design - MOBILE OPTIMIZED */
 @media (max-width: 768px) {
     .app-bar-content {
         padding: 0 var(--space-md);
     }
     
+    /* MOBILE: Much smaller hero section */
     .hero-section {
-        padding: var(--space-xl) var(--space-lg);
-        margin-bottom: var(--space-lg);
+        padding: var(--space-lg) var(--space-md);
+        margin-bottom: var(--space-md);
     }
     
     .hero-title {
-        font-size: var(--font-size-xxl);
+        font-size: var(--font-size-xl);
+        margin: 0 0 var(--space-xs) 0;
+    }
+    
+    .hero-subtitle {
+        font-size: var(--font-size-sm);
+        line-height: 1.3;
     }
     
     .quick-filters {
@@ -562,9 +629,50 @@
     .stats-overview {
         grid-template-columns: repeat(2, 1fr);
     }
+    
+    /* MOBILE: Adjust filter chips for mobile */
+    .quick-filters-section .filter-chips {
+        gap: var(--space-sm);
+        justify-content: flex-start;
+        overflow-x: auto;
+        padding-bottom: var(--space-xs);
+    }
+    
+    .quick-filters-section .filter-chip {
+        flex-shrink: 0;
+    }
+    
+    /* MOBILE: Section header adjustments */
+    .section-header {
+        align-items: flex-start;
+        flex-direction: column;
+        gap: var(--space-sm);
+    }
+    
+    .section-title h2 {
+        font-size: var(--font-size-xl);
+    }
+    
+    .section-subtitle {
+        font-size: var(--font-size-xs);
+    }
 }
 
 @media (max-width: 480px) {
+    /* MOBILE: Even more compact hero section */
+    .hero-section {
+        padding: var(--space-md);
+        margin-bottom: var(--space-sm);
+    }
+    
+    .hero-title {
+        font-size: var(--font-size-lg);
+    }
+    
+    .hero-subtitle {
+        font-size: var(--font-size-xs);
+    }
+    
     .stats-overview {
         grid-template-columns: 1fr;
     }
@@ -600,7 +708,25 @@
         background-color: rgba(255, 255, 255, 0.04);
     }
     
-    .filter-chip:hover {
+    .filter-chip {
         background: var(--surface-700);
+        border-color: var(--surface-600);
+        color: var(--text-on-primary);
+    }
+    
+    .filter-chip:hover {
+        background: var(--surface-600);
+        border-color: var(--surface-500);
+    }
+    
+    .filter-chip.active {
+        background: var(--primary-color);
+        color: var(--text-on-primary);
+        border-color: var(--primary-color);
+    }
+    
+    .filter-chip.active:hover {
+        background: var(--primary-color-dark);
+        border-color: var(--primary-color-dark);
     }
 }

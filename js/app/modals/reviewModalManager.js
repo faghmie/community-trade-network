@@ -1,13 +1,12 @@
-// js/app/modals/reviewModalManager.js
-// Review modal specific functionality - now handles all review form operations
-
+// js/app/modals/reviewModalManager.js - SIMPLIFIED WITH DIRECT CALLBACK
 export class ReviewModalManager {
-    constructor(dataModule, reviewManager, baseModalManager) {
+    constructor(dataModule, reviewManager, onReviewSubmitCallback = null) {
         this.dataModule = dataModule;
         this.reviewManager = reviewManager;
-        this.baseModalManager = baseModalManager;
+        this.onReviewSubmitCallback = onReviewSubmitCallback; // Direct callback from main app
+        this.modalElement = null;
+        this.isOpen = false;
         this.currentContractorId = null;
-        this.isInitialized = false;
         
         // Form state
         this.currentRatings = {
@@ -18,89 +17,198 @@ export class ReviewModalManager {
             value: 0
         };
         
-        this.eventHandlers = {
-            onReviewSubmit: null
-        };
-        
-        // Initialize formElements as empty object to prevent undefined errors
-        this.formElements = {};
+        console.log('🔧 ReviewModalManager: Created with direct callback:', !!this.onReviewSubmitCallback);
     }
 
-    async openReviewModal(contractorId = null) {
+    open(contractorId = null) {
+        console.log('🔧 ReviewModalManager: Opening modal for contractor:', contractorId);
         this.currentContractorId = contractorId;
-        const { reviewModal } = this.baseModalManager.elements;
-        
-        if (reviewModal) {
-            // Ensure form is initialized before resetting
-            if (!this.isInitialized) {
-                await this.initializeForm();
-                this.isInitialized = true;
-            }
-            
-            // Now reset form after initialization
-            await this.resetForm();
-            
-            this.baseModalManager.openModal(reviewModal);
-            
-            // Set contractor ID
-            if (contractorId) {
-                const contractorIdInput = document.getElementById('contractorId');
-                if (contractorIdInput) {
-                    contractorIdInput.value = contractorId;
-                }
-            }
+
+        // Create modal if it doesn't exist
+        if (!this.modalElement) {
+            console.log('🔧 ReviewModalManager: Creating new modal element');
+            this.createModal();
         }
+
+        // Reset form and populate
+        this.resetForm();
+        
+        // Show modal
+        this.showModal();
+        
+        this.isOpen = true;
+        console.log('🔧 ReviewModalManager: Modal opened successfully');
     }
 
-    async initializeForm() {
-        console.log('Initializing review form...');
+    createModal() {
+        // Create modal structure from scratch
+        const modalHTML = `
+            <div class="modal review-modal">
+                <div class="modal-content large">
+                    <div class="modal-header">
+                        <h2>Leave a Review</h2>
+                        <button class="close" aria-label="Close modal">&times;</button>
+                    </div>
+                    <div class="modal-body">
+                        <form id="reviewForm" class="review-form">
+                            <input type="hidden" id="contractorId" name="contractorId">
+                            <input type="hidden" id="rating" name="rating" value="0">
+                            <input type="hidden" id="qualityRating" name="qualityRating" value="0">
+                            <input type="hidden" id="communicationRating" name="communicationRating" value="0">
+                            <input type="hidden" id="timelinessRating" name="timelinessRating" value="0">
+                            <input type="hidden" id="valueRating" name="valueRating" value="0">
+                            
+                            <div class="form-group">
+                                <label for="reviewerName">Your Name *</label>
+                                <input type="text" id="reviewerName" name="reviewerName" required 
+                                       placeholder="Enter your name">
+                            </div>
+
+                            <!-- Overall Rating -->
+                            <div class="form-group">
+                                <label>Overall Rating *</label>
+                                <div class="star-rating overall-rating">
+                                    ${this.createStarRatingHTML('overall', 5)}
+                                </div>
+                            </div>
+
+                            <!-- Category Ratings -->
+                            <div class="category-ratings">
+                                <h4>Rate Individual Categories (Optional)</h4>
+                                
+                                <div class="category-rating-group">
+                                    <label>Quality of Work</label>
+                                    <div class="star-rating quality-rating">
+                                        ${this.createStarRatingHTML('quality', 5)}
+                                    </div>
+                                </div>
+
+                                <div class="category-rating-group">
+                                    <label>Communication</label>
+                                    <div class="star-rating communication-rating">
+                                        ${this.createStarRatingHTML('communication', 5)}
+                                    </div>
+                                </div>
+
+                                <div class="category-rating-group">
+                                    <label>Timeliness</label>
+                                    <div class="star-rating timeliness-rating">
+                                        ${this.createStarRatingHTML('timeliness', 5)}
+                                    </div>
+                                </div>
+
+                                <div class="category-rating-group">
+                                    <label>Value for Money</label>
+                                    <div class="star-rating value-rating">
+                                        ${this.createStarRatingHTML('value', 5)}
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="projectType">Project Type *</label>
+                                <select id="projectType" name="projectType" required>
+                                    <option value="">Select project type</option>
+                                    <option value="Home Renovation">Home Renovation</option>
+                                    <option value="Plumbing">Plumbing</option>
+                                    <option value="Electrical">Electrical</option>
+                                    <option value="Painting">Painting</option>
+                                    <option value="Roofing">Roofing</option>
+                                    <option value="Landscaping">Landscaping</option>
+                                    <option value="Other">Other</option>
+                                </select>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="comment">Your Review *</label>
+                                <textarea id="comment" name="comment" required 
+                                          placeholder="Share your experience with this contractor..." 
+                                          rows="4"></textarea>
+                            </div>
+                        </form>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary cancel-review-btn">Cancel</button>
+                        <button type="submit" class="btn btn-primary submit-review-btn">Submit Review</button>
+                    </div>
+                </div>
+            </div>
+        `;
         
-        // Cache form elements
-        this.cacheFormElements();
+        const template = document.createElement('template');
+        template.innerHTML = modalHTML.trim();
+        this.modalElement = template.content.firstChild;
         
-        // Bind form events
-        this.bindFormEvents();
+        // Add to DOM
+        document.body.appendChild(this.modalElement);
         
-        // Initialize star ratings
+        // Bind events
+        this.bindModalEvents();
+        console.log('🔧 ReviewModalManager: Modal created and added to DOM');
+    }
+
+    createStarRatingHTML(type, maxStars) {
+        let starsHTML = '';
+        for (let i = 1; i <= maxStars; i++) {
+            starsHTML += `
+                <span class="material-star" data-rating="${i}" data-type="${type}">
+                    <i class="material-icons">star_border</i>
+                </span>
+            `;
+        }
+        return starsHTML;
+    }
+
+    bindModalEvents() {
+        if (!this.modalElement) return;
+
+        // Close button
+        const closeBtn = this.modalElement.querySelector('.close');
+        closeBtn.addEventListener('click', () => {
+            console.log('🔧 ReviewModalManager: Close button clicked');
+            this.close();
+        });
+
+        // Cancel button
+        const cancelBtn = this.modalElement.querySelector('.cancel-review-btn');
+        cancelBtn.addEventListener('click', () => {
+            console.log('🔧 ReviewModalManager: Cancel button clicked');
+            this.close();
+        });
+
+        // Submit button
+        const submitBtn = this.modalElement.querySelector('.submit-review-btn');
+        submitBtn.addEventListener('click', () => {
+            console.log('🔧 ReviewModalManager: Submit button clicked');
+            this.handleReviewSubmit();
+        });
+
+        // Star rating events
         this.initializeStarRatings();
-        
-        console.log('Review form initialized');
+
+        // Backdrop click
+        this.modalElement.addEventListener('click', (e) => {
+            if (e.target === this.modalElement) {
+                console.log('🔧 ReviewModalManager: Backdrop clicked');
+                this.close();
+            }
+        });
+
+        // Escape key
+        document.addEventListener('keydown', this.handleKeydown.bind(this));
+        console.log('🔧 ReviewModalManager: Modal events bound');
     }
 
-    cacheFormElements() {
-        this.formElements = {
-            reviewForm: document.getElementById('reviewForm'),
-            reviewerName: document.getElementById('reviewerName'),
-            rating: document.getElementById('rating'),
-            comment: document.getElementById('comment'),
-            projectType: document.getElementById('projectType'),
-            contractorId: document.getElementById('contractorId'),
-            // Category rating elements
-            qualityRating: document.getElementById('qualityRating'),
-            communicationRating: document.getElementById('communicationRating'),
-            timelinessRating: document.getElementById('timelinessRating'),
-            valueRating: document.getElementById('valueRating')
-        };
-        
-        console.log('📝 Form elements cached:', Object.keys(this.formElements));
-    }
-
-    bindFormEvents() {
-        const { reviewForm } = this.formElements;
-        
-        if (reviewForm) {
-            reviewForm.addEventListener('submit', (e) => {
-                e.preventDefault();
-                this.handleReviewSubmit();
-            });
+    handleKeydown(e) {
+        if (this.isOpen && e.key === 'Escape') {
+            console.log('🔧 ReviewModalManager: Escape key pressed');
+            this.close();
         }
     }
 
     initializeStarRatings() {
-        console.log('Initializing star ratings...');
-        
         // Overall rating stars
-        const overallStars = document.querySelectorAll('.overall-rating .material-star');
+        const overallStars = this.modalElement.querySelectorAll('.overall-rating .material-star');
         overallStars.forEach(star => {
             star.addEventListener('click', () => this.handleStarClick(star, 'overall'));
         });
@@ -108,17 +216,16 @@ export class ReviewModalManager {
         // Category rating stars
         const categories = ['quality', 'communication', 'timeliness', 'value'];
         categories.forEach(category => {
-            const stars = document.querySelectorAll(`.${category}-rating .material-star`);
+            const stars = this.modalElement.querySelectorAll(`.${category}-rating .material-star`);
             stars.forEach(star => {
                 star.addEventListener('click', () => this.handleStarClick(star, category));
             });
         });
-
-        console.log('Star ratings initialized');
     }
 
     handleStarClick(star, ratingType) {
         const rating = parseInt(star.getAttribute('data-rating'));
+        console.log('🔧 ReviewModalManager: Star clicked - rating:', rating, 'type:', ratingType);
         this.setRating(rating, ratingType);
         
         // Auto-calculate overall rating if all categories are rated
@@ -133,36 +240,40 @@ export class ReviewModalManager {
         
         // Update the hidden input value
         const inputId = type === 'overall' ? 'rating' : `${type}Rating`;
-        const ratingInput = document.getElementById(inputId);
+        const ratingInput = this.modalElement.querySelector(`#${inputId}`);
         if (ratingInput) {
             ratingInput.value = rating;
-            console.log(`⭐ Set ${type} rating to:`, rating);
         }
         
         // Update star visuals for the specific rating group
         let stars;
         switch(type) {
             case 'quality':
-                stars = document.querySelectorAll('.quality-rating .material-star');
+                stars = this.modalElement.querySelectorAll('.quality-rating .material-star');
                 break;
             case 'communication':
-                stars = document.querySelectorAll('.communication-rating .material-star');
+                stars = this.modalElement.querySelectorAll('.communication-rating .material-star');
                 break;
             case 'timeliness':
-                stars = document.querySelectorAll('.timeliness-rating .material-star');
+                stars = this.modalElement.querySelectorAll('.timeliness-rating .material-star');
                 break;
             case 'value':
-                stars = document.querySelectorAll('.value-rating .material-star');
+                stars = this.modalElement.querySelectorAll('.value-rating .material-star');
                 break;
             case 'overall':
             default:
-                stars = document.querySelectorAll('.overall-rating .material-star');
+                stars = this.modalElement.querySelectorAll('.overall-rating .material-star');
         }
 
         if (stars) {
             stars.forEach(star => {
                 const starRatingValue = parseInt(star.getAttribute('data-rating'));
-                star.classList.toggle('active', starRatingValue <= rating);
+                const icon = star.querySelector('.material-icons');
+                
+                if (icon) {
+                    icon.textContent = starRatingValue <= rating ? 'star' : 'star_border';
+                    icon.style.color = starRatingValue <= rating ? '#ffc107' : '#ccc';
+                }
                 
                 // Add pulse animation
                 if (starRatingValue === rating) {
@@ -179,47 +290,77 @@ export class ReviewModalManager {
         // Only calculate if all category ratings are set
         if (quality > 0 && communication > 0 && timeliness > 0 && value > 0) {
             const average = Math.round((quality + communication + timeliness + value) / 4);
+            console.log('🔧 ReviewModalManager: Auto-calculating overall rating:', average);
             this.setRating(average, 'overall');
         }
     }
 
-    onReviewSubmit(callback) {
-        this.eventHandlers.onReviewSubmit = callback;
+    showModal() {
+        if (!this.modalElement) return;
+
+        console.log('🔧 ReviewModalManager: Showing modal');
+        this.modalElement.style.display = 'flex';
+        document.body.style.overflow = 'hidden';
+        
+        // Add animation class
+        setTimeout(() => {
+            this.modalElement.classList.add('modal-open');
+            console.log('🔧 ReviewModalManager: modal-open class added');
+        }, 10);
+    }
+
+    close() {
+        if (!this.modalElement || !this.isOpen) return;
+
+        console.log('🔧 ReviewModalManager: Closing modal');
+        this.modalElement.classList.remove('modal-open');
+        
+        setTimeout(() => {
+            this.modalElement.style.display = 'none';
+            document.body.style.overflow = '';
+            this.isOpen = false;
+            this.resetForm();
+            console.log('🔧 ReviewModalManager: Modal closed');
+        }, 300);
     }
 
     handleReviewSubmit() {
-        const { reviewerName, projectType, comment } = this.formElements;
-        
+        console.log('🔧 ReviewModalManager: Handling review submission');
+        const reviewerName = this.modalElement.querySelector('#reviewerName')?.value?.trim() || '';
+        const projectType = this.modalElement.querySelector('#projectType')?.value || '';
+        const comment = this.modalElement.querySelector('#comment')?.value?.trim() || '';
+
         const reviewData = {
-            reviewerName: reviewerName?.value?.trim() || '',
+            reviewerName,
             rating: this.currentRatings.overall,
-            // Category ratings
             qualityRating: this.currentRatings.quality,
             communicationRating: this.currentRatings.communication,
             timelinessRating: this.currentRatings.timeliness,
             valueRating: this.currentRatings.value,
-            projectType: projectType?.value || '',
-            comment: comment?.value?.trim() || '',
+            projectType,
+            comment,
             contractorId: this.currentContractorId
         };
 
-        // Debug logging
-        console.log('📝 Review form data:', reviewData);
-        console.log('⭐ Current ratings state:', this.currentRatings);
+        console.log('🔧 ReviewModalManager: Review data:', reviewData);
 
         // Validate
         const errors = this.validateReview(reviewData);
         if (errors.length > 0) {
-            console.log('❌ Validation errors:', errors);
+            console.error('🔧 ReviewModalManager: Validation errors:', errors);
             this.showFormError(errors.join('\n'));
             return;
         }
 
-        if (this.eventHandlers.onReviewSubmit) {
-            // Pass both the review data and contractor ID
-            this.eventHandlers.onReviewSubmit(reviewData, this.currentContractorId);
+        // Use direct callback if available (simpler approach)
+        if (this.onReviewSubmitCallback) {
+            console.log('🔧 ReviewModalManager: Calling direct onReviewSubmitCallback');
+            this.onReviewSubmitCallback(reviewData, this.currentContractorId);
             this.showFormSuccess('Review submitted successfully!');
-            this.closeReviewModal();
+            this.close();
+        } else {
+            console.error('🔧 ReviewModalManager: No review submission handler available');
+            this.showFormError('Review submission is not configured properly.');
         }
     }
 
@@ -230,7 +371,6 @@ export class ReviewModalManager {
             errors.push('Please enter your name');
         }
         
-        // Check if overall rating is provided OR all category ratings are provided
         const hasOverallRating = reviewData.rating > 0 && !isNaN(reviewData.rating);
         const hasAllCategoryRatings = reviewData.qualityRating > 0 && 
                                     reviewData.communicationRating > 0 && 
@@ -252,21 +392,20 @@ export class ReviewModalManager {
         return errors;
     }
 
-    async resetForm() {
-        console.log('Resetting review form...');
-        
-        // Ensure form elements are cached
-        if (!this.formElements.reviewForm) {
-            this.cacheFormElements();
+    resetForm() {
+        if (!this.modalElement) return;
+
+        const form = this.modalElement.querySelector('#reviewForm');
+        if (form) {
+            form.reset();
         }
-        
-        const { reviewForm, projectType } = this.formElements;
-        
-        if (reviewForm) {
-            reviewForm.reset();
-        }
-        if (projectType) {
-            projectType.value = '';
+
+        // Set contractor ID if available
+        if (this.currentContractorId) {
+            const contractorIdInput = this.modalElement.querySelector('#contractorId');
+            if (contractorIdInput) {
+                contractorIdInput.value = this.currentContractorId;
+            }
         }
         
         // Reset all star ratings
@@ -278,29 +417,22 @@ export class ReviewModalManager {
             value: 0
         };
         
-        // Reset hidden inputs
-        const ratingInputs = ['rating', 'qualityRating', 'communicationRating', 'timelinessRating', 'valueRating'];
-        ratingInputs.forEach(inputId => {
-            const input = document.getElementById(inputId);
-            if (input) input.value = '0';
-        });
-        
         // Reset all star displays
         this.setRating(0, 'overall');
         this.setRating(0, 'quality');
         this.setRating(0, 'communication');
         this.setRating(0, 'timeliness');
         this.setRating(0, 'value');
-        
-        // Clear modal state
-        this.baseModalManager.clearModalState('reviewForm');
-        
-        console.log('Review form reset complete');
     }
 
-    closeReviewModal() {
-        this.resetForm();
-        this.baseModalManager.closeReviewModal();
+    // Cleanup
+    destroy() {
+        if (this.modalElement) {
+            document.removeEventListener('keydown', this.handleKeydown.bind(this));
+            this.modalElement.remove();
+            this.modalElement = null;
+        }
+        this.isOpen = false;
     }
 
     showFormError(message) {
@@ -308,7 +440,7 @@ export class ReviewModalManager {
         if (window.utils && window.utils.showNotification) {
             window.utils.showNotification(message, 'error');
         } else {
-            alert(message); // Fallback
+            alert(message);
         }
     }
 
@@ -319,8 +451,12 @@ export class ReviewModalManager {
         }
     }
 
-    // Method to pre-fill form for a specific contractor
-    setContractor(contractor) {
-        this.currentContractorId = contractor.id;
+    // Backward compatibility - alias for old code
+    openReviewModal(contractorId = null) {
+        this.open(contractorId);
+    }
+
+    closeReviewModal() {
+        this.close();
     }
 }

@@ -104,24 +104,10 @@ export class FavoritesDataManager {
         return this.favorites.length;
     }
 
-    // Import/export operations
-    async importFavorites(favoritesArray) {
-        if (favoritesArray && Array.isArray(favoritesArray)) {
-            this.favorites = favoritesArray;
-            const success = await this.save();
-            return success;
-        }
-        return false;
-    }
-
-    exportFavorites() {
-        return [...this.favorites]; // Return copy
-    }
-
-    async clearFavorites() {
-        this.favorites = [];
-        return await this.save();
-    }
+    // REMOVED: Import/export operations including:
+    // - importFavorites()
+    // - exportFavorites() 
+    // - clearFavorites()
 
     // Refresh favorites from storage
     async refresh() {

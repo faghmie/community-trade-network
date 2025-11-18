@@ -1,0 +1,298 @@
+/* css/components/notifications.css */
+/* Enhanced Material Design Notification System with Sync Status Support */
+
+/* Notification Container */
+.notification-container {
+    position: fixed;
+    top: var(--space-md);
+    right: var(--space-md);
+    z-index: var(--z-notification);
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-sm);
+    max-width: 400px;
+    width: calc(100% - var(--space-lg));
+    pointer-events: none;
+}
+
+/* Base Notification Styles */
+.notification {
+    background: var(--bg-card);
+    border-radius: var(--border-radius);
+    padding: var(--space-md);
+    box-shadow: var(--elevation-3);
+    border-left: 4px solid var(--primary-color);
+    display: flex;
+    align-items: flex-start;
+    gap: var(--space-md);
+    pointer-events: all;
+    transform: translateX(100%);
+    opacity: 0;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    max-height: 0;
+    overflow: hidden;
+}
+
+.notification.showing {
+    transform: translateX(0);
+    opacity: 1;
+    max-height: 200px;
+    margin-bottom: var(--space-xs);
+}
+
+.notification.hiding {
+    transform: translateX(100%);
+    opacity: 0;
+    max-height: 0;
+    margin-bottom: 0;
+}
+
+/* Notification Content */
+.notification-content {
+    flex: 1;
+    min-width: 0;
+}
+
+.notification-title {
+    font-size: var(--font-size-sm);
+    font-weight: var(--font-weight-medium);
+    color: var(--text-primary);
+    margin: 0 0 var(--space-xs) 0;
+    line-height: var(--line-height-tight);
+}
+
+.notification-message {
+    font-size: var(--font-size-sm);
+    color: var(--text-secondary);
+    margin: 0;
+    line-height: var(--line-height-normal);
+    word-wrap: break-word;
+}
+
+/* Notification Types */
+.notification-success {
+    border-left-color: var(--success-color);
+}
+
+.notification-error {
+    border-left-color: var(--error-color);
+}
+
+.notification-warning {
+    border-left-color: var(--warning-color);
+}
+
+.notification-info {
+    border-left-color: var(--primary-color);
+}
+
+.notification-sync {
+    border-left-color: var(--accent-color);
+}
+
+/* Notification Actions */
+.notification-close {
+    background: none;
+    border: none;
+    color: var(--text-secondary);
+    cursor: pointer;
+    padding: var(--space-xs);
+    border-radius: var(--border-radius-full);
+    transition: var(--material-transition);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    width: 32px;
+    height: 32px;
+}
+
+.notification-close:hover {
+    background: rgba(0, 0, 0, 0.04);
+    color: var(--text-primary);
+}
+
+.notification-close:active {
+    background: rgba(0, 0, 0, 0.08);
+}
+
+.notification-action {
+    background: none;
+    border: none;
+    color: var(--primary-color);
+    cursor: pointer;
+    padding: var(--space-xs) var(--space-sm);
+    border-radius: var(--border-radius-sm);
+    font-size: var(--font-size-sm);
+    font-weight: var(--font-weight-medium);
+    transition: var(--material-transition);
+    margin-left: auto;
+    flex-shrink: 0;
+}
+
+.notification-action:hover {
+    background: rgba(0, 0, 0, 0.04);
+}
+
+.notification-action:active {
+    background: rgba(0, 0, 0, 0.08);
+}
+
+/* Sync Notification Progress Bar */
+.notification-with-progress .notification-progress {
+    margin-top: var(--space-sm);
+}
+
+.progress-bar {
+    background: var(--surface-200);
+    border-radius: var(--border-radius-full);
+    height: 4px;
+    overflow: hidden;
+    position: relative;
+}
+
+.progress-fill {
+    background: var(--primary-color);
+    height: 100%;
+    border-radius: var(--border-radius-full);
+    transition: width 0.3s ease;
+}
+
+.progress-text {
+    font-size: var(--font-size-xs);
+    color: var(--text-secondary);
+    margin-top: var(--space-xs);
+    text-align: center;
+}
+
+/* Sync-specific progress colors */
+.notification-sync .progress-fill {
+    background: var(--accent-color);
+}
+
+.notification-success .progress-fill {
+    background: var(--success-color);
+}
+
+.notification-error .progress-fill {
+    background: var(--error-color);
+}
+
+.notification-warning .progress-fill {
+    background: var(--warning-color);
+}
+
+/* Mobile Responsiveness */
+@media (max-width: 768px) {
+    .notification-container {
+        top: var(--space-sm);
+        right: var(--space-sm);
+        left: var(--space-sm);
+        max-width: none;
+        width: auto;
+    }
+    
+    .notification {
+        padding: var(--space-sm);
+    }
+    
+    .notification-title {
+        font-size: var(--font-size-base);
+    }
+    
+    .notification-message {
+        font-size: var(--font-size-sm);
+    }
+}
+
+@media (max-width: 480px) {
+    .notification-container {
+        top: var(--space-xs);
+        right: var(--space-xs);
+        left: var(--space-xs);
+    }
+    
+    .notification {
+        padding: var(--space-sm);
+        gap: var(--space-sm);
+    }
+    
+    .notification-close {
+        width: 28px;
+        height: 28px;
+    }
+    
+    .notification-action {
+        padding: var(--space-xxs) var(--space-xs);
+        font-size: var(--font-size-xs);
+    }
+    
+    .progress-bar {
+        height: 3px;
+    }
+}
+
+/* Landscape Mobile Optimization */
+@media (max-height: 500px) and (orientation: landscape) {
+    .notification-container {
+        top: var(--space-xs);
+        max-height: 80vh;
+        overflow-y: auto;
+    }
+    
+    .notification {
+        max-height: 120px;
+    }
+}
+
+/* Dark Theme Support */
+@media (prefers-color-scheme: dark) {
+    .notification-close:hover {
+        background: rgba(255, 255, 255, 0.08);
+    }
+    
+    .notification-close:active {
+        background: rgba(255, 255, 255, 0.16);
+    }
+    
+    .notification-action:hover {
+        background: rgba(255, 255, 255, 0.08);
+    }
+    
+    .notification-action:active {
+        background: rgba(255, 255, 255, 0.16);
+    }
+    
+    .progress-bar {
+        background: var(--surface-600);
+    }
+}
+
+/* High Contrast Mode Support */
+@media (prefers-contrast: high) {
+    .notification {
+        border-width: 3px;
+    }
+    
+    .progress-bar {
+        border: 1px solid currentColor;
+    }
+}
+
+/* Reduced Motion Support */
+@media (prefers-reduced-motion: reduce) {
+    .notification {
+        transition: none;
+    }
+    
+    .progress-fill {
+        transition: none;
+    }
+}
+
+/* Print Styles */
+@media print {
+    .notification-container {
+        display: none !important;
+    }
+}

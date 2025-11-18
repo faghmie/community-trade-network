@@ -50,48 +50,24 @@ async function initializeApp() {
     }
 }
 
-// Event delegation system for data-action attributes
+// SIMPLIFIED event delegation - only handle actions not managed by FilterManager
 function setupEventDelegation() {
-    console.log('Setting up event delegation...');
+    console.log('Setting up minimal event delegation...');
 
     document.addEventListener('click', function (event) {
         const target = event.target.closest('[data-action]');
         if (!target || !window.app) return;
 
         const action = target.getAttribute('data-action');
-        console.log('Action triggered:', action);
+        
+        // Only log actions that we're actually handling in this delegation
+        const handledActions = ['export-favorites', 'import-favorites', 'export-data', 'clear-all-favorites'];
+        if (handledActions.includes(action)) {
+            console.log('Global action triggered:', action);
+        }
 
+        // Only handle actions that aren't managed by FilterManager
         switch (action) {
-            case 'search':
-                event.preventDefault();
-                window.app.searchContractors();
-                break;
-
-            case 'toggle-filters':
-                event.preventDefault();
-                handleToggleFilters();
-                break;
-
-            case 'clear-filters':
-                event.preventDefault();
-                window.app.clearFilters();
-                break;
-
-            case 'show-favorites':
-                event.preventDefault();
-                window.app.showFavoritesOnly();
-                break;
-
-            case 'show-high-rated':
-                event.preventDefault();
-                window.app.showHighRated();
-                break;
-
-            case 'view-favorites':
-                event.preventDefault();
-                window.app.showFavoritesSection();
-                break;
-
             case 'export-favorites':
                 event.preventDefault();
                 if (window.app.favoritesManager) {
@@ -116,15 +92,9 @@ function setupEventDelegation() {
                 }
                 break;
                 
-            // Map view toggle actions
-            case 'view-map':
-                event.preventDefault();
-                window.app.showMapView();
-                break;
-                
-            case 'view-list':
-                event.preventDefault();
-                window.app.showListView();
+            // All other actions are handled by FilterManager and UIManager
+            default:
+                // Let the managers handle it - don't log here
                 break;
         }
     });
@@ -136,57 +106,23 @@ function setupEventDelegation() {
         const action = target.getAttribute('data-action');
 
         switch (action) {
-            case 'filter':
-                window.app.filterContractors();
-                break;
-
-            case 'sort':
-                window.app.sortContractors();
-                break;
-
             case 'import-favorites-file':
                 if (target.files && target.files[0]) {
                     window.app.handleFavoritesImport(target.files[0]);
                     target.value = ''; // Reset file input
                 }
                 break;
+            // All other change actions are handled by FilterManager
+            default:
+                // Let FilterManager handle it
+                break;
         }
     });
 
-    document.addEventListener('keypress', function (event) {
-        const target = event.target;
-        if (!target.hasAttribute('data-action') || !window.app) return;
-
-        const action = target.getAttribute('data-action');
-
-        if (action === 'search-keypress' && event.key === 'Enter') {
-            event.preventDefault();
-            window.app.searchContractors();
-        }
-    });
-
-    console.log('Event delegation setup complete');
+    console.log('Minimal event delegation setup complete');
 }
 
-// Toggle filters function
-function handleToggleFilters() {
-    const toggleBtn = document.getElementById('toggleFiltersBtn');
-    const advancedFilters = document.getElementById('advancedFilters');
-
-    if (!toggleBtn || !advancedFilters) return;
-
-    const isHidden = advancedFilters.classList.contains('hidden');
-
-    if (isHidden) {
-        advancedFilters.classList.remove('hidden');
-        toggleBtn.innerHTML = '<i class="material-icons">filter_list</i><span>Less Filters</span>';
-        toggleBtn.classList.add('active');
-    } else {
-        advancedFilters.classList.add('hidden');
-        toggleBtn.innerHTML = '<i class="material-icons">filter_list</i><span>More Filters</span>';
-        toggleBtn.classList.remove('active');
-    }
-}
+// REMOVED: handleToggleFilters function - now handled by FilterManager
 
 // Initialize event delegation after app loads
 function initEventDelegation() {

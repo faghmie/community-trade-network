@@ -1,4 +1,4 @@
-// js/modules/storage.js
+// js/modules/storage.js - PROPER SYNC STRATEGY
 // ES6 Module for storage management with Supabase sync
 
 export class Storage {
@@ -10,54 +10,70 @@ export class Storage {
         this.supabase = supabase;
     }
 
-    // Save data to localStorage and optionally sync to Supabase
-    save(key, data, options = {}) {
-        const { syncToSupabase = true, immediate = true } = options;
-        
+    // Save data to localStorage and sync to Supabase (Admin use)
+    async save(key, data, options = {}) {
+        const { syncToSupabase = true } = options;
+
         try {
+            // Always save to localStorage first
             localStorage.setItem(key, JSON.stringify(data));
 
-            if (syncToSupabase && immediate && this.isSupabaseAvailable()) {
-                this.syncToSupabase(key, data).catch(error => {
-                    console.warn(`Background sync failed for ${key}:`, error);
-                });
+            // Then sync to Supabase if available (admin operations)
+            if (syncToSupabase && this.isSupabaseAvailable()) {
+                await this.syncToSupabase(key, data);
             }
 
+            console.log(`✅ Storage: Saved ${key} to localStorage${syncToSupabase ? ' and Supabase' : ''}`);
             return true;
         } catch (error) {
-            console.error('Error saving to localStorage:', error);
+            console.error('Error saving data:', error);
             return false;
         }
     }
 
-    // Load data from localStorage with Supabase fallback
+    // Load data with proper Supabase sync (User use)
     async load(key, options = {}) {
-        const { preferRemote = false, forceRefresh = false } = options;
-        
+        const { forceRefresh = false } = options;
+
         try {
-            // For favorites, always load from localStorage first as they are user-specific
+            // For user-specific data (favorites), only use localStorage
             if (key === 'favorites') {
                 const localData = localStorage.getItem(key);
                 return localData ? JSON.parse(localData) : [];
             }
 
-            if ((forceRefresh || !this.exists(key)) && this.isSupabaseAvailable()) {
+            // Get local data first
+            const localData = localStorage.getItem(key);
+            const parsedLocalData = localData ? JSON.parse(localData) : null;
+
+            // For shared data, sync with Supabase when available
+            if (this.isSupabaseAvailable()) {
                 try {
+                    console.log(`🔄 Storage: Syncing ${key} with Supabase...`);
                     const remoteData = await this.loadFromSupabase(key);
-                    if (remoteData) {
-                        localStorage.setItem(key, JSON.stringify(remoteData));
-                        return remoteData;
+
+                    if (remoteData !== null && remoteData !== undefined) {
+                        // Merge strategies based on data type
+                        const mergedData = this.mergeData(key, parsedLocalData, remoteData);
+
+                        // Save merged data back to localStorage
+                        localStorage.setItem(key, JSON.stringify(mergedData));
+                        console.log(`✅ Storage: Merged ${key} from Supabase and localStorage:`, mergedData.length || 'data');
+                        return mergedData;
                     }
                 } catch (error) {
-                    // Fall back to localStorage
+                    console.warn(`⚠️ Storage: Failed to sync ${key} with Supabase, using localStorage:`, error);
+                    // Fall through to localStorage
                 }
             }
 
-            const localData = localStorage.getItem(key);
-            if (localData) {
-                return JSON.parse(localData);
+            // Use existing localStorage data
+            if (parsedLocalData) {
+                console.log(`📁 Storage: Loaded ${key} from localStorage:`, parsedLocalData.length || 'data');
+                return parsedLocalData;
             }
 
+            console.log(`📁 Storage: No data found for ${key}`);
             return null;
         } catch (error) {
             console.error('Error loading data:', error);
@@ -65,10 +81,83 @@ export class Storage {
         }
     }
 
-    // Remove data from localStorage and optionally from Supabase
+    // Merge local and remote data with proper conflict resolution
+    mergeData(key, localData, remoteData) {
+        if (!localData) return remoteData;
+        if (!remoteData) return localData;
+
+        switch (key) {
+            case 'reviews':
+                // For reviews: Keep remote approved reviews, merge with local pending reviews
+                const remoteReviews = remoteData || [];
+                const localReviews = localData || [];
+
+                // Separate local reviews by status
+                const localPendingReviews = localReviews.filter(review => review.status === 'pending');
+                const localOtherReviews = localReviews.filter(review => review.status !== 'pending');
+
+                // Create a map of remote reviews by ID for quick lookup
+                const remoteReviewsMap = new Map();
+                remoteReviews.forEach(review => remoteReviewsMap.set(review.id, review));
+
+                // Merge: Start with all remote reviews
+                const mergedReviews = [...remoteReviews];
+
+                // Add local pending reviews that don't exist in remote
+                localPendingReviews.forEach(localReview => {
+                    if (!remoteReviewsMap.has(localReview.id)) {
+                        mergedReviews.push(localReview);
+                    }
+                });
+
+                console.log(`🔀 Reviews merge: Remote=${remoteReviews.length}, LocalPending=${localPendingReviews.length}, Merged=${mergedReviews.length}`);
+                return mergedReviews;
+
+            case 'contractors':
+                // For contractors: Remote is source of truth, but preserve local favorites status?
+                // Since favorites are stored separately, we can use remote as source of truth
+                console.log(`🔀 Contractors merge: Using remote data (${remoteData.length} contractors)`);
+                return remoteData;
+
+            case 'categories':
+                // For categories: Remote is source of truth
+                console.log(`🔀 Categories merge: Using remote data (${remoteData.length} categories)`);
+                return remoteData;
+
+            default:
+                // Default: Remote takes precedence
+                return remoteData;
+        }
+    }
+
+    // Sync from Supabase and update localStorage (for users)
+    async syncFromSupabase(key) {
+        if (!this.isSupabaseAvailable()) {
+            throw new Error('Cannot sync from Supabase: not available');
+        }
+
+        try {
+            console.log(`📥 Storage: Loading ${key} from Supabase...`);
+            const remoteData = await this.loadFromSupabase(key);
+
+            if (remoteData !== null && remoteData !== undefined) {
+                // For users: Supabase data is the source of truth for shared data
+                localStorage.setItem(key, JSON.stringify(remoteData));
+                console.log(`✅ Storage: Synced ${key} from Supabase to localStorage:`, remoteData.length || 'data');
+                return remoteData;
+            }
+
+            return null;
+        } catch (error) {
+            console.error(`Error syncing ${key} from Supabase:`, error);
+            throw error;
+        }
+    }
+
+    // Remove data from localStorage
     async remove(key, options = {}) {
         const { syncToSupabase = true } = options;
-        
+
         try {
             localStorage.removeItem(key);
             return true;
@@ -100,18 +189,20 @@ export class Storage {
 
     // Check if Supabase is available
     isSupabaseAvailable() {
-        return this.supabase && 
-               this.supabase.initialized &&
-               this.supabase.status === 'online';
+        return this.supabase &&
+            this.supabase.initialized &&
+            this.supabase.status === 'online';
     }
 
-    // Sync specific data to Supabase
+    // Sync specific data to Supabase (admin operations)
     async syncToSupabase(key, data) {
         if (!this.isSupabaseAvailable()) {
             throw new Error('Cannot sync: Supabase not available');
         }
 
         try {
+            console.log(`🔄 Storage: Syncing ${key} to Supabase...`);
+
             switch (key) {
                 case 'contractors':
                     if (data && data.length > 0) {
@@ -120,7 +211,7 @@ export class Storage {
                         }
                     }
                     break;
-                    
+
                 case 'reviews':
                     if (data && data.length > 0) {
                         for (const review of data) {
@@ -128,7 +219,7 @@ export class Storage {
                         }
                     }
                     break;
-                    
+
                 case 'categories':
                     if (data && data.length > 0) {
                         for (const category of data) {
@@ -136,18 +227,16 @@ export class Storage {
                         }
                     }
                     break;
-                    
+
                 case 'favorites':
-                    // Favorites are user-specific and typically don't sync to Supabase
-                    // But we'll save them if the method exists
-                    if (data && data.length > 0 && typeof this.supabase.saveFavorites === 'function') {
-                        await this.supabase.saveFavorites(data);
-                    }
+                    // Favorites are user-specific, don't sync to Supabase
                     break;
-                    
+
                 default:
                     return;
             }
+
+            console.log(`✅ Storage: Successfully synced ${key} to Supabase`);
         } catch (error) {
             console.error(`Error syncing ${key} to Supabase:`, error);
             throw error;
@@ -161,101 +250,52 @@ export class Storage {
         }
 
         try {
+            let remoteData;
             switch (key) {
                 case 'contractors':
-                    return await this.supabase.getAllContractors();
-                    
+                    remoteData = await this.supabase.getAllContractors();
+                    break;
+
                 case 'reviews':
-                    return await this.supabase.getAllReviews();
-                    
+                    remoteData = await this.supabase.getAllReviews();
+                    break;
+
                 case 'categories':
-                    return await this.supabase.getAllCategories();
-                    
+                    remoteData = await this.supabase.getAllCategories();
+                    break;
+
                 case 'favorites':
-                    // Favorites are user-specific, load from localStorage only
-                    if (typeof this.supabase.getFavorites === 'function') {
-                        return await this.supabase.getFavorites();
-                    }
-                    return null;
-                    
+                    // Favorites are user-specific, don't load from Supabase
+                    remoteData = null;
+                    break;
+
                 default:
                     return null;
             }
+
+            return remoteData;
         } catch (error) {
             console.error(`Error loading ${key} from Supabase:`, error);
             throw error;
         }
     }
 
-    // Retry pending syncs
-    async retryPendingSyncs() {
-        if (!this.isSupabaseAvailable()) return;
-        await this.supabase.processPendingSync();
-    }
-
-    // Check if online
-    isOnline() {
-        return navigator.onLine;
-    }
-
-    // Full data sync
-    async fullSync() {
+    // Force refresh all shared data from Supabase (user manual sync)
+    async forceRefreshAll() {
         if (!this.isSupabaseAvailable()) {
-            throw new Error('Cannot perform full sync: Supabase not available');
+            throw new Error('Cannot force refresh: Supabase not available');
         }
 
         try {
-            const localData = {
-                contractors: await this.load('contractors') || [],
-                reviews: await this.load('reviews') || [],
-                categories: await this.load('categories') || [],
-                favorites: await this.load('favorites') || []
-            };
+            console.log('🔄 Storage: Force refreshing all shared data from Supabase...');
 
-            if (localData.contractors.length > 0) {
-                await this.syncToSupabase('contractors', localData.contractors);
-            }
-            if (localData.reviews.length > 0) {
-                await this.syncToSupabase('reviews', localData.reviews);
-            }
-            if (localData.categories.length > 0) {
-                await this.syncToSupabase('categories', localData.categories);
-            }
-            if (localData.favorites.length > 0 && typeof this.supabase.saveFavorites === 'function') {
-                await this.syncToSupabase('favorites', localData.favorites);
-            }
-
-            return true;
-        } catch (error) {
-            console.error('Full sync failed:', error);
-            throw error;
-        }
-    }
-
-    // Pull latest data from Supabase and update localStorage
-    async pullLatest() {
-        if (!this.isSupabaseAvailable()) {
-            throw new Error('Cannot pull latest data: Supabase not available');
-        }
-
-        try {
-            const contractors = await this.loadFromSupabase('contractors');
-            const reviews = await this.loadFromSupabase('reviews');
-            const categories = await this.loadFromSupabase('categories');
-
-            if (contractors) {
-                this.save('contractors', contractors, { syncToSupabase: false, immediate: false });
-            }
-            if (reviews) {
-                this.save('reviews', reviews, { syncToSupabase: false, immediate: false });
-            }
-            if (categories) {
-                this.save('categories', categories, { syncToSupabase: false, immediate: false });
-            }
+            const contractors = await this.syncFromSupabase('contractors');
+            const reviews = await this.syncFromSupabase('reviews');
+            const categories = await this.syncFromSupabase('categories');
 
             return { contractors, reviews, categories };
         } catch (error) {
-            console.error('Failed to pull latest data:', error);
+            console.error('Force refresh failed:', error);
             throw error;
         }
     }
@@ -263,23 +303,11 @@ export class Storage {
     // Get storage statistics
     getStats() {
         return {
-            contractors: (this.load('contractors') || []).length,
-            reviews: (this.load('reviews') || []).length,
-            categories: (this.load('categories') || []).length,
-            favorites: (this.load('favorites') || []).length,
-            supabaseStatus: this.isSupabaseAvailable() ? this.supabase.getSyncStatus() : 'unavailable'
+            contractors: (JSON.parse(localStorage.getItem('contractors') || '[]')).length,
+            reviews: (JSON.parse(localStorage.getItem('reviews') || '[]')).length,
+            categories: (JSON.parse(localStorage.getItem('categories') || '[]')).length,
+            favorites: (JSON.parse(localStorage.getItem('favorites') || '[]')).length,
+            supabaseStatus: this.isSupabaseAvailable() ? 'available' : 'unavailable'
         };
-    }
-
-    // Special method for favorites persistence
-    async saveFavorites(favorites) {
-        return this.save('favorites', favorites, { 
-            syncToSupabase: false, // Favorites typically don't sync to avoid user conflicts
-            immediate: true 
-        });
-    }
-
-    async loadFavorites() {
-        return this.load('favorites');
     }
 }

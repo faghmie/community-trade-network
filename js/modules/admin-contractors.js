@@ -1,12 +1,14 @@
 // Admin Contractors Management
 import { showNotification } from './notifications.js';
 import { isValidEmail, isValidSouthAfricanPhone, isValidUrl } from './validation.js';
+import { ContractorModalManager } from '../app/modals/contractorModalManager.js';
 
 class AdminContractorsModule {
     constructor(dataModule, categoriesModule, locationData) {
         this.dataModule = dataModule;
         this.categoriesModule = categoriesModule;
         this.locationData = locationData;
+        this.contractorModalManager = null;
         
         // Bind methods
         this.init = this.init.bind(this);
@@ -23,6 +25,16 @@ class AdminContractorsModule {
     init() {
         this.bindEvents();
         this.renderContractorsTable();
+        
+        // Initialize contractor modal manager (without review modal manager for admin)
+        this.contractorModalManager = new ContractorModalManager(
+            this.dataModule,
+            this.dataModule.reviewManager,
+            this.dataModule.cardManager,
+            null // No review modal manager in admin context
+        );
+        
+        console.log('🔧 AdminContractorsModule: ContractorModalManager initialized');
     }
 
     bindEvents() {
@@ -298,6 +310,18 @@ class AdminContractorsModule {
     }
 
     viewContractor(id) {
+        console.log('🔧 AdminContractorsModule: View contractor called with ID:', id);
+        if (this.contractorModalManager) {
+            this.contractorModalManager.open(id);
+        } else {
+            console.error('🔧 AdminContractorsModule: ContractorModalManager not initialized');
+            // Fallback to old implementation if modal manager is not available
+            this.fallbackViewContractor(id);
+        }
+    }
+
+    // Fallback implementation in case modal manager fails
+    fallbackViewContractor(id) {
         const contractor = this.dataModule.getContractor(id);
         if (contractor) {
             // Create modal if it doesn't exist

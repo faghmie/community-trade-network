@@ -1,0 +1,162 @@
+/* css/components/bottom-sheet.css */
+/* Material Design Bottom Sheet Components */
+
+.bottom-sheet {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: var(--z-modal);
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    pointer-events: none;
+}
+
+.bottom-sheet:not(.hidden) {
+    pointer-events: all;
+}
+
+.bottom-sheet-scrim {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.32);
+    animation: bottomSheetFadeIn 0.2s ease;
+}
+
+.bottom-sheet-container {
+    position: relative;
+    width: 100%;
+    max-width: 640px;
+    max-height: 90vh;
+    pointer-events: none;
+}
+
+.bottom-sheet-surface {
+    background: var(--surface);
+    border-radius: 28px 28px 0 0;
+    box-shadow: var(--elevation-24);
+    overflow: hidden;
+    animation: bottomSheetSlideUp 0.3s ease;
+    max-height: 90vh;
+    display: flex;
+    flex-direction: column;
+    pointer-events: all;
+}
+
+.bottom-sheet-header {
+    padding: 24px 24px 16px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 1px solid var(--border-light);
+    position: relative;
+}
+
+.bottom-sheet-handle {
+    position: absolute;
+    top: 8px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 32px;
+    height: 4px;
+    background: var(--text-secondary);
+    border-radius: 2px;
+    opacity: 0.6;
+}
+
+.bottom-sheet-title {
+    flex: 1;
+    margin: 0;
+}
+
+.bottom-sheet-title h3 {
+    margin: 0;
+    font-size: var(--font-size-lg);
+    font-weight: var(--font-weight-medium);
+    color: var(--text-primary);
+}
+
+.bottom-sheet-close {
+    margin-left: auto;
+}
+
+.bottom-sheet-content {
+    flex: 1;
+    overflow-y: auto;
+    padding: 24px;
+    max-height: 60vh;
+}
+
+.bottom-sheet-actions {
+    padding: 16px 24px;
+    display: flex;
+    gap: 12px;
+    justify-content: flex-end;
+    border-top: 1px solid var(--border-light);
+    background: var(--surface-variant);
+}
+
+/* Bottom Sheet States */
+.bottom-sheet.hidden {
+    display: none;
+}
+
+.bottom-sheet.hidden .bottom-sheet-surface {
+    transform: translateY(100%);
+}
+
+/* Animations */
+@keyframes bottomSheetSlideUp {
+    from {
+        transform: translateY(100%);
+    }
+    to {
+        transform: translateY(0);
+    }
+}
+
+@keyframes bottomSheetFadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+/* Responsive Design */
+@media (min-width: 768px) {
+    .bottom-sheet-surface {
+        max-width: 480px;
+        margin: 0 auto;
+        border-radius: 12px;
+    }
+    
+    .bottom-sheet-handle {
+        display: none;
+    }
+}
+
+/* Dark Theme Support */
+@media (prefers-color-scheme: dark) {
+    .bottom-sheet-surface {
+        background: var(--surface);
+    }
+    
+    .bottom-sheet-scrim {
+        background: rgba(0, 0, 0, 0.6);
+    }
+}
+
+/* Reduced Motion Support */
+@media (prefers-reduced-motion: reduce) {
+    .bottom-sheet-scrim,
+    .bottom-sheet-surface {
+        animation: none;
+    }
+}

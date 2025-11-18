@@ -1,4 +1,8 @@
 /* Enhanced BUT Compact Stats Cards Component */
+.stats-section {
+    margin-bottom: var(--space-lg);
+}
+
 .stats-overview {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
@@ -160,6 +164,77 @@
     gap: 2px;
 }
 
+/* NEW: Material Design Stats Chips for Mobile */
+.stats-chips {
+    display: none; /* Hidden by default, shown on mobile */
+    gap: var(--space-xs);
+    margin: var(--space-sm) 0;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    width: 100%;
+}
+
+.stat-chip {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: var(--space-xs);
+    background: var(--surface-100);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    font-size: var(--font-size-xs);
+    font-weight: var(--font-weight-medium);
+    color: var(--text-secondary);
+    transition: var(--material-transition);
+    min-height: 24px;
+    flex: 1;
+    min-width: 0;
+    box-sizing: border-box;
+    flex-direction: row;
+    gap: var(--space-xs);
+}
+
+.stat-chip--primary {
+    background: var(--primary-50);
+    border-color: var(--primary-200);
+    color: var(--primary-700);
+}
+
+.stat-chip--accent {
+    background: var(--accent-50);
+    border-color: var(--accent-200);
+    color: var(--accent-700);
+}
+
+.stat-chip--success {
+    background: var(--success-50);
+    border-color: var(--success-200);
+    color: var(--success-700);
+}
+
+.stat-chip--warning {
+    background: var(--warning-50);
+    border-color: var(--warning-200);
+    color: var(--warning-700);
+}
+
+.stat-chip-value {
+    font-weight: var(--font-weight-bold);
+    color: var(--text-primary);
+    font-feature-settings: "tnum";
+    font-variant-numeric: tabular-nums;
+    font-size: var(--font-size-sm);
+}
+
+.stat-chip-label {
+    font-size: 0.6rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* REMOVED: stat-chip-icon - No icons in mobile chips */
+
 /* Compact Trend Indicators */
 .stat-trend {
     display: inline-flex;
@@ -198,14 +273,45 @@
     font-size: 0.7rem;
 }
 
-/* MOBILE-FIRST RESPONSIVE - Keeping them compact! */
+/* MOBILE-FIRST RESPONSIVE - Convert to chips on mobile */
 @media (max-width: 768px) {
-    .stats-overview {
-        grid-template-columns: repeat(2, 1fr);
-        gap: var(--space-sm);
-        margin: var(--space-md) 0;
+    .stats-section {
+        margin-bottom: var(--space-md);
     }
     
+    /* Hide traditional stats cards on mobile */
+    .stats-overview {
+        display: none;
+    }
+    
+    /* Show Material Design chips on mobile */
+    .stats-chips {
+        display: flex;
+        margin: var(--space-xs) 0;
+    }
+    
+    /* FIXED: Horizontal layout for chips */
+    .stat-chip {
+        flex: 1;
+        min-width: 0;
+        padding: 4px 6px;
+        margin: 0 1px;
+        min-height: 22px;
+        flex-direction: row;
+        justify-content: center;
+        gap: 2px;
+    }
+    
+    .stat-chip-value {
+        font-size: var(--font-size-xs);
+        font-weight: var(--font-weight-bold);
+    }
+    
+    .stat-chip-label {
+        font-size: 0.55rem;
+    }
+    
+    /* Original mobile styles preserved for other components */
     .stat-card {
         padding: var(--space-md);
         min-height: 70px;
@@ -233,52 +339,45 @@
 }
 
 @media (max-width: 480px) {
-    .stats-overview {
-        grid-template-columns: repeat(2, 1fr);
-        gap: var(--space-sm);
+    .stats-chips {
+        gap: 2px;
+        justify-content: space-between;
+        margin: 2px 0;
     }
     
-    .stat-card--with-icon {
-        flex-direction: row;
-        text-align: left;
-        gap: var(--space-sm);
+    .stat-chip {
+        flex: 1;
+        min-width: 0;
+        padding: 3px 4px;
+        min-height: 20px;
     }
     
-    .stat-card {
-        min-height: 65px;
-        padding: var(--space-md);
+    .stat-chip-value {
+        font-size: 0.7rem;
     }
     
-    .stat-number {
-        font-size: var(--font-size-md);
-    }
-    
-    /* Ultra compact for very small screens */
-    .stats-overview--compact-mobile {
-        grid-template-columns: repeat(3, 1fr);
-    }
-    
-    .stat-card--ultra-compact {
-        padding: var(--space-sm);
-        min-height: 55px;
-    }
-    
-    .stat-card--ultra-compact .stat-number {
-        font-size: var(--font-size-md);
+    .stat-chip-label {
+        font-size: 0.5rem;
     }
 }
 
 @media (max-width: 360px) {
-    .stats-overview {
-        grid-template-columns: 1fr;
+    .stats-chips {
+        gap: 1px;
+        margin: 1px 0;
     }
     
-    .stats-overview--compact-mobile {
-        grid-template-columns: repeat(2, 1fr);
+    .stat-chip {
+        padding: 2px 3px;
+        min-height: 18px;
+    }
+    
+    .stat-chip-label {
+        font-size: 0.45rem;
     }
 }
 
-/* Dark Theme for Compact Stats */
+/* Dark Theme for Compact Stats & Chips */
 @media (prefers-color-scheme: dark) {
     .stat-card {
         background: linear-gradient(135deg, var(--surface-800), var(--surface-700));
@@ -312,6 +411,41 @@
             var(--elevation-2),
             0 0 0 1px var(--primary-300);
     }
+    
+    /* Dark theme for chips */
+    .stat-chip {
+        background: var(--surface-700);
+        border-color: var(--surface-600);
+        color: var(--text-secondary);
+    }
+    
+    .stat-chip--primary {
+        background: var(--primary-900);
+        border-color: var(--primary-700);
+        color: var(--primary-200);
+    }
+    
+    .stat-chip--accent {
+        background: var(--accent-900);
+        border-color: var(--accent-700);
+        color: var(--accent-200);
+    }
+    
+    .stat-chip--success {
+        background: var(--success-900);
+        border-color: var(--success-700);
+        color: var(--success-200);
+    }
+    
+    .stat-chip--warning {
+        background: var(--warning-900);
+        border-color: var(--warning-700);
+        color: var(--warning-200);
+    }
+    
+    .stat-chip-value {
+        color: var(--text-primary);
+    }
 }
 
 /* Reduced motion for accessibility */
@@ -326,5 +460,9 @@
     
     .stat-card:hover .stat-icon {
         transform: none;
+    }
+    
+    .stat-chip {
+        transition: none;
     }
 }
