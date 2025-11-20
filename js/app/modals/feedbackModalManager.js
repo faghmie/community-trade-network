@@ -1,17 +1,21 @@
 /**
- * Feedback Modal Manager
- * Handles user feedback collection and submission to Supabase
+ * Feedback Modal Manager - ES6 Module
+ * Handles user feedback collection and submission using DataModule
  */
-class FeedbackModalManager {
-    constructor() {
+import { showSuccess, showError } from '../../modules/notifications.js';
+
+export class FeedbackModalManager {
+    constructor(dataModule) {
+        this.dataModule = dataModule;
         this.isOpen = false;
         this.currentRating = 0;
-        this.modalId = 'feedback-modal';
-        this.overlayId = 'feedback-modal-overlay';
+        this.modalElement = null;
         this.callbacks = {
             onSubmit: null,
             onClose: null
         };
+
+        console.log('🔧 FeedbackModalManager: Created with Material Design structure');
     }
 
     /**
@@ -19,100 +23,106 @@ class FeedbackModalManager {
      */
     init() {
         this.createModal();
-        this.bindEvents();
-        console.log('FeedbackModalManager initialized');
+        console.log('✅ FeedbackModalManager initialized');
     }
 
     /**
-     * Create the modal HTML structure
+     * Create the modal HTML structure using Material Design classes
      */
     createModal() {
         // Remove existing modal if present
-        const existingModal = document.getElementById(this.modalId);
-        if (existingModal) {
-            existingModal.remove();
+        if (this.modalElement) {
+            this.modalElement.remove();
         }
 
+        // Create Material Design modal structure (consistent with contractor modal)
         const modalHTML = `
-            <div id="${this.overlayId}" class="modal-overlay feedback-overlay" style="display: none;">
-                <div id="${this.modalId}" class="modal feedback-modal" role="dialog" aria-labelledby="feedback-modal-title" aria-modal="true">
+            <div class="modal feedback-modal">
+                <div class="modal-backdrop"></div>
+                <div class="modal-content">
                     <div class="modal-header">
-                        <h2 id="feedback-modal-title">Send Feedback</h2>
-                        <button class="modal-close" aria-label="Close feedback form">
-                            <span class="material-icons">close</span>
+                        <h2>Send Feedback</h2>
+                        <button class="close" aria-label="Close modal">
+                            <i class="material-icons">close</i>
                         </button>
                     </div>
-                    
-                    <div class="modal-content">
+                    <div class="modal-body">
                         <form id="feedback-form" class="feedback-form">
                             <!-- Rating Section -->
-                            <div class="feedback-section">
-                                <label class="feedback-label">Overall Experience</label>
-                                <div class="rating-stars" id="feedback-rating-stars">
+                            <div class="feedback-section material-form-group">
+                                <label class="material-input-label">Overall Experience</label>
+                                <div class="feedback-rating-stars" id="feedback-rating-stars">
                                     ${this.generateStarRatingHTML()}
                                 </div>
                                 <div class="rating-text" id="rating-text">Tap to rate</div>
                             </div>
 
                             <!-- Positive Comments -->
-                            <div class="feedback-section">
-                                <label for="positive-comments" class="feedback-label">
+                            <div class="feedback-section material-form-group">
+                                <label for="positive-comments" class="material-input-label">
                                     What's working well?
                                 </label>
                                 <textarea 
                                     id="positive-comments" 
-                                    class="feedback-textarea" 
+                                    class="material-textarea" 
                                     placeholder="What do you like about the app? What features are most useful?"
                                     rows="3"
+                                    maxlength="1000"
                                 ></textarea>
+                                <div class="material-form-help">Required - Share what you love about the app</div>
                             </div>
 
                             <!-- Improvement Comments -->
-                            <div class="feedback-section">
-                                <label for="improvement-comments" class="feedback-label">
+                            <div class="feedback-section material-form-group">
+                                <label for="improvement-comments" class="material-input-label">
                                     What can be improved?
                                 </label>
                                 <textarea 
                                     id="improvement-comments" 
-                                    class="feedback-textarea" 
+                                    class="material-textarea" 
                                     placeholder="Any issues, bugs, or features you'd like to see?"
                                     rows="3"
+                                    maxlength="1000"
                                 ></textarea>
+                                <div class="material-form-help">Optional - Help us make the app better</div>
                             </div>
 
                             <!-- Optional Contact -->
-                            <div class="feedback-section">
-                                <label for="contact-email" class="feedback-label">
+                            <div class="feedback-section material-form-group">
+                                <label for="contact-email" class="material-input-label">
                                     Email (optional - for follow up)
                                 </label>
                                 <input 
                                     type="email" 
                                     id="contact-email" 
-                                    class="feedback-input" 
+                                    class="material-input" 
                                     placeholder="your.email@example.com"
                                 >
+                                <div class="material-form-help">We'll only use this to respond to your feedback</div>
                             </div>
 
                             <!-- Context Information (hidden) -->
                             <input type="hidden" id="page-context" value="">
                             <input type="hidden" id="feature-context" value="">
-
-                            <!-- Form Actions -->
-                            <div class="feedback-actions">
-                                <button type="button" class="btn-secondary" id="feedback-cancel">
-                                    Cancel
-                                </button>
-                                <button type="submit" class="btn-primary" id="feedback-submit" disabled>
-                                    Send Feedback
-                                </button>
-                            </div>
                         </form>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" id="feedback-cancel">
+                            Cancel
+                        </button>
+                        <button type="submit" class="btn btn-primary" id="feedback-submit" disabled>
+                            Send Feedback
+                        </button>
                     </div>
                 </div>
             </div>
         `;
 
-        document.body.insertAdjacentHTML('beforeend', modalHTML);
+        const template = document.createElement('template');
+        template.innerHTML = modalHTML.trim();
+        this.modalElement = template.content.firstChild;
+        document.body.appendChild(this.modalElement);
+        this.bindModalEvents();
     }
 
     /**
@@ -123,7 +133,7 @@ class FeedbackModalManager {
         for (let i = 1; i <= 5; i++) {
             starsHTML += `
                 <button type="button" class="star-rating-btn" data-rating="${i}" aria-label="Rate ${i} star${i !== 1 ? 's' : ''}">
-                    <span class="star-icon" data-rating="${i}">☆</span>
+                    <span class="star-icon material-icons" data-rating="${i}">star_border</span>
                 </button>
             `;
         }
@@ -133,25 +143,26 @@ class FeedbackModalManager {
     /**
      * Bind event listeners
      */
-    bindEvents() {
-        const overlay = document.getElementById(this.overlayId);
-        const modal = document.getElementById(this.modalId);
-        const closeBtn = modal?.querySelector('.modal-close');
-        const cancelBtn = document.getElementById('feedback-cancel');
-        const form = document.getElementById('feedback-form');
-        const ratingStars = document.getElementById('feedback-rating-stars');
+    bindModalEvents() {
+        if (!this.modalElement) return;
 
-        // Close modal events
-        [overlay, closeBtn, cancelBtn].forEach(element => {
-            element?.addEventListener('click', (e) => {
-                if (e.target === overlay || e.target === closeBtn || e.target === cancelBtn || 
-                    e.target.closest('.modal-close') || e.target.closest('#feedback-cancel')) {
-                    this.close();
-                }
-            });
+        // Close button
+        const closeBtn = this.modalElement.querySelector('.close');
+        closeBtn.addEventListener('click', () => this.close());
+
+        // Cancel button
+        const cancelBtn = this.modalElement.querySelector('#feedback-cancel');
+        cancelBtn.addEventListener('click', () => this.close());
+
+        // Backdrop click
+        this.modalElement.addEventListener('click', (e) => {
+            if (e.target === this.modalElement || e.target.classList.contains('modal-backdrop')) {
+                this.close();
+            }
         });
 
         // Star rating events
+        const ratingStars = this.modalElement.querySelector('#feedback-rating-stars');
         ratingStars?.addEventListener('click', (e) => {
             const starBtn = e.target.closest('.star-rating-btn');
             if (starBtn) {
@@ -160,35 +171,30 @@ class FeedbackModalManager {
             }
         });
 
-        // Keyboard navigation for stars
-        ratingStars?.addEventListener('keydown', (e) => {
-            if (e.key === 'Enter' || e.key === ' ') {
-                const starBtn = e.target.closest('.star-rating-btn');
-                if (starBtn) {
-                    e.preventDefault();
-                    const rating = parseInt(starBtn.dataset.rating);
-                    this.setRating(rating);
-                }
-            }
-        });
-
         // Form submission
-        form?.addEventListener('submit', (e) => {
+        const submitBtn = this.modalElement.querySelector('#feedback-submit');
+        submitBtn.addEventListener('click', (e) => {
             e.preventDefault();
             this.handleSubmit();
         });
 
-        // Form validation
-        form?.addEventListener('input', () => {
-            this.validateForm();
+        // Form validation on all input events
+        const form = this.modalElement.querySelector('#feedback-form');
+        const inputs = form?.querySelectorAll('textarea, input');
+        inputs?.forEach(input => {
+            input.addEventListener('input', () => {
+                this.validateForm();
+            });
         });
 
         // Escape key to close
-        document.addEventListener('keydown', (e) => {
-            if (e.key === 'Escape' && this.isOpen) {
-                this.close();
-            }
-        });
+        document.addEventListener('keydown', this.handleKeydown.bind(this));
+    }
+
+    handleKeydown(e) {
+        if (this.isOpen && e.key === 'Escape') {
+            this.close();
+        }
     }
 
     /**
@@ -205,15 +211,15 @@ class FeedbackModalManager {
      * Update star display based on current rating
      */
     updateStarDisplay() {
-        const stars = document.querySelectorAll('#feedback-rating-stars .star-icon');
+        const stars = this.modalElement.querySelectorAll('#feedback-rating-stars .star-icon');
         stars.forEach((star, index) => {
             const starRating = parseInt(star.dataset.rating);
             if (starRating <= this.currentRating) {
-                star.textContent = '★';
-                star.style.color = '#ffc107';
+                star.textContent = 'star';
+                star.style.color = 'var(--warning-color)';
             } else {
-                star.textContent = '☆';
-                star.style.color = '#e0e0e0';
+                star.textContent = 'star_border';
+                star.style.color = 'var(--surface-400)';
             }
         });
     }
@@ -222,30 +228,39 @@ class FeedbackModalManager {
      * Update rating text based on current rating
      */
     updateRatingText() {
-        const ratingText = document.getElementById('rating-text');
+        const ratingText = this.modalElement.querySelector('#rating-text');
         const ratings = {
-            1: 'Poor',
-            2: 'Fair', 
-            3: 'Good',
-            4: 'Very Good',
-            5: 'Excellent'
+            1: 'Poor - Needs significant improvement',
+            2: 'Fair - Has some issues', 
+            3: 'Good - Meets expectations',
+            4: 'Very Good - Exceeds expectations',
+            5: 'Excellent - Outstanding experience'
         };
-        ratingText.textContent = ratings[this.currentRating] || 'Tap to rate';
+        ratingText.textContent = ratings[this.currentRating] || 'Tap stars to rate your experience';
+        ratingText.style.color = this.currentRating > 0 ? 'var(--on-surface)' : 'var(--on-surface-variant)';
     }
 
     /**
      * Validate the feedback form
      */
     validateForm() {
-        const submitBtn = document.getElementById('feedback-submit');
+        const submitBtn = this.modalElement.querySelector('#feedback-submit');
         const hasRating = this.currentRating > 0;
-        const positiveComments = document.getElementById('positive-comments').value.trim();
-        const improvementComments = document.getElementById('improvement-comments').value.trim();
+        const positiveComments = this.modalElement.querySelector('#positive-comments').value.trim();
+        const improvementComments = this.modalElement.querySelector('#improvement-comments').value.trim();
         
-        // Require at least one comment field to be filled
+        // Require at least one comment field to be filled along with rating
         const hasComments = positiveComments.length > 0 || improvementComments.length > 0;
         
+        // Update button state
         submitBtn.disabled = !(hasRating && hasComments);
+        
+        // Update button text based on validation
+        if (submitBtn.disabled) {
+            submitBtn.textContent = 'Send Feedback';
+        } else {
+            submitBtn.textContent = `Send ${this.currentRating}★ Feedback`;
+        }
     }
 
     /**
@@ -254,51 +269,51 @@ class FeedbackModalManager {
     open(context = {}) {
         if (this.isOpen) return;
 
+        console.log('🔧 FeedbackModalManager: Opening modal');
         this.isOpen = true;
         this.currentRating = 0;
         
         // Set context information
-        document.getElementById('page-context').value = context.page || this.getCurrentPage();
-        document.getElementById('feature-context').value = context.feature || '';
+        this.modalElement.querySelector('#page-context').value = context.page || this.getCurrentPage();
+        this.modalElement.querySelector('#feature-context').value = context.feature || '';
         
         // Reset form
         this.resetForm();
         
         // Show modal
-        const overlay = document.getElementById(this.overlayId);
-        const modal = document.getElementById(this.modalId);
-        
-        overlay.style.display = 'block';
-        modal.style.display = 'block';
-        
-        // Focus first element
-        setTimeout(() => {
-            document.getElementById('feedback-rating-stars')?.focus();
-        }, 100);
+        this.showModal();
+    }
 
-        // Trigger callback
-        if (this.callbacks.onOpen) {
-            this.callbacks.onOpen();
-        }
+    /**
+     * Show the modal
+     */
+    showModal() {
+        if (!this.modalElement) return;
+
+        console.log('🔧 FeedbackModalManager: Showing modal');
+        this.modalElement.style.display = 'flex';
+        document.body.style.overflow = 'hidden';
+
+        // Add animation class
+        setTimeout(() => {
+            this.modalElement.classList.add('modal-open');
+        }, 10);
     }
 
     /**
      * Close the feedback modal
      */
     close() {
-        if (!this.isOpen) return;
+        if (!this.modalElement || !this.isOpen) return;
 
-        this.isOpen = false;
-        const overlay = document.getElementById(this.overlayId);
-        const modal = document.getElementById(this.modalId);
-        
-        overlay.style.display = 'none';
-        modal.style.display = 'none';
+        console.log('🔧 FeedbackModalManager: Closing modal');
+        this.modalElement.classList.remove('modal-open');
 
-        // Trigger callback
-        if (this.callbacks.onClose) {
-            this.callbacks.onClose();
-        }
+        setTimeout(() => {
+            this.modalElement.style.display = 'none';
+            document.body.style.overflow = '';
+            this.isOpen = false;
+        }, 300);
     }
 
     /**
@@ -309,7 +324,12 @@ class FeedbackModalManager {
         this.updateStarDisplay();
         this.updateRatingText();
         
-        document.getElementById('feedback-form').reset();
+        const form = this.modalElement.querySelector('#feedback-form');
+        if (form) {
+            form.reset();
+        }
+        
+        // Force validation after reset to ensure button is disabled
         this.validateForm();
     }
 
@@ -327,7 +347,7 @@ class FeedbackModalManager {
      * Handle form submission
      */
     async handleSubmit() {
-        const submitBtn = document.getElementById('feedback-submit');
+        const submitBtn = this.modalElement.querySelector('#feedback-submit');
         const originalText = submitBtn.textContent;
 
         try {
@@ -335,96 +355,37 @@ class FeedbackModalManager {
             submitBtn.disabled = true;
             submitBtn.textContent = 'Sending...';
 
+            // Ensure data module is initialized
+            await this.dataModule.ensureInitialized();
+
             // Collect form data
             const feedbackData = {
                 rating: this.currentRating,
-                positive_comments: document.getElementById('positive-comments').value.trim(),
-                improvement_comments: document.getElementById('improvement-comments').value.trim(),
-                contact_email: document.getElementById('contact-email').value.trim() || null,
+                positive_comments: this.modalElement.querySelector('#positive-comments').value.trim(),
+                improvement_comments: this.modalElement.querySelector('#improvement-comments').value.trim(),
+                contact_email: this.modalElement.querySelector('#contact-email').value.trim() || null,
                 user_agent: navigator.userAgent,
-                app_version: '1.0.0', // Could be dynamic from manifest
-                page_context: document.getElementById('page-context').value,
-                feature_context: document.getElementById('feature-context').value,
-                timestamp: new Date().toISOString()
+                app_version: '1.0.0',
+                page_context: this.modalElement.querySelector('#page-context').value,
+                feature_context: this.modalElement.querySelector('#feature-context').value
             };
 
-            // Submit to Supabase
-            const success = await this.submitToSupabase(feedbackData);
+            // Submit via DataModule
+            const success = await this.dataModule.submitFeedback(feedbackData);
 
             if (success) {
-                this.showSuccessMessage();
+                showSuccess('Thank you for your feedback! We appreciate your input.');
                 this.close();
-                
-                // Trigger callback
-                if (this.callbacks.onSubmit) {
-                    this.callbacks.onSubmit(feedbackData);
-                }
             } else {
                 throw new Error('Failed to submit feedback');
             }
 
         } catch (error) {
             console.error('Error submitting feedback:', error);
-            this.showErrorMessage();
+            showError('Sorry, there was an error submitting your feedback. Please try again.');
         } finally {
-            // Re-enable submit button
-            submitBtn.disabled = false;
-            submitBtn.textContent = originalText;
-        }
-    }
-
-    /**
-     * Submit feedback data to Supabase
-     */
-    async submitToSupabase(feedbackData) {
-        try {
-            // Check if Supabase is available
-            if (typeof window.supabaseClient === 'undefined') {
-                throw new Error('Supabase client not available');
-            }
-
-            const { data, error } = await window.supabaseClient
-                .from('user_feedback')
-                .insert([
-                    { 
-                        feedback_data: feedbackData,
-                        status: 'new'
-                    }
-                ]);
-
-            if (error) {
-                console.error('Supabase error:', error);
-                return false;
-            }
-
-            console.log('Feedback submitted successfully:', data);
-            return true;
-
-        } catch (error) {
-            console.error('Error submitting to Supabase:', error);
-            return false;
-        }
-    }
-
-    /**
-     * Show success message
-     */
-    showSuccessMessage() {
-        if (typeof window.showSuccess === 'function') {
-            window.showSuccess('Thank you for your feedback! We appreciate your input.');
-        } else {
-            alert('Thank you for your feedback! We appreciate your input.');
-        }
-    }
-
-    /**
-     * Show error message
-     */
-    showErrorMessage() {
-        if (typeof window.showError === 'function') {
-            window.showError('Sorry, there was an error submitting your feedback. Please try again.');
-        } else {
-            alert('Sorry, there was an error submitting your feedback. Please try again.');
+            // Re-enable submit button only if form is still valid
+            this.validateForm();
         }
     }
 
@@ -438,21 +399,21 @@ class FeedbackModalManager {
     }
 
     /**
+     * Check if modal is open
+     */
+    isModalOpen() {
+        return this.isOpen;
+    }
+
+    /**
      * Destroy the modal and clean up
      */
     destroy() {
-        const overlay = document.getElementById(this.overlayId);
-        const modal = document.getElementById(this.modalId);
-        
-        if (overlay) overlay.remove();
-        if (modal) modal.remove();
-        
-        document.removeEventListener('keydown', this.handleKeydown);
+        if (this.modalElement) {
+            document.removeEventListener('keydown', this.handleKeydown.bind(this));
+            this.modalElement.remove();
+            this.modalElement = null;
+        }
         this.isOpen = false;
     }
-}
-
-// Export for use in other modules
-if (typeof module !== 'undefined' && module.exports) {
-    module.exports = FeedbackModalManager;
 }

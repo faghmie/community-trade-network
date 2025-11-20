@@ -5,6 +5,7 @@ import { UIManager } from './uiManager.js';
 import { ModalManager } from './modalManager.js';
 import { FilterManager } from './filterManager.js';
 import { MapManager } from '../modules/mapManager.js';
+import { FeedbackModalManager } from './modals/feedbackModalManager.js'; // NEW: Import feedback modal manager
 
 export class ContractorReviewApp {
     constructor(dataModule) {
@@ -14,6 +15,7 @@ export class ContractorReviewApp {
         this.filterManager = null;
         this.mapManager = null;
         this.cardManager = null;
+        this.feedbackModalManager = null; // NEW: Feedback modal manager
         
         this.currentContractor = null;
         this.filteredContractors = [];
@@ -93,6 +95,11 @@ export class ContractorReviewApp {
         // Create map manager
         this.mapManager = new MapManager(this.dataModule);
         console.log('✅ MapManager created');
+
+        // NEW: Create feedback modal manager
+        this.feedbackModalManager = new FeedbackModalManager(this.dataModule);
+        this.feedbackModalManager.init();
+        console.log('✅ FeedbackModalManager created and initialized');
     }
 
     setupManagers() {
@@ -165,6 +172,16 @@ export class ContractorReviewApp {
                 this.handleViewChange();
             }
         });
+
+        // NEW: Listen for feedback submission events
+        this.feedbackModalManager.on('onSubmit', (feedbackData) => {
+            console.log('🔧 Main App: Feedback submitted successfully:', feedbackData);
+            // You could add analytics tracking here
+        });
+
+        this.feedbackModalManager.on('onClose', () => {
+            console.log('🔧 Main App: Feedback modal closed');
+        });
     }
 
     setupGlobalHandlers() {
@@ -175,11 +192,13 @@ export class ContractorReviewApp {
         window.dataModule = this.dataModule;
         window.modalManager = this.modalManager;
         window.mapManager = this.mapManager;
+        window.feedbackModalManager = this.feedbackModalManager; // NEW: Make feedback manager available
 
         // Make app methods available globally for HTML onclick handlers
         window.toggleFavorite = (contractorId) => this.toggleFavorite(contractorId);
         window.showContractorDetails = (contractorId) => this.showContractorDetails(contractorId);
         window.showReviewForm = (contractorId) => this.showReviewForm(contractorId);
+        window.showFeedbackForm = () => this.showFeedbackForm(); // NEW: Feedback method
         window.searchContractors = () => this.searchContractors();
         window.filterContractors = () => this.filterContractors();
         window.sortContractors = () => this.sortContractors();
@@ -272,6 +291,17 @@ export class ContractorReviewApp {
         }
     }
 
+    // NEW: Show feedback form
+    showFeedbackForm(context = {}) {
+        if (!this.feedbackModalManager) {
+            console.error('FeedbackModalManager not initialized');
+            showNotification('Feedback system not available. Please refresh the page.', 'error');
+            return;
+        }
+
+        this.feedbackModalManager.open(context);
+    }
+
     // Favorites management
     async toggleFavorite(contractorId) {
         if (!this.dataModule || !this.uiManager?.favoritesManager) {
@@ -346,6 +376,8 @@ export class ContractorReviewApp {
             this.modalManager.closeReviewModal();
         } else if (modalId === 'contractorModal') {
             this.modalManager.closeContractorModal();
+        } else if (modalId === 'feedbackModal') {
+            this.feedbackModalManager.close();
         }
     }
 
@@ -391,6 +423,7 @@ export class ContractorReviewApp {
             dataModuleInitialized: this.dataModule.initialized,
             uiManagerInitialized: !!this.uiManager,
             filterManagerInitialized: !!this.filterManager,
+            feedbackModalManagerInitialized: !!this.feedbackModalManager, // NEW: Feedback status
             favoritesManagerAvailable: !!this.uiManager?.favoritesManager,
             lazyLoaderAvailable: !!this.uiManager?.lazyLoader,
             statsManagerAvailable: !!this.uiManager?.statsManager,

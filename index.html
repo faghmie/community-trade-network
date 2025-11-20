@@ -49,7 +49,8 @@
     </div>
 
     <!-- PWA Install Banner (Hidden by default) -->
-    <div id="pwaInstallBanner" class="pwa-install-banner hidden" role="dialog" aria-labelledby="pwaInstallTitle" aria-live="polite">
+    <div id="pwaInstallBanner" class="pwa-install-banner hidden" role="dialog" aria-labelledby="pwaInstallTitle"
+        aria-live="polite">
         <div class="pwa-install-content">
             <div class="pwa-install-icon">
                 <i class="material-icons" data-icon="install_mobile">install_mobile</i>
@@ -79,7 +80,7 @@
             </div>
         </section>
 
-        
+
         <!-- REMOVED: Quick Filter Chips section - functionality moved to bottom navigation -->
 
         <!-- Map Container -->
@@ -228,6 +229,11 @@
                 <i class="material-icons" data-icon="map">map</i>
                 <span class="bottom-nav-label">Map</span>
             </a>
+            <!-- NEW: Feedback Button -->
+            <a href="#" class="bottom-nav-item" id="feedbackNavItem" data-action="show-feedback">
+                <i class="material-icons" data-icon="feedback">feedback</i>
+                <span class="bottom-nav-label">Feedback</span>
+            </a>
             <a href="#" class="bottom-nav-item" id="installNavItem" style="display: none;">
                 <i class="material-icons" data-icon="download">download</i>
                 <span class="bottom-nav-label">Install</span>
@@ -238,6 +244,7 @@
             </a>
         </div>
     </nav>
+
 
     <!-- External Libraries -->
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
@@ -258,7 +265,7 @@
                     registration.addEventListener('updatefound', () => {
                         const newWorker = registration.installing;
                         console.log('🔄 New Service Worker found, installing...');
-                        
+
                         newWorker.addEventListener('statechange', () => {
                             if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
                                 // New content is available, show update notification
@@ -312,14 +319,14 @@
         }
 
         // Set up global event listeners for update notification
-        document.addEventListener('DOMContentLoaded', function() {
+        document.addEventListener('DOMContentLoaded', function () {
             const refreshBtn = document.getElementById('refreshAppBtn');
             const dismissBtn = document.getElementById('dismissUpdateBtn');
-            
+
             if (refreshBtn) {
                 refreshBtn.addEventListener('click', refreshApplication);
             }
-            
+
             if (dismissBtn) {
                 dismissBtn.addEventListener('click', hideAppUpdateNotification);
             }

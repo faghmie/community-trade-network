@@ -231,34 +231,72 @@
     transform: translateY(0);
 }
 
-/* Disabled State */
+/* FIXED: Enhanced Disabled State with proper specificity */
 .btn:disabled,
-.btn.disabled {
-    background-color: var(--surface-300);
-    color: var(--text-disabled);
-    cursor: not-allowed;
-    box-shadow: none;
-    transform: none;
-    border-color: var(--surface-400);
+.btn.disabled,
+.btn-primary:disabled,
+.btn-primary.disabled,
+.btn-secondary:disabled, 
+.btn-secondary.disabled,
+.btn-toggle:disabled,
+.btn-toggle.disabled,
+.btn-outline:disabled,
+.btn-outline.disabled,
+.btn-text:disabled,
+.btn-text.disabled,
+.btn-success:disabled,
+.btn-success.disabled,
+.btn-warning:disabled,
+.btn-warning.disabled,
+.btn-danger:disabled,
+.btn-danger.disabled {
+    background-color: var(--surface-container-high) !important;
+    color: var(--on-surface-variant) !important;
+    cursor: not-allowed !important;
+    box-shadow: none !important;
+    transform: none !important;
+    border-color: var(--outline-variant) !important;
+    opacity: 0.6 !important;
+    pointer-events: none !important;
 }
 
+/* FIXED: Ensure disabled state overrides all interactive states */
 .btn:disabled:hover,
-.btn.disabled:hover {
-    background-color: var(--surface-300);
-    box-shadow: none;
-    transform: none;
-}
-
+.btn:disabled:focus,
 .btn:disabled:active,
-.btn.disabled:active {
-    background-color: var(--surface-300);
-    box-shadow: none;
-    transform: none;
-}
-
-.btn:disabled::after,
-.btn.disabled::after {
-    display: none;
+.btn.disabled:hover,
+.btn.disabled:focus,
+.btn.disabled:active,
+.btn-primary:disabled:hover,
+.btn-primary:disabled:focus, 
+.btn-primary:disabled:active,
+.btn-secondary:disabled:hover,
+.btn-secondary:disabled:focus,
+.btn-secondary:disabled:active,
+.btn-toggle:disabled:hover,
+.btn-toggle:disabled:focus,
+.btn-toggle:disabled:active,
+.btn-outline:disabled:hover,
+.btn-outline:disabled:focus,
+.btn-outline:disabled:active,
+.btn-text:disabled:hover,
+.btn-text:disabled:focus,
+.btn-text:disabled:active,
+.btn-success:disabled:hover,
+.btn-success:disabled:focus,
+.btn-success:disabled:active,
+.btn-warning:disabled:hover,
+.btn-warning:disabled:focus,
+.btn-warning:disabled:active,
+.btn-danger:disabled:hover,
+.btn-danger:disabled:focus,
+.btn-danger:disabled:active {
+    background-color: var(--surface-container-high) !important;
+    color: var(--on-surface-variant) !important;
+    box-shadow: none !important;
+    transform: none !important;
+    border-color: var(--outline-variant) !important;
+    opacity: 0.6 !important;
 }
 
 /* Icon Button */
@@ -388,11 +426,28 @@
         background-color: var(--surface-700);
     }
     
+    /* FIXED: Dark theme disabled states */
     .btn:disabled,
-    .btn.disabled {
-        background-color: var(--surface-600);
-        color: var(--text-disabled);
-        border-color: var(--surface-500);
+    .btn.disabled,
+    .btn-primary:disabled,
+    .btn-primary.disabled,
+    .btn-secondary:disabled, 
+    .btn-secondary.disabled,
+    .btn-toggle:disabled,
+    .btn-toggle.disabled,
+    .btn-outline:disabled,
+    .btn-outline.disabled,
+    .btn-text:disabled,
+    .btn-text.disabled,
+    .btn-success:disabled,
+    .btn-success.disabled,
+    .btn-warning:disabled,
+    .btn-warning.disabled,
+    .btn-danger:disabled,
+    .btn-danger.disabled {
+        background-color: var(--surface-container-high) !important;
+        color: var(--on-surface-variant) !important;
+        border-color: var(--outline-variant) !important;
     }
 }
 

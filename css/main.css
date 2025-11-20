@@ -19,6 +19,7 @@
 @import url('components/bottom-nav.css');
 @import url('./components/bottom-sheet.css'); /* NEW: Bottom sheet styles */
 @import url('components/review-modal.css'); 
+@import url('components/feedback.css'); /* NEW: Feedback system styles */
 @import url('layout.css');
 
 /* Global Material Design Base Styles */

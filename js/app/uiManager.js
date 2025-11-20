@@ -1,4 +1,4 @@
-// js/app/uiManager.js
+// js/app/uiManager.js - UPDATED to handle feedback action
 // ES6 Module for UI management - Orchestrator only
 
 import { LazyLoader } from './lazyLoader.js';
@@ -187,8 +187,20 @@ export class UIManager {
             return;
         }
 
-        // Handle favorites-specific actions
+        // Handle app-level actions
         switch (action) {
+            case 'show-feedback':
+                console.log('🔧 UIManager: Opening feedback modal');
+                if (window.app && window.app.showFeedbackForm) {
+                    window.app.showFeedbackForm({
+                        page: 'main',
+                        feature: 'bottom-navigation'
+                    });
+                } else {
+                    console.error('🔧 UIManager: App or showFeedbackForm not available');
+                }
+                break;
+
             case 'show-favorites':
             case 'view-favorites':
                 if (this.favoritesManager) {

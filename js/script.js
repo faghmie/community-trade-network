@@ -97,6 +97,19 @@ function setupEventDelegation() {
                     window.app.favoritesManager.clearFavorites();
                 }
                 break;
+
+            // NEW: Handle feedback button click
+            case 'show-feedback':
+                event.preventDefault();
+                if (window.app?.showFeedbackForm) {
+                    window.app.showFeedbackForm({
+                        page: 'main',
+                        feature: 'bottom-navigation'
+                    });
+                } else {
+                    console.warn('Feedback system not available');
+                }
+                break;
         }
     });
 
@@ -112,7 +125,6 @@ function setupEventDelegation() {
         }
     });
 }
-
 // Initialize event delegation after app loads
 function initEventDelegation() {
     setTimeout(() => {

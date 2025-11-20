@@ -3,6 +3,9 @@
 
 let's stop the session here and update the project-structure. Based on the code that you have been reviewing and updating describe what each file in the project does and list their exposed methods for future sessions. here is the current project structure. do not describe what was achieved in the session only what the project structure looks like now
 
+let's stop the session here and update the project-structure. Based on the code that you have been reviewing and updating describe what each file in the project does. Also describe the various architecture decisions and patterns. Explain it such that the next session understands how the application is built and how modules and components integrate with each other. do not describe what was achieved in the session only what the project structure looks like now
+
+
 <paste output from bash script here>
 
 

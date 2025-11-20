@@ -160,7 +160,39 @@ export class SupabaseClient {
         }
     }
 
-    // NEW: Delete category from Supabase
+    // NEW: Save feedback to Supabase
+    async saveFeedback(feedback) {
+        if (!this.initialized || this.status !== 'online') {
+            this.addToPendingSync('user_feedback', 'upsert', feedback);
+            return false;
+        }
+
+        try {
+            // For feedback, ALL data goes in the feedback_data JSONB column
+            const { id, created_at, ...feedbackData } = feedback;
+
+            const doc = {
+                id: id,
+                feedback_data: feedbackData,  // All feedback data goes here
+                status: feedbackData.status || 'new',
+                created_at: created_at || new Date().toISOString()
+            };
+
+            const { error } = await this.client
+                .from('user_feedback')
+                .upsert(doc, { onConflict: 'id' });
+
+            if (error) throw error;
+            console.log('✅ Feedback saved to Supabase:', feedback.id);
+            return true;
+        } catch (error) {
+            console.error('Error saving feedback to Supabase:', error);
+            this.addToPendingSync('user_feedback', 'upsert', feedback);
+            return false;
+        }
+    }
+
+    // Delete category from Supabase
     async deleteCategory(categoryId) {
         if (!this.initialized || this.status !== 'online') {
             this.addToPendingSync('categories', 'delete', { id: categoryId });
@@ -277,6 +309,34 @@ export class SupabaseClient {
         }
     }
 
+    // NEW: Get all feedback from Supabase
+    async getAllFeedback() {
+        if (!this.initialized) return [];
+
+        try {
+            const { data, error } = await this.client
+                .from('user_feedback')
+                .select('*')
+                .order('created_at', { ascending: false });
+
+            if (error) throw error;
+
+            // Feedback should have all data in the feedback_data column
+            const feedback = (data || []).map(row => ({
+                id: row.id,
+                status: row.status,
+                ...row.feedback_data,  // All feedback properties come from feedback_data
+                created_at: row.created_at
+            }));
+
+            console.log(`📥 Supabase: Loaded ${feedback.length} feedback items`);
+            return feedback;
+        } catch (error) {
+            console.error('Error fetching feedback from Supabase:', error);
+            return [];
+        }
+    }
+
     // Pending sync management
     addToPendingSync(table, operation, data) {
         this.pendingSync.push({
@@ -321,6 +381,10 @@ export class SupabaseClient {
                         } else {
                             success = await this.saveCategory(sync.data);
                         }
+                        break;
+                    case 'user_feedback':
+                        // NEW: Handle feedback sync
+                        success = await this.saveFeedback(sync.data);
                         break;
                 }
 

@@ -13,6 +13,7 @@ import { ReviewManager } from './reviewManager.js';
 import { CategoriesModule } from './categories.js';
 import { FavoritesDataManager } from './favoritesDataManager.js';
 import { StatsDataManager } from './statsDataManager.js';
+import { FeedbackDataManager } from './feedbackDataManager.js'; // NEW: Import feedback manager
 
 // Import Supabase client directly
 import { supabase } from './supabase.js';
@@ -31,6 +32,7 @@ export class DataModule {
         this.categoriesModule = null;
         this.favoritesDataManager = null;
         this.statsManager = null;
+        this.feedbackDataManager = null; // NEW: Feedback manager
         this.supabaseConnected = false;
         this.loadingScreen = new LoadingScreen();
     }
@@ -53,6 +55,7 @@ export class DataModule {
                 this.categoriesModule = new CategoriesModule(this);
                 this.favoritesDataManager = new FavoritesDataManager();
                 this.statsManager = new StatsDataManager();
+                this.feedbackDataManager = new FeedbackDataManager(); // NEW: Create feedback manager
 
                 // Initialize storage with Supabase (if available)
                 this.storage.init(supabase);
@@ -75,6 +78,9 @@ export class DataModule {
                 // Initialize favorites data manager with contractor manager reference
                 await this.favoritesDataManager.init(this.storage, this.contractorManager);
                 this.statsManager.init(this.contractorManager, this.reviewManager);
+                
+                // NEW: Initialize feedback data manager
+                this.feedbackDataManager.init(this.storage);
 
                 this.initialized = true;
                 this.initializing = false;
@@ -177,6 +183,19 @@ export class DataModule {
     getFavorites = () => this.favoritesDataManager.getFavorites();
 
     getFavoritesCount = () => this.favoritesDataManager.getFavoritesCount();
+
+    // NEW: Feedback data methods
+    submitFeedback = (feedbackData) => this.feedbackDataManager.submitFeedback(feedbackData);
+
+    getAllFeedback = () => this.feedbackDataManager.getAllFeedback();
+
+    getFeedbackByStatus = (status) => this.feedbackDataManager.getFeedbackByStatus(status);
+
+    updateFeedbackStatus = (feedbackId, status) => this.feedbackDataManager.updateFeedbackStatus(feedbackId, status);
+
+    getFeedbackStats = () => this.feedbackDataManager.getFeedbackStats();
+
+    deleteFeedback = (feedbackId) => this.feedbackDataManager.deleteFeedback(feedbackId);
 
     // Data mutation methods
     addContractor(data) { 
@@ -347,6 +366,11 @@ export class DataModule {
 
     getStatsManager() {
         return this.statsManager;
+    }
+
+    // NEW: Get feedback data manager
+    getFeedbackDataManager() {
+        return this.feedbackDataManager;
     }
 
     // Get connection status

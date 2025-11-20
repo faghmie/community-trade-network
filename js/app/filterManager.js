@@ -97,14 +97,18 @@ export class FilterManager {
             });
         }
 
-        // Bottom navigation items
+        // Bottom navigation items - ONLY handle items with data-view attribute
         if (bottomNavItems) {
             bottomNavItems.forEach(item => {
-                item.addEventListener('click', (e) => {
-                    e.preventDefault();
-                    const view = item.getAttribute('data-view');
-                    this.handleBottomNavigation(view, item);
-                });
+                // Only handle navigation items that have a data-view attribute
+                if (item.hasAttribute('data-view')) {
+                    item.addEventListener('click', (e) => {
+                        e.preventDefault();
+                        const view = item.getAttribute('data-view');
+                        this.handleBottomNavigation(view, item);
+                    });
+                }
+                // Items without data-view (like feedback button) will be handled by other systems
             });
         }
 

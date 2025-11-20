@@ -23,6 +23,41 @@ CREATE TABLE categories (
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
+-- User Feedback Table for Contractor Review App
+-- Stores customer feedback about the app experience (not contractor reviews)
+
+CREATE TABLE IF NOT EXISTS user_feedback (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  
+  -- Core feedback data stored as JSONB for flexibility
+  feedback_data JSONB NOT NULL,
+  
+  -- Status for moderation/workflow
+  status TEXT DEFAULT 'new' CHECK (status IN ('new', 'reviewed', 'actioned', 'archived')),
+  
+  -- Index for better query performance
+  CONSTRAINT valid_feedback_data CHECK (feedback_data ? 'rating')
+);
+
+-- Indexes for better query performance
+CREATE INDEX IF NOT EXISTS idx_user_feedback_created_at ON user_feedback(created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_user_feedback_status ON user_feedback(status);
+CREATE INDEX IF NOT EXISTS idx_user_feedback_rating ON user_feedback((feedback_data->>'rating'));
+CREATE INDEX IF NOT EXISTS idx_user_feedback_data ON user_feedback USING GIN (feedback_data);
+
+-- Example of the JSONB structure:
+-- {
+--   "rating": 4,
+--   "positive_comments": "Love the search filters!",
+--   "improvement_comments": "Would like more contractor categories",
+--   "contact_email": "optional@example.com",
+--   "user_agent": "Mozilla/5.0...",
+--   "app_version": "1.0.0",
+--   "page_context": "contractor-details",
+--   "feature_used": "review-submission"
+-- }
+
 -- Enable Row Level Security
 ALTER TABLE contractors ENABLE ROW LEVEL SECURITY;
 ALTER TABLE reviews ENABLE ROW LEVEL SECURITY;
