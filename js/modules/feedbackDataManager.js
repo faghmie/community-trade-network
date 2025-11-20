@@ -18,7 +18,6 @@ export class FeedbackDataManager {
     init(storage) {
         this.storage = storage;
         this.initialized = true;
-        console.log('✅ FeedbackDataManager initialized');
     }
 
     /**
@@ -63,7 +62,6 @@ export class FeedbackDataManager {
             });
 
             if (success) {
-                console.log('✅ Feedback submitted successfully:', feedbackRecord.id);
                 return true;
             } else {
                 throw new Error('Failed to save feedback to storage');
@@ -175,7 +173,6 @@ export class FeedbackDataManager {
             });
 
             if (success) {
-                console.log(`✅ Feedback ${feedbackId} status updated to: ${status}`);
                 return true;
             } else {
                 throw new Error('Failed to update feedback status');
@@ -239,7 +236,6 @@ export class FeedbackDataManager {
             });
 
             if (success) {
-                console.log(`✅ Feedback deleted: ${feedbackId}`);
                 return true;
             } else {
                 throw new Error('Failed to delete feedback');

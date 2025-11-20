@@ -24,12 +24,9 @@ export class ContractorReviewApp {
     }
 
     async init() {
-        console.log('🚀 Starting Contractor Review App initialization...');
-        
         try {
             // Initialize data module first
             await this.dataModule.init();
-            console.log('✅ DataModule initialized');
             
             // Create all managers with proper dependency injection
             await this.createManagers();
@@ -43,11 +40,8 @@ export class ContractorReviewApp {
             // Render initial state
             this.renderDashboard();
             
-            console.log('✅ Contractor Review App initialized successfully!');
-            console.log('📊 App status:', this.getAppStatus());
-            
         } catch (error) {
-            console.error('❌ App initialization failed:', error);
+            console.error('App initialization failed:', error);
             showNotification('App initialization failed. Please refresh the page.', 'error');
         }
     }
@@ -58,12 +52,10 @@ export class ContractorReviewApp {
             this.dataModule, 
             this.dataModule.getReviewManager()
         );
-        console.log('✅ CardManager created');
 
         // Create filter manager
         this.filterManager = new FilterManager();
         await this.filterManager.init(this.dataModule);
-        console.log('✅ FilterManager created');
 
         // Create UI manager
         this.uiManager = new UIManager(
@@ -73,7 +65,6 @@ export class ContractorReviewApp {
             this.dataModule.getReviewManager()
         );
         await this.uiManager.init(this.filterManager);
-        console.log('✅ UIManager created');
 
         // Create modal manager with direct callback for review submission
         this.modalManager = new ModalManager(
@@ -82,7 +73,6 @@ export class ContractorReviewApp {
             this.cardManager,
             (reviewData, contractorId) => {
                 // Direct callback from ReviewModalManager
-                console.log('🔧 Main App: Received review submission via direct callback');
                 this.handleReviewSubmit({
                     ...reviewData,
                     contractorId: contractorId || reviewData.contractorId
@@ -90,27 +80,20 @@ export class ContractorReviewApp {
             }
         );
         await this.modalManager.init();
-        console.log('✅ ModalManager created and initialized');
 
         // Create map manager
         this.mapManager = new MapManager(this.dataModule);
-        console.log('✅ MapManager created');
 
         // NEW: Create feedback modal manager
         this.feedbackModalManager = new FeedbackModalManager(this.dataModule);
         this.feedbackModalManager.init();
-        console.log('✅ FeedbackModalManager created and initialized');
     }
 
     setupManagers() {
         // When filters change, update UI - FIXED: Properly handle filtered contractors
         this.filterManager.onFiltersChange((filters, filteredContractors) => {
-            console.log('🔧 Main App: Filters changed, filtered contractors:', filteredContractors?.length);
-            
             // Use the filtered contractors provided by FilterManager, or apply filters if not provided
             this.filteredContractors = filteredContractors || this.filterManager.applyFilters(filters);
-            
-            console.log('🔧 Main App: Rendering', this.filteredContractors.length, 'contractors');
             
             // Render the filtered contractors
             this.uiManager.renderContractors(this.filteredContractors);
@@ -120,7 +103,6 @@ export class ContractorReviewApp {
             
             // Update map markers if in map view
             if (this.currentView === 'map') {
-                console.log('🔧 Main App: Updating map with filtered contractors');
                 this.mapManager.updateContractors(this.filteredContractors);
             }
             
@@ -132,13 +114,9 @@ export class ContractorReviewApp {
 
         // Handle favorites updates
         document.addEventListener('favoritesUpdated', () => {
-            console.log('🔧 Main App: Favorites updated event received');
             // Only reapply filters if favorites filter is currently active
             if (this.isFavoritesFilterActive) {
-                console.log('Favorites updated and favorites filter is active - refreshing filters');
                 this.filterManager.applyCurrentFilters();
-            } else {
-                console.log('Favorites updated but favorites filter not active - UI will update automatically');
             }
         });
 
@@ -149,25 +127,21 @@ export class ContractorReviewApp {
 
         // Listen for view changes from filterManager
         this.filterManager.onViewChange((view) => {
-            console.log('🔧 Main App: View changed to:', view);
             this.currentView = view;
             this.handleViewChange();
         });
 
         // Listen for data updates
         document.addEventListener('contractorsUpdated', () => {
-            console.log('🔧 Main App: Contractors updated, refreshing dashboard');
             this.renderDashboard();
         });
 
         document.addEventListener('reviewsUpdated', () => {
-            console.log('🔧 Main App: Reviews updated');
             // Stats are handled by StatsManager via UIManager
         });
 
         // Listen for map initialization events
         document.addEventListener('mapInitialized', () => {
-            console.log('🔧 Main App: Map initialized event received');
             if (this.currentView === 'map') {
                 this.handleViewChange();
             }
@@ -175,12 +149,11 @@ export class ContractorReviewApp {
 
         // NEW: Listen for feedback submission events
         this.feedbackModalManager.on('onSubmit', (feedbackData) => {
-            console.log('🔧 Main App: Feedback submitted successfully:', feedbackData);
             // You could add analytics tracking here
         });
 
         this.feedbackModalManager.on('onClose', () => {
-            console.log('🔧 Main App: Feedback modal closed');
+            // Handle feedback modal close if needed
         });
     }
 

@@ -21,18 +21,13 @@ export class ContractorManager {
         // Load contractors from storage - dataModule handles default data setup
         const saved = await this.storage.load('contractors');
         
-        console.log('🔧 ContractorManager.init(): Loading contractors from storage...');
-        console.log('🔧 Saved data from storage:', saved);
-        
         // FIX: Only use data from storage, dataModule handles defaults
         if (saved && saved !== "undefined" && saved.length > 0) {
             this.contractors = saved;
-            console.log('🔧 Loaded contractors from storage:', this.contractors.length);
         } else {
             // If no data in storage, start with empty array
             // dataModule will handle populating with defaults
             this.contractors = [];
-            console.log('🔧 No contractors in storage, starting with empty array');
         }
     }
 
@@ -42,11 +37,7 @@ export class ContractorManager {
     }
 
     save = () => {
-        console.log('🔧 ContractorManager.save(): Saving contractors to storage...');
-        console.log('🔧 Current contractors count:', this.contractors.length);
-        const result = this.storage.save('contractors', this.contractors);
-        console.log('🔧 Save result:', result);
-        return result;
+        return this.storage.save('contractors', this.contractors);
     }
 
     getAll = () => this.contractors;
@@ -54,9 +45,6 @@ export class ContractorManager {
     getById = (id) => this.contractors.find(contractor => contractor.id === id);
 
     create(contractorData) {
-        console.log('🔧 ContractorManager.create(): Creating new contractor...');
-        console.log('🔧 Contractor data:', contractorData);
-        
         // Generate coordinates and service areas based on location
         const { coordinates, serviceAreas } = this.generateMapData(contractorData.location);
         
@@ -72,11 +60,7 @@ export class ContractorManager {
             createdAt: new Date().toISOString()
         };
         
-        console.log('🔧 Created contractor object:', contractor);
-        
         this.contractors.push(contractor);
-        console.log('🔧 Contractors array after push:', this.contractors.length);
-        
         this.save();
         return contractor;
     }
@@ -115,8 +99,6 @@ export class ContractorManager {
     // Clean up all reviews for a deleted contractor
     async cleanupContractorReviews(contractorId) {
         try {
-            console.log(`🔧 Cleaning up reviews for deleted contractor: ${contractorId}`);
-            
             // Load current reviews from storage
             const currentReviews = await this.storage.load('reviews');
             
@@ -127,8 +109,6 @@ export class ContractorManager {
                 // Save the filtered reviews back to storage WITH Supabase sync
                 await this.storage.save('reviews', updatedReviews, { syncToSupabase: true });
                 
-                console.log(`🔧 Removed ${currentReviews.length - updatedReviews.length} reviews for contractor ${contractorId}`);
-                
                 // Wait for Supabase sync to complete before refreshing
                 await this.waitForSupabaseSync();
                 
@@ -136,7 +116,7 @@ export class ContractorManager {
                 await this.forceRefreshReviewManager();
             }
         } catch (error) {
-            console.error('🔧 Error cleaning up contractor reviews:', error);
+            console.error('Error cleaning up contractor reviews:', error);
         }
     }
 
@@ -156,11 +136,8 @@ export class ContractorManager {
     // Force refresh the review manager to ensure it has the latest data
     async forceRefreshReviewManager() {
         try {
-            console.log('🔄 Force refreshing review manager...');
-            
             // First, force a sync from Supabase to localStorage
             if (this.storage && this.storage.forceRefreshAll) {
-                console.log('🔄 Triggering storage force refresh...');
                 await this.storage.forceRefreshAll();
             }
             
@@ -169,22 +146,19 @@ export class ContractorManager {
                 const reviewManager = window.dataModule.getReviewManager();
                 if (reviewManager && typeof reviewManager.refresh === 'function') {
                     await reviewManager.refresh();
-                    console.log('✅ Review manager refreshed via dataModule');
                 }
             }
             
             // Method 2: Use the stored review manager reference
             else if (this.reviewManager && typeof this.reviewManager.refresh === 'function') {
                 await this.reviewManager.refresh();
-                console.log('✅ Review manager refreshed via direct reference');
             }
             
             // Dispatch event to notify UI components to refresh
             document.dispatchEvent(new CustomEvent('reviewsUpdated'));
-            console.log('📢 Dispatched reviewsUpdated event');
             
         } catch (error) {
-            console.error('❌ Error refreshing review manager:', error);
+            console.error('Error refreshing review manager:', error);
         }
     }
 

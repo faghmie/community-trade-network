@@ -27,10 +27,6 @@ export class StatsManager {
             this.dataModule.getStats();
 
         this.updateContractorCountUI(stats);
-        
-        console.log('StatsManager: Updated contractor count -', {
-            contractors: stats.totalContractors
-        });
     }
 
     // Update only the contractor count element

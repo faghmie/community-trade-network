@@ -27,7 +27,6 @@ export class FavoritesDataManager {
             }
             
             this.initialized = true;
-            console.log('FavoritesDataManager initialized with', this.favorites.length, 'favorites');
         } catch (error) {
             console.error('Error initializing FavoritesDataManager:', error);
             this.favorites = [];
@@ -51,9 +50,7 @@ export class FavoritesDataManager {
                 });
             }
             
-            if (success) {
-                console.log('Favorites saved successfully:', this.favorites);
-            } else {
+            if (!success) {
                 console.error('Failed to save favorites');
             }
             return success;
@@ -76,21 +73,15 @@ export class FavoritesDataManager {
         const index = this.favorites.indexOf(contractorId);
         let isNowFavorite = false;
 
-        console.log('Toggle favorite - Current favorites:', this.favorites);
-        console.log('Toggle favorite - Looking for:', contractorId);
-        console.log('Toggle favorite - Found at index:', index);
-
         if (index > -1) {
             // Remove from favorites
             this.favorites.splice(index, 1);
             isNowFavorite = false;
-            console.log('Removed contractor from favorites:', contractorId);
         } else {
             // Add to favorites - but only if contractor exists
             if (await this.isContractorValid(contractorId)) {
                 this.favorites.push(contractorId);
                 isNowFavorite = true;
-                console.log('Added contractor to favorites:', contractorId);
             } else {
                 console.error('Cannot add favorite: Contractor does not exist:', contractorId);
                 return { success: false, isNowFavorite: false };
@@ -98,18 +89,12 @@ export class FavoritesDataManager {
         }
 
         const success = await this.save();
-        console.log('Toggle favorite - New favorites:', this.favorites);
-        console.log('Toggle favorite - Save success:', success);
-        console.log('Toggle favorite - Is now favorite:', isNowFavorite);
-        
         return { success, isNowFavorite };
     }
 
     isFavorite(contractorId) {
         // Always check against cleaned favorites
-        const isFav = this.favorites.includes(contractorId);
-        console.log('isFavorite check:', contractorId, '=', isFav);
-        return isFav;
+        return this.favorites.includes(contractorId);
     }
 
     getFavorites() {
@@ -141,7 +126,6 @@ export class FavoritesDataManager {
             const removedCount = initialCount - cleanedFavorites.length;
             
             if (removedCount > 0) {
-                console.log(`🧹 Cleaned up ${removedCount} favorites for deleted contractors`);
                 this.favorites = cleanedFavorites;
                 await this.save(); // Save the cleaned list
                 return true;
@@ -183,7 +167,6 @@ export class FavoritesDataManager {
     // Set contractor manager reference (can be called after init)
     setContractorManager(contractorManager) {
         this.contractorManager = contractorManager;
-        console.log('FavoritesDataManager: Contractor manager set');
     }
 
     // Refresh favorites from storage
@@ -194,7 +177,6 @@ export class FavoritesDataManager {
                 this.favorites = saved;
                 // Auto-cleanup after refresh
                 await this.cleanupFavorites();
-                console.log('Favorites refreshed from storage:', this.favorites.length, 'favorites');
                 return true;
             }
             return false;

@@ -1,4 +1,3 @@
-// js/modules/supabase.js
 // Supabase Integration - Main Supabase client and data operations
 
 import { supabaseUrl, supabaseAnonKey } from '../config/supabase-credentials.js';
@@ -11,8 +10,6 @@ export class SupabaseClient {
         this.status = 'offline';
         this.client = null;
         this.pendingSync = [];
-
-        console.log('🔧 SupabaseClient created');
 
         // Auto-initialize
         this.autoInit();
@@ -35,7 +32,6 @@ export class SupabaseClient {
             const isConnected = await this.checkConnection();
             this.status = isConnected ? 'online' : 'error';
 
-            console.log('✅ Supabase initialized:', this.status);
             return isConnected;
 
         } catch (error) {
@@ -88,7 +84,6 @@ export class SupabaseClient {
                 .upsert(doc, { onConflict: 'id' });
 
             if (error) throw error;
-            console.log('✅ Contractor saved to Supabase:', contractor.id);
             return true;
         } catch (error) {
             console.error('Error saving contractor to Supabase:', error);
@@ -121,7 +116,6 @@ export class SupabaseClient {
                 .upsert(doc, { onConflict: 'id' });
 
             if (error) throw error;
-            console.log('✅ Review saved to Supabase:', review.id);
             return true;
         } catch (error) {
             console.error('Error saving review to Supabase:', error);
@@ -151,7 +145,6 @@ export class SupabaseClient {
                 .upsert(doc, { onConflict: 'id' });
 
             if (error) throw error;
-            console.log('✅ Category saved to Supabase:', category.id);
             return true;
         } catch (error) {
             console.error('Error saving category to Supabase:', error);
@@ -183,7 +176,6 @@ export class SupabaseClient {
                 .upsert(doc, { onConflict: 'id' });
 
             if (error) throw error;
-            console.log('✅ Feedback saved to Supabase:', feedback.id);
             return true;
         } catch (error) {
             console.error('Error saving feedback to Supabase:', error);
@@ -206,7 +198,6 @@ export class SupabaseClient {
                 .eq('id', categoryId);
 
             if (error) throw error;
-            console.log('✅ Category deleted from Supabase:', categoryId);
             return true;
         } catch (error) {
             console.error('Error deleting category from Supabase:', error);
@@ -250,14 +241,14 @@ export class SupabaseClient {
 
             // CRITICAL FIX: Check if data is valid before mapping
             if (!data || !Array.isArray(data)) {
-                console.warn('⚠️ Supabase: No reviews data or invalid format received');
+                console.warn('No reviews data or invalid format received');
                 return [];
             }
 
             const reviews = data.map(row => {
                 // Ensure we have valid row data
                 if (!row || typeof row !== 'object') {
-                    console.warn('⚠️ Supabase: Invalid review row:', row);
+                    console.warn('Invalid review row:', row);
                     return null;
                 }
 
@@ -271,12 +262,11 @@ export class SupabaseClient {
                         updatedAt: row.updated_at
                     };
                 } catch (error) {
-                    console.error('❌ Supabase: Error processing review row:', error, row);
+                    console.error('Error processing review row:', error, row);
                     return null;
                 }
             }).filter(review => review !== null); // Remove any null entries
 
-            console.log(`📥 Supabase: Loaded ${reviews.length} reviews`);
             return reviews;
         } catch (error) {
             console.error('Error fetching reviews from Supabase:', error);
@@ -301,7 +291,6 @@ export class SupabaseClient {
                 created_at: row.created_at
             }));
 
-            console.log(`📥 Supabase: Loaded ${categories.length} categories`);
             return categories;
         } catch (error) {
             console.error('Error fetching categories from Supabase:', error);
@@ -329,7 +318,6 @@ export class SupabaseClient {
                 created_at: row.created_at
             }));
 
-            console.log(`📥 Supabase: Loaded ${feedback.length} feedback items`);
             return feedback;
         } catch (error) {
             console.error('Error fetching feedback from Supabase:', error);
@@ -350,16 +338,12 @@ export class SupabaseClient {
         if (this.pendingSync.length > 100) {
             this.pendingSync = this.pendingSync.slice(-100);
         }
-
-        console.log(`📝 Added to pending sync: ${table}.${operation}`, data.id);
     }
 
     async processPendingSync() {
         if (!this.initialized || this.status !== 'online' || this.pendingSync.length === 0) {
             return;
         }
-
-        console.log(`🔄 Processing ${this.pendingSync.length} pending syncs...`);
 
         const processed = [];
         const failed = [];
@@ -401,7 +385,6 @@ export class SupabaseClient {
             }
         }
 
-        console.log(`✅ Processed ${processed.length} syncs, ${failed.length} failed`);
         return { processed, failed };
     }
 

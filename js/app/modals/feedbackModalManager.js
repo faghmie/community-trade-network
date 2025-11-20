@@ -14,8 +14,6 @@ export class FeedbackModalManager {
             onSubmit: null,
             onClose: null
         };
-
-        console.log('🔧 FeedbackModalManager: Created with Material Design structure');
     }
 
     /**
@@ -23,7 +21,6 @@ export class FeedbackModalManager {
      */
     init() {
         this.createModal();
-        console.log('✅ FeedbackModalManager initialized');
     }
 
     /**
@@ -269,7 +266,6 @@ export class FeedbackModalManager {
     open(context = {}) {
         if (this.isOpen) return;
 
-        console.log('🔧 FeedbackModalManager: Opening modal');
         this.isOpen = true;
         this.currentRating = 0;
         
@@ -290,7 +286,6 @@ export class FeedbackModalManager {
     showModal() {
         if (!this.modalElement) return;
 
-        console.log('🔧 FeedbackModalManager: Showing modal');
         this.modalElement.style.display = 'flex';
         document.body.style.overflow = 'hidden';
 
@@ -306,7 +301,6 @@ export class FeedbackModalManager {
     close() {
         if (!this.modalElement || !this.isOpen) return;
 
-        console.log('🔧 FeedbackModalManager: Closing modal');
         this.modalElement.classList.remove('modal-open');
 
         setTimeout(() => {

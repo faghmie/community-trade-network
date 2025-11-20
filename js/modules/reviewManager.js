@@ -17,59 +17,47 @@ export class ReviewManager {
         this.contractorManager = contractorManager;
         this.storage = storage;
 
-        console.log('📝 ReviewManager initializing...');
-
         // FIX: Use parameter if provided, otherwise use imported default
         const reviewsToUse = defaultReviews || JSON.parse(JSON.stringify(importedDefaultReviews));
 
         try {
             const saved = await this.storage.load('reviews');
-            console.log('📝 Loaded reviews from storage:', saved ? saved.length : 'none');
 
             if (saved && saved.length > 0) {
                 // Use saved reviews if they exist
                 this.reviews = saved;
-                console.log('📝 Using saved reviews:', this.reviews.length);
             } else if (saved !== null && saved !== undefined) {
                 // CRITICAL FIX: If saved is explicitly null/undefined (no data), but we got a response,
                 // don't load defaults. This means Supabase intentionally has 0 reviews.
                 this.reviews = [];
-                console.log('📝 Using empty reviews array (intentional no data from Supabase)');
             } else {
                 // Only use defaults if we truly have no saved data (first-time setup)
                 this.reviews = reviewsToUse;
-                console.log('📝 Using default reviews (first load):', this.reviews.length);
             }
 
             // Update all contractor stats after loading reviews (only approved reviews)
             this.updateAllContractorStats();
             this.initialized = true;
-            console.log('📝 ReviewManager initialized with', this.reviews.length, 'reviews');
         } catch (error) {
-            console.error('❌ ReviewManager initialization failed:', error);
+            console.error('ReviewManager initialization failed:', error);
             // Fall back to default reviews but don't save them
             this.reviews = reviewsToUse;
             this.updateAllContractorStats();
             this.initialized = true;
-            console.log('📝 ReviewManager fallback initialized with', this.reviews.length, 'reviews');
         }
     }
 
     async save() {
-        console.log('💾 Saving reviews to storage:', this.reviews.length);
         await this.storage.save('reviews', this.reviews);
     }
 
     // CRITICAL FIX: Return raw reviews without enhancement - enhancement should happen at display time
     getAllReviews = () => {
-        console.log('📋 Getting all reviews (raw):', this.reviews.length);
         return [...this.reviews]; // Return a copy to prevent mutation
     };
 
     // NEW: Get reviews with current contractor information (fresh data every time)
     getReviewsWithContractorInfo = () => {
-        console.log('📋 Getting reviews with fresh contractor info');
-        
         return this.reviews.map(review => {
             // ALWAYS get fresh contractor data to ensure no stale information
             const contractor = this.contractorManager.getById(review.contractor_id);
@@ -83,33 +71,25 @@ export class ReviewManager {
     };
 
     getReviewsByContractor = (contractorId) => {
-        const reviews = this.reviews.filter(review => review.contractor_id === contractorId);
-        console.log(`📋 Getting reviews for contractor ${contractorId}:`, reviews.length);
-        return reviews;
+        return this.reviews.filter(review => review.contractor_id === contractorId);
     }
 
     getApprovedReviewsByContractor = (contractorId) => {
-        const reviews = this.reviews.filter(review => 
+        return this.reviews.filter(review => 
             review.contractor_id === contractorId && review.status === 'approved'
         );
-        console.log(`📋 Getting approved reviews for contractor ${contractorId}:`, reviews.length);
-        return reviews;
     }
 
     getPendingReviewsByContractor = (contractorId) => {
-        const reviews = this.reviews.filter(review => 
+        return this.reviews.filter(review => 
             review.contractor_id === contractorId && review.status === 'pending'
         );
-        console.log(`📋 Getting pending reviews for contractor ${contractorId}:`, reviews.length);
-        return reviews;
     }
 
     async addReview(contractorId, reviewData) {
-        console.log('➕ Adding review for contractor:', contractorId, reviewData);
-
         const contractor = this.contractorManager.getById(contractorId);
         if (!contractor) {
-            console.error('❌ Contractor not found:', contractorId);
+            console.error('Contractor not found:', contractorId);
             throw new Error(`Contractor with ID ${contractorId} not found`);
         }
 
@@ -142,11 +122,7 @@ export class ReviewManager {
             status: 'pending' // All new reviews start as pending
         };
 
-        console.log('➕ Created review object:', review);
-
         this.reviews.push(review);
-        console.log('➕ Reviews array after push:', this.reviews.length);
-
         await this.save();
         
         // IMPORTANT: Do NOT update contractor stats for pending reviews
@@ -155,16 +131,13 @@ export class ReviewManager {
 
         showNotification('Review submitted successfully! It will be visible after approval by our team.', 'success');
 
-        console.log('✅ Review added successfully (pending moderation)');
         return review;
     }
 
     async updateReviewStatus(reviewId, status) {
-        console.log(`🔄 Updating review ${reviewId} status to:`, status);
-
         const review = this.reviews.find(r => r.id === reviewId);
         if (!review) {
-            console.error('❌ Review not found:', reviewId);
+            console.error('Review not found:', reviewId);
             return false;
         }
 
@@ -178,16 +151,13 @@ export class ReviewManager {
         }
 
         showNotification(`Review ${status} successfully!`, 'success');
-        console.log('✅ Review status updated');
         return true;
     }
 
     async deleteReview(reviewId) {
-        console.log('🗑️ Deleting review:', reviewId);
-
         const index = this.reviews.findIndex(r => r.id === reviewId);
         if (index === -1) {
-            console.error('❌ Review not found for deletion:', reviewId);
+            console.error('Review not found for deletion:', reviewId);
             return false;
         }
 
@@ -202,13 +172,10 @@ export class ReviewManager {
         }
 
         showNotification('Review deleted successfully!', 'success');
-        console.log('✅ Review deleted');
         return true;
     }
 
     searchReviews(searchTerm = '', statusFilter = 'all', contractorFilter = 'all') {
-        console.log('🔍 Searching reviews:', { searchTerm, statusFilter, contractorFilter });
-
         // CRITICAL FIX: Use getReviewsWithContractorInfo to ensure fresh contractor data
         const allReviews = this.getReviewsWithContractorInfo();
         const filteredReviews = allReviews.filter(review => {
@@ -223,16 +190,13 @@ export class ReviewManager {
             return matchesSearch && matchesStatus && matchesContractor;
         });
 
-        console.log('🔍 Search results:', filteredReviews.length);
         return filteredReviews;
     }
 
     updateContractorStats(contractorId) {
-        console.log(`📊 Updating stats for contractor:`, contractorId);
-
         const contractor = this.contractorManager.getById(contractorId);
         if (!contractor) {
-            console.error('❌ Contractor not found for stats update:', contractorId);
+            console.error('Contractor not found for stats update:', contractorId);
             return;
         }
 
@@ -242,17 +206,10 @@ export class ReviewManager {
         contractor.reviewCount = approvedReviews.length;
         contractor.overallRating = this.calculateOverallRating(approvedReviews);
 
-        console.log(`📊 Contractor ${contractorId} stats (approved reviews only):`, {
-            reviewCount: contractor.reviewCount,
-            overallRating: contractor.overallRating,
-            approvedReviewsCount: approvedReviews.length
-        });
-
         this.contractorManager.save();
     }
 
     updateAllContractorStats() {
-        console.log('📊 Updating stats for all contractors (approved reviews only)');
         const contractors = this.contractorManager.getAll();
         contractors.forEach(contractor => {
             this.updateContractorStats(contractor.id);
@@ -280,15 +237,11 @@ export class ReviewManager {
     }
 
     getPendingReviewsCount = () => {
-        const count = this.reviews.filter(review => review.status === 'pending').length;
-        console.log('⏳ Pending reviews count:', count);
-        return count;
+        return this.reviews.filter(review => review.status === 'pending').length;
     }
 
     // Refresh reviews data from storage
     async refresh() {
-        console.log('🔄 Refreshing reviews from storage');
-        
         try {
             // Force a fresh load from storage (bypass any caching)
             const saved = await this.storage.load('reviews', { forceRefresh: true });
@@ -296,58 +249,35 @@ export class ReviewManager {
             // CRITICAL FIX: Always update the reviews array, even if it's empty
             // This ensures deleted reviews are properly removed from cache
             this.reviews = saved || [];
-            console.log('🔄 Reviews refreshed from storage:', this.reviews.length);
             
             // Update contractor stats after refresh
             this.updateAllContractorStats();
             
         } catch (error) {
-            console.error('❌ Error refreshing reviews:', error);
+            console.error('Error refreshing reviews:', error);
             // If refresh fails, clear the cache to prevent stale data
             this.reviews = [];
-            console.log('🔄 Reviews cache cleared due to error');
         }
     }
 
     // Force a complete refresh including Supabase sync
     async forceRefresh() {
-        console.log('🔄🔄 FORCE refreshing reviews (including Supabase sync)');
-        
         try {
             // First, trigger a complete storage refresh
             if (this.storage && this.storage.forceRefreshAll) {
-                console.log('🔄 Triggering storage force refresh...');
                 await this.storage.forceRefreshAll();
             }
             
             // Then refresh our local cache
             await this.refresh();
             
-            console.log('✅ Force refresh completed');
-            
         } catch (error) {
-            console.error('❌ Error during force refresh:', error);
+            console.error('Error during force refresh:', error);
         }
     }
 
     // NEW: Clear internal cache completely (for admin use)
     clearCache() {
-        console.log('🧹 Clearing ReviewManager cache');
         this.reviews = [];
-    }
-
-    // Debug method to log current state
-    debug() {
-        console.log('🐛 ReviewManager Debug:');
-        console.log('Total reviews:', this.reviews.length);
-        
-        const approved = this.reviews.filter(r => r.status === 'approved').length;
-        const pending = this.reviews.filter(r => r.status === 'pending').length;
-        const rejected = this.reviews.filter(r => r.status === 'rejected').length;
-        
-        console.log('Approved reviews:', approved);
-        console.log('Pending reviews:', pending);
-        console.log('Rejected reviews:', rejected);
-        console.log('All reviews:', this.reviews);
     }
 }

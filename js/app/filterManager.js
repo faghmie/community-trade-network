@@ -42,6 +42,7 @@ export class FilterManager {
         // Apply initial filters to show all contractors
         this.applyCurrentFilters();
     }
+
     cacheElements() {
         this.elements = {
             searchInput: document.getElementById('searchInput'),
@@ -81,7 +82,7 @@ export class FilterManager {
     }
 
     bindEvents() {
-        const { searchInput, viewToggle, closeFiltersPanel, quickFilterChips, bottomNavItems } = this.elements;
+        const { searchInput, viewToggle, closeFiltersPanel, bottomNavItems } = this.elements;
 
         // Search input with debounce
         if (searchInput) {
@@ -161,8 +162,6 @@ export class FilterManager {
 
     // Handle bottom navigation
     handleBottomNavigation(view, item) {
-        console.log('FilterManager: Handling bottom navigation:', view);
-
         // Update active state
         this.updateBottomNavigationActiveState(view);
 
@@ -183,7 +182,7 @@ export class FilterManager {
                 this.showAdminView();
                 break;
             default:
-                console.warn('FilterManager: Unknown bottom nav view:', view);
+                console.warn('Unknown bottom nav view:', view);
         }
     }
 
@@ -207,7 +206,6 @@ export class FilterManager {
 
     // Bottom navigation view methods
     showHomeView() {
-        console.log('FilterManager: Switching to Home view');
         this.hideFilterPanel();
         this.clearFilters();
         this.notifyViewChange('list');
@@ -215,7 +213,6 @@ export class FilterManager {
     }
 
     showFavoritesView() {
-        console.log('FilterManager: Switching to Favorites view');
         this.hideFilterPanel();
         this.applyFavoritesFilter();
         this.notifyViewChange('list');
@@ -223,11 +220,7 @@ export class FilterManager {
     }
 
     showSearchView() {
-        console.log('FilterManager: Switching to Search view');
         this.showFilterPanel();
-        // REMOVED: this.notifyViewChange('list'); - Don't switch to list view
-        // REMOVED: this.updateViewState('list'); - Keep current view state
-
         // Focus on search input
         setTimeout(() => {
             if (this.elements.searchInput) {
@@ -237,14 +230,12 @@ export class FilterManager {
     }
 
     showMapView() {
-        console.log('FilterManager: Switching to Map view');
         this.hideFilterPanel();
         this.notifyViewChange('map');
         this.updateViewState('map');
     }
 
     showAdminView() {
-        console.log('FilterManager: Switching to Admin view');
         window.location.href = 'admin.html';
     }
 
@@ -266,14 +257,11 @@ export class FilterManager {
 
     // Apply favorites filter - FIXED: Programmatic approach
     applyFavoritesFilter() {
-        console.log('FilterManager: Applying favorites filter');
-
         // Clear other filters first to ensure favorites filter works properly
         this.clearOtherFiltersForFavorites();
 
         // FIXED: Set favorites filter programmatically (no form element)
         this.currentFilters.favorites = 'favorites';
-        console.log('🔍 FilterManager: Set programmatic favorites filter to:', this.currentFilters.favorites);
 
         // Apply the filters
         this.applyCurrentFilters();
@@ -281,8 +269,6 @@ export class FilterManager {
 
     // Apply high rated filter
     applyHighRatedFilter() {
-        console.log('FilterManager: Applying high rated filter');
-
         // Clear favorites filter when switching to high rated
         this.currentFilters.favorites = '';
 
@@ -295,14 +281,13 @@ export class FilterManager {
 
     // Clear other filters when applying favorites to avoid conflicts
     clearOtherFiltersForFavorites() {
-        console.log('FilterManager: Clearing other filters for favorites');
         if (this.elements.searchInput) this.elements.searchInput.value = '';
         if (this.elements.categoryFilter) this.elements.categoryFilter.value = '';
         if (this.elements.locationFilter) this.elements.locationFilter.value = '';
         if (this.elements.ratingFilter) this.elements.ratingFilter.value = '';
         if (this.elements.sortBy) this.elements.sortBy.value = 'name';
-
     }
+
     // Notify view change
     notifyViewChange(view) {
         if (this.eventHandlers.onViewChange) {
@@ -349,12 +334,8 @@ export class FilterManager {
 
         this.currentFilters = newFilters;
 
-        console.log('🔍 FilterManager: Applying current filters:', this.currentFilters);
-
         // Apply sorting and get filtered contractors
         const filteredContractors = this.applySorting();
-
-        console.log('🔍 FilterManager: Filtered contractors count:', filteredContractors.length);
 
         // Notify about filter change with the actual filtered contractors
         if (this.eventHandlers.onFiltersChange) {
@@ -400,8 +381,6 @@ export class FilterManager {
     // Update filter indicator badge on search navigation button
     updateFilterIndicator() {
         const activeFilterCount = this.getActiveFilterCount();
-        console.log('FilterManager: Updating filter indicator to:', activeFilterCount);
-
         const searchNavItem = document.querySelector('[data-view="search"]');
         let filterBadge = searchNavItem?.querySelector('.bottom-nav-badge');
 
@@ -441,12 +420,6 @@ export class FilterManager {
             return [];
         }
 
-        console.log('🔍 FilterManager: applyFilters called with:', filters);
-
-        // Get all contractors first for debugging
-        const allContractors = this.dataModule.getContractors();
-        console.log('🔍 FilterManager: Total contractors available:', allContractors.length);
-
         // Apply search and basic filters first
         let contractors = this.dataModule.searchContractors(
             filters.searchTerm,
@@ -455,22 +428,16 @@ export class FilterManager {
             filters.location
         );
 
-        console.log('🔍 FilterManager: Contractors after search filters:', contractors.length);
-
         // Apply favorites filter if specified
         if (filters.favorites === 'favorites') {
-            console.log('🔍 FilterManager: Applying favorites filter - showing ONLY favorites');
             const beforeCount = contractors.length;
 
             contractors = contractors.filter(contractor => {
                 const isFavorite = this.dataModule.isFavorite(contractor.id);
                 return isFavorite;
             });
-
-            console.log('🔍 FilterManager: After favorites filter:', beforeCount, '->', contractors.length);
         }
 
-        console.log('🔍 FilterManager: Final contractors count:', contractors.length);
         return contractors;
     }
 
@@ -480,8 +447,6 @@ export class FilterManager {
 
         // Apply filters first, then sort
         let contractors = this.applyFilters(this.currentFilters);
-
-        console.log('🔍 FilterManager: Sorting', contractors.length, 'contractors by:', sortValue);
 
         contractors.sort((a, b) => {
             let result = 0;
@@ -521,7 +486,7 @@ export class FilterManager {
     }
 
     clearFilters() {
-        const { searchInput, categoryFilter, locationFilter, ratingFilter, sortBy, quickFilterChips } = this.elements;
+        const { searchInput, categoryFilter, locationFilter, ratingFilter, sortBy } = this.elements;
 
         if (searchInput) searchInput.value = '';
         if (categoryFilter) categoryFilter.value = '';
@@ -545,7 +510,6 @@ export class FilterManager {
         if (filtersPanel) {
             filtersPanel.classList.remove('hidden');
             this.isFilterPanelVisible = true;
-            console.log('🔍 FilterManager: Filter panel shown');
 
             setTimeout(() => {
                 if (this.elements.searchInput) {
@@ -553,7 +517,7 @@ export class FilterManager {
                 }
             }, 100);
         } else {
-            console.error('❌ FilterManager: filtersPanel element not found!');
+            console.error('filtersPanel element not found!');
         }
     }
 
@@ -634,8 +598,6 @@ export class FilterManager {
 
     // Handle external actions
     handleAction(action) {
-        console.log('FilterManager: Handling action:', action);
-
         switch (action) {
             case 'show-filters':
             case 'search':
@@ -665,13 +627,12 @@ export class FilterManager {
                 this.applyHighRatedFilter();
                 break;
             default:
-                console.log('FilterManager: Unhandled action:', action);
+                console.log('Unhandled action:', action);
         }
     }
 
     // Update categories when they change
     handleCategoriesUpdated() {
-        console.log('FilterManager: Categories updated, refreshing filters');
         this.refreshCategoryFilter();
     }
 

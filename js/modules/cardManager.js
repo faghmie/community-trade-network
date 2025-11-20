@@ -7,11 +7,6 @@ export class CardManager {
     constructor(dataModule, reviewManager) {
         this.dataModule = dataModule;
         this.reviewManager = reviewManager;
-        
-        console.log('🔧 CardManager initialized with dependencies:', {
-            hasDataModule: !!dataModule,
-            hasReviewManager: !!reviewManager
-        });
     }
 
     /**
@@ -29,13 +24,13 @@ export class CardManager {
         const displayRatingFormatted = !isNaN(ratingValue) ? ratingValue.toFixed(1) : '0.0';
         const isFavorite = this.dataModule.isFavorite(contractor.id);
 
-        // Create star display
-        const fullStars = Math.floor(ratingValue);
-        const hasHalfStar = ratingValue % 1 >= 0.5;
-        const emptyStars = 5 - fullStars - (hasHalfStar ? 1 : 0);
+        // Format service areas for display
+        const serviceAreasDisplay = this.formatServiceAreas(contractor.serviceAreas);
 
         return `
-            <div class="card contractor-card material-card" onclick="app.showContractorDetails('${sanitizeHtml(contractor.id)}')">
+            <div class="card contractor-card material-card" 
+                 data-contractor-id="${sanitizeHtml(contractor.id)}"
+                 onclick="app.showContractorDetails('${sanitizeHtml(contractor.id)}')">
                 <div class="card-content">
                     <button class="favorite-btn ${isFavorite ? 'favorited' : ''}" 
                             data-contractor-id="${sanitizeHtml(contractor.id)}"
@@ -53,53 +48,47 @@ export class CardManager {
                         </p>
                         <p class="contractor-location">
                             <i class="material-icons">location_on</i>
-                            ${sanitizeHtml(contractor.location || 'Service area not specified')}
+                            ${sanitizeHtml(contractor.location || 'Location not specified')}
                         </p>
                     </div>
                     
                     <div class="rating-display">
-                        <div class="rating-stars">
-                            ${'<span class="rating-star">★</span>'.repeat(fullStars)}
-                            ${hasHalfStar ? '<span class="rating-star">★</span>' : ''}
-                            ${'<span class="rating-star">★</span>'.repeat(emptyStars)}
+                        <div class="rating-icon">
+                            <i class="material-icons">star</i>
                         </div>
                         <span class="rating-value">${displayRatingFormatted}</span>
-                        <span class="review-count">(${approvedReviews.length})</span>
+                        <span class="review-count">${approvedReviews.length} review${approvedReviews.length !== 1 ? 's' : ''}</span>
                     </div>
-                </div>
-                
-                <div class="card-actions">
-                    <button class="card-action primary" 
-                            onclick="app.showReviewForm('${sanitizeHtml(contractor.id)}'); event.stopPropagation();">
-                        <i class="material-icons">rate_review</i>
-                        <span>Leave Review</span>
-                    </button>
+
+                    <div class="contractor-details">
+                        <p class="service-areas">
+                            <i class="material-icons">map</i>
+                            ${serviceAreasDisplay}
+                        </p>
+                    </div>
                 </div>
             </div>
         `;
     }
 
     /**
-     * Create star display component (reusable)
-     * @param {number} rating - Rating value (0-5)
-     * @param {number} maxStars - Maximum number of stars (default: 5)
-     * @returns {string} HTML string for star display
+     * Format service areas array for display
+     * @param {Array} serviceAreas - Array of service area strings
+     * @returns {string} Formatted service areas string
      */
-    createStarDisplay(rating, maxStars = 5) {
-        const fullStars = Math.floor(rating);
-        const hasHalfStar = rating % 1 >= 0.5;
-        const emptyStars = maxStars - fullStars - (hasHalfStar ? 1 : 0);
+    formatServiceAreas(serviceAreas) {
+        if (!serviceAreas || serviceAreas.length === 0) {
+            return 'Service areas not specified';
+        }
         
-        return `
-            <div class="rating-display">
-                <div class="rating-stars">
-                    ${'<span class="rating-star">★</span>'.repeat(fullStars)}
-                    ${hasHalfStar ? '<span class="rating-star">★</span>' : ''}
-                    ${'<span class="rating-star">★</span>'.repeat(emptyStars)}
-                </div>
-                <span class="rating-value">${rating.toFixed(1)}</span>
-            </div>
-        `;
+        if (serviceAreas.length <= 2) {
+            return `Serves: ${serviceAreas.join(', ')}`;
+        }
+        
+        // For more than 2 areas, show first 2 + count of others
+        const primaryAreas = serviceAreas.slice(0, 2).join(', ');
+        const additionalCount = serviceAreas.length - 2;
+        return `Serves: ${primaryAreas} +${additionalCount} more`;
     }
 
     /**
@@ -109,7 +98,7 @@ export class CardManager {
      */
     renderContractorCards(contractors, container) {
         if (!container) {
-            console.warn('CardManager: No container provided for rendering cards');
+            console.warn('No container provided for rendering cards');
             return;
         }
 
@@ -154,18 +143,4 @@ export class CardManager {
             </div>
         `;
     }
-
-    /**
-     * Utility method to escape HTML for safety - REMOVED (using sanitizeHtml from utilities.js instead)
-     * @deprecated Use sanitizeHtml from utilities.js instead
-     */
-    // escapeHtml(unsafe) {
-    //     if (typeof unsafe !== 'string') return unsafe;
-    //     return unsafe
-    //         .replace(/&/g, "&amp;")
-    //         .replace(/</g, "&lt;")
-    //         .replace(/>/g, "&gt;")
-    //         .replace(/"/g, "&quot;")
-    //         .replace(/'/g, "&#039;");
-    // }
 }

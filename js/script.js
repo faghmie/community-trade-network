@@ -12,13 +12,10 @@ const serviceWorkerManager = new ServiceWorkerManager();
 
 async function initializeApp() {
     try {
-        console.log('🚀 Starting Contractor Reviews App...');
-
         // Initialize service worker manager
         await serviceWorkerManager.init();
 
         // PWA Install Manager is already initialized (singleton)
-        console.log('📱 PWA Install Manager ready');
 
         // Create data module instance
         const dataModule = new DataModule();
@@ -29,24 +26,17 @@ async function initializeApp() {
         // Initialize the main app
         await app.init();
 
-        console.log('🎉 Contractor Reviews App initialized successfully!');
-
         // Store app reference for global access if needed
         window.app = app;
 
-        // Log PWA installation status for debugging
-        console.log('🔍 PWA Installation Status:', pwaInstallManager.getInstallStatus());
-
     } catch (error) {
-        console.error('❌ Failed to initialize application:', error);
+        console.error('Failed to initialize application:', error);
         showError('Error loading application. Please refresh the page.');
     }
 }
 
 // Event delegation for global actions
 function setupEventDelegation() {
-    console.log('Setting up event delegation...');
-
     document.addEventListener('click', (event) => {
         const target = event.target.closest('[data-action]');
         if (!target) return;
@@ -125,6 +115,7 @@ function setupEventDelegation() {
         }
     });
 }
+
 // Initialize event delegation after app loads
 function initEventDelegation() {
     setTimeout(() => {

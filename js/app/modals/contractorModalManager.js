@@ -1,4 +1,4 @@
-// js/app/modals/contractorModalManager.js - MATERIAL DESIGN OVERHAUL
+// js/app/modals/contractorModalManager.js
 import { sanitizeHtml } from '../../modules/utilities.js';
 
 export class ContractorModalManager {
@@ -10,12 +10,9 @@ export class ContractorModalManager {
         this.modalElement = null;
         this.isOpen = false;
         this.currentContractorId = null;
-
-        console.log('🔧 ContractorModalManager: Created with Material Design overhaul');
     }
 
     open(contractorId) {
-        console.log('🔧 ContractorModalManager: Opening modal for contractor:', contractorId);
         const contractor = this.dataModule.getContractor(contractorId);
         if (!contractor) {
             console.error('Contractor not found:', contractorId);
@@ -140,15 +137,13 @@ export class ContractorModalManager {
         const reviewBtn = this.modalElement.querySelector('.contractor-review-btn');
         if (reviewBtn && this.reviewModalManager) {
             reviewBtn.addEventListener('click', () => {
-                console.log('🔧 ContractorModalManager: Review button clicked');
                 const contractorId = this.getCurrentContractorId();
 
                 if (contractorId && this.reviewModalManager) {
-                    console.log('🔧 ContractorModalManager: Opening review modal for contractor:', contractorId);
                     this.close();
                     this.reviewModalManager.open(contractorId);
                 } else {
-                    console.error('🔧 ContractorModalManager: Cannot open review modal - missing contractor ID or review modal manager');
+                    console.error('ContractorModalManager: Cannot open review modal - missing contractor ID or review modal manager');
                 }
             });
         }
@@ -175,7 +170,6 @@ export class ContractorModalManager {
     showModal() {
         if (!this.modalElement) return;
 
-        console.log('🔧 ContractorModalManager: Showing modal');
         this.modalElement.style.display = 'flex';
         document.body.style.overflow = 'hidden';
 
@@ -188,7 +182,6 @@ export class ContractorModalManager {
     close() {
         if (!this.modalElement || !this.isOpen) return;
 
-        console.log('🔧 ContractorModalManager: Closing modal');
         this.modalElement.classList.remove('modal-open');
 
         setTimeout(() => {
@@ -201,7 +194,6 @@ export class ContractorModalManager {
 
     // Event subscription methods
     onReviewRequest(callback) {
-        console.log('🔧 ContractorModalManager: onReviewRequest callback set');
         return this;
     }
 
@@ -357,7 +349,7 @@ export class ContractorModalManager {
                     <div class="rating-bar-fill" style="width: ${percentage}%"></div>
                 </div>
                 <div class="rating-stars-mini">
-                    ${this.cardManager ? this.cardManager.createStarDisplay(rating) : this.createFallbackStarDisplay(rating)}
+                    ${this.createFallbackStarDisplay(rating)}
                 </div>
             </div>
         `;
@@ -378,7 +370,7 @@ export class ContractorModalManager {
                         <div class="reviewer-main">
                             <span class="reviewer-name">${sanitizeHtml(review.reviewerName)}</span>
                             <div class="review-rating-stars">
-                                ${this.cardManager ? this.cardManager.createStarDisplay(review.rating) : this.createFallbackStarDisplay(review.rating)}
+                                ${this.createFallbackStarDisplay(review.rating)}
                             </div>
                         </div>
                         <div class="review-meta">
@@ -403,7 +395,7 @@ export class ContractorModalManager {
                             <div class="category-rating-pill">
                                 <span class="category-label">Quality</span>
                                 <span class="category-stars">
-                                    ${this.cardManager ? this.cardManager.createStarDisplay(categoryRatings.quality) : this.createFallbackStarDisplay(categoryRatings.quality)}
+                                    ${this.createFallbackStarDisplay(categoryRatings.quality)}
                                 </span>
                             </div>
                         ` : ''}
@@ -411,7 +403,7 @@ export class ContractorModalManager {
                             <div class="category-rating-pill">
                                 <span class="category-label">Communication</span>
                                 <span class="category-stars">
-                                    ${this.cardManager ? this.cardManager.createStarDisplay(categoryRatings.communication) : this.createFallbackStarDisplay(categoryRatings.communication)}
+                                    ${this.createFallbackStarDisplay(categoryRatings.communication)}
                                 </span>
                             </div>
                         ` : ''}
@@ -419,7 +411,7 @@ export class ContractorModalManager {
                             <div class="category-rating-pill">
                                 <span class="category-label">Timeliness</span>
                                 <span class="category-stars">
-                                    ${this.cardManager ? this.cardManager.createStarDisplay(categoryRatings.timeliness) : this.createFallbackStarDisplay(categoryRatings.timeliness)}
+                                    ${this.createFallbackStarDisplay(categoryRatings.timeliness)}
                                 </span>
                             </div>
                         ` : ''}
@@ -427,7 +419,7 @@ export class ContractorModalManager {
                             <div class="category-rating-pill">
                                 <span class="category-label">Value</span>
                                 <span class="category-stars">
-                                    ${this.cardManager ? this.cardManager.createStarDisplay(categoryRatings.value) : this.createFallbackStarDisplay(categoryRatings.value)}
+                                    ${this.createFallbackStarDisplay(categoryRatings.value)}
                                 </span>
                             </div>
                         ` : ''}

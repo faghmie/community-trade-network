@@ -1,4 +1,4 @@
-// js/app/modals/reviewModalManager.js - FIXED STAR RATING INTERACTIONS & FORM VALIDATION
+// js/app/modals/reviewModalManager.js
 export class ReviewModalManager {
     constructor(dataModule, reviewManager, onReviewSubmitCallback = null) {
         this.dataModule = dataModule;
@@ -17,18 +17,14 @@ export class ReviewModalManager {
             timeliness: 0,
             value: 0
         };
-        
-        console.log('🔧 ReviewModalManager: Created with Material Design overhaul');
     }
 
     open(contractorId = null, contractor = null) {
-        console.log('🔧 ReviewModalManager: Opening Material Design modal for contractor:', contractorId);
         this.currentContractorId = contractorId;
         this.currentContractor = contractor;
 
         // Create modal if it doesn't exist
         if (!this.modalElement) {
-            console.log('🔧 ReviewModalManager: Creating new Material Design modal element');
             this.createMaterialModal();
         }
 
@@ -44,7 +40,6 @@ export class ReviewModalManager {
         this.showModal();
         
         this.isOpen = true;
-        console.log('🔧 ReviewModalManager: Material Design modal opened successfully');
     }
 
     createMaterialModal() {
@@ -216,7 +211,6 @@ export class ReviewModalManager {
         
         // Bind events
         this.bindMaterialEvents();
-        console.log('🔧 ReviewModalManager: Material Design modal created and added to DOM');
     }
 
     createMaterialStarRatingHTML(type, maxStars) {
@@ -252,14 +246,12 @@ export class ReviewModalManager {
         // Close button
         const closeBtn = this.modalElement.querySelector('.close');
         closeBtn.addEventListener('click', () => {
-            console.log('🔧 ReviewModalManager: Close button clicked');
             this.close();
         });
 
         // Cancel button
         const cancelBtn = this.modalElement.querySelector('.cancel-review-btn');
         cancelBtn.addEventListener('click', () => {
-            console.log('🔧 ReviewModalManager: Cancel button clicked');
             this.close();
         });
 
@@ -267,7 +259,6 @@ export class ReviewModalManager {
         const submitBtn = this.modalElement.querySelector('.submit-review-btn');
         submitBtn.addEventListener('click', (e) => {
             e.preventDefault();
-            console.log('🔧 ReviewModalManager: Submit button clicked');
             this.handleReviewSubmit();
         });
 
@@ -280,25 +271,20 @@ export class ReviewModalManager {
         // Backdrop click
         const backdrop = this.modalElement.querySelector('.modal-backdrop');
         backdrop.addEventListener('click', () => {
-            console.log('🔧 ReviewModalManager: Backdrop clicked');
             this.close();
         });
 
         // Escape key
         document.addEventListener('keydown', (e) => this.handleKeydown(e));
-        console.log('🔧 ReviewModalManager: Material Design events bound');
     }
 
     handleKeydown(e) {
         if (this.isOpen && e.key === 'Escape') {
-            console.log('🔧 ReviewModalManager: Escape key pressed');
             this.close();
         }
     }
 
     initializeMaterialStarRatings() {
-        console.log('🔧 ReviewModalManager: Initializing star ratings with event delegation');
-        
         // Use event delegation for all star buttons
         const modalBody = this.modalElement.querySelector('.modal-body');
         if (modalBody) {
@@ -308,7 +294,6 @@ export class ReviewModalManager {
                     e.preventDefault();
                     const rating = parseInt(starButton.getAttribute('data-rating'));
                     const type = starButton.getAttribute('data-type');
-                    console.log('🔧 ReviewModalManager: Star clicked via delegation:', { rating, type });
                     this.handleMaterialStarClick(starButton, type);
                 }
             });
@@ -321,7 +306,6 @@ export class ReviewModalManager {
                         e.preventDefault();
                         const rating = parseInt(starButton.getAttribute('data-rating'));
                         const type = starButton.getAttribute('data-type');
-                        console.log('🔧 ReviewModalManager: Star activated via keyboard:', { rating, type });
                         this.handleMaterialStarClick(starButton, type);
                     }
                 }
@@ -413,23 +397,11 @@ export class ReviewModalManager {
 
         submitBtn.disabled = !isValid;
         
-        console.log('🔧 ReviewModalManager: Form validation check:', {
-            reviewerName: !!reviewerName,
-            projectType: !!projectType,
-            comment: !!comment,
-            commentLength: comment.length,
-            hasOverallRating,
-            hasAnyCategoryRating,
-            hasAnyRating,
-            isValid
-        });
-        
         return isValid;
     }
 
     handleMaterialStarClick(star, ratingType) {
         const rating = parseInt(star.getAttribute('data-rating'));
-        console.log('🔧 ReviewModalManager: Material star clicked - rating:', rating, 'type:', ratingType);
         
         // Update the rating
         this.setMaterialRating(rating, ratingType);
@@ -446,19 +418,16 @@ export class ReviewModalManager {
     setMaterialRating(rating, type = 'overall') {
         // Update the current rating state
         this.currentRatings[type] = rating;
-        console.log('🔧 ReviewModalManager: Setting rating:', { type, rating, currentRatings: this.currentRatings });
         
         // Update the hidden input value
         const inputId = type === 'overall' ? 'rating' : `${type}Rating`;
         const ratingInput = this.modalElement.querySelector(`#${inputId}`);
         if (ratingInput) {
             ratingInput.value = rating;
-            console.log('🔧 ReviewModalManager: Updated hidden input:', inputId, 'value:', rating);
         }
         
         // Update star visuals for ALL star buttons of this type
         const allStarButtons = this.modalElement.querySelectorAll(`.material-star-button[data-type="${type}"]`);
-        console.log('🔧 ReviewModalManager: Found star buttons for type', type, ':', allStarButtons.length);
         
         if (allStarButtons && allStarButtons.length > 0) {
             allStarButtons.forEach((starButton, index) => {
@@ -487,8 +456,6 @@ export class ReviewModalManager {
                     setTimeout(() => starButton.classList.remove('star-pulse'), 300);
                 }
             });
-        } else {
-            console.error('🔧 ReviewModalManager: No star buttons found for type:', type);
         }
 
         // Update rating label
@@ -544,7 +511,6 @@ export class ReviewModalManager {
         // Only calculate if all category ratings are set
         if (quality > 0 && communication > 0 && timeliness > 0 && value > 0) {
             const average = Math.round((quality + communication + timeliness + value) / 4);
-            console.log('🔧 ReviewModalManager: Auto-calculating overall rating:', average);
             this.setMaterialRating(average, 'overall');
         }
     }
@@ -552,7 +518,6 @@ export class ReviewModalManager {
     showModal() {
         if (!this.modalElement) return;
 
-        console.log('🔧 ReviewModalManager: Showing Material Design modal');
         this.modalElement.style.display = 'flex';
         document.body.style.overflow = 'hidden';
 
@@ -565,15 +530,12 @@ export class ReviewModalManager {
             if (firstInput) {
                 setTimeout(() => firstInput.focus(), 100);
             }
-            
-            console.log('🔧 ReviewModalManager: modal-open class added');
         }, 10);
     }
 
     close() {
         if (!this.modalElement || !this.isOpen) return;
 
-        console.log('🔧 ReviewModalManager: Closing Material Design modal');
         this.modalElement.classList.remove('modal-open');
 
         setTimeout(() => {
@@ -581,13 +543,10 @@ export class ReviewModalManager {
             document.body.style.overflow = '';
             this.isOpen = false;
             this.resetForm();
-            console.log('🔧 ReviewModalManager: Modal closed');
         }, 300);
     }
 
     handleReviewSubmit() {
-        console.log('🔧 ReviewModalManager: Handling Material Design review submission');
-        
         if (!this.validateForm()) {
             this.showFormError('Please complete all required fields.');
             return;
@@ -611,20 +570,16 @@ export class ReviewModalManager {
             status: 'pending'
         };
 
-        console.log('🔧 ReviewModalManager: Review data prepared:', reviewData);
-
         // Validate
         const errors = this.validateReview(reviewData);
         if (errors.length > 0) {
-            console.error('🔧 ReviewModalManager: Validation errors:', errors);
+            console.error('ReviewModalManager: Validation errors:', errors);
             this.showFormError(errors.join('\n'));
             return;
         }
 
         // Use direct callback if available
         if (this.onReviewSubmitCallback) {
-            console.log('🔧 ReviewModalManager: Calling direct onReviewSubmitCallback');
-            
             // Show loading state
             const submitBtn = this.modalElement.querySelector('.submit-review-btn');
             const originalText = submitBtn.querySelector('.button-text').textContent;
@@ -636,7 +591,7 @@ export class ReviewModalManager {
                 this.showFormSuccess('Thank you for your review! It will be visible after approval.');
                 this.close();
             } catch (error) {
-                console.error('🔧 ReviewModalManager: Error submitting review:', error);
+                console.error('ReviewModalManager: Error submitting review:', error);
                 this.showFormError('Failed to submit review. Please try again.');
                 
                 // Reset button state
@@ -644,7 +599,7 @@ export class ReviewModalManager {
                 submitBtn.disabled = false;
             }
         } else {
-            console.error('🔧 ReviewModalManager: No review submission handler available');
+            console.error('ReviewModalManager: No review submission handler available');
             this.showFormError('Review submission is not configured properly.');
         }
     }
@@ -750,7 +705,6 @@ export class ReviewModalManager {
     }
 
     showFormSuccess(message) {
-        console.log('Review form success:', message);
         if (window.utils && window.utils.showNotification) {
             window.utils.showNotification(message, 'success');
         }
@@ -758,12 +712,10 @@ export class ReviewModalManager {
 
     // Backward compatibility - alias for old code
     openReviewModal(contractorId = null, contractor = null) {
-        console.log('🔧 ReviewModalManager: openReviewModal called via alias');
         this.open(contractorId, contractor);
     }
 
     closeReviewModal() {
-        console.log('🔧 ReviewModalManager: closeReviewModal called via alias');
         this.close();
     }
 

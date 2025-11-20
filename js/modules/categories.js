@@ -16,8 +16,6 @@ export class CategoriesModule {
         // Load categories from storage
         await this.loadCategories();
         this.initialized = true;
-        
-        console.log('✅ CategoriesModule initialized with categories:', this.categories.length);
     }
 
     async loadCategories() {
@@ -27,20 +25,18 @@ export class CategoriesModule {
             
             if (loadedCategories && loadedCategories.length > 0) {
                 this.categories = loadedCategories;
-                console.log('✅ CategoriesModule: Loaded categories from storage:', this.categories.length);
             } else {
-                console.warn('⚠️ CategoriesModule: No categories found in storage');
+                console.warn('No categories found in storage');
                 this.categories = [];
             }
         } catch (error) {
-            console.error('❌ CategoriesModule: Error loading categories:', error);
+            console.error('Error loading categories:', error);
             this.categories = [];
         }
     }
 
     // Refresh categories from storage
     async refresh() {
-        console.log('🔄 CategoriesModule: Refreshing categories...');
         await this.loadCategories();
         return this.categories;
     }
@@ -78,7 +74,6 @@ export class CategoriesModule {
         const success = await this.storage.save('categories', this.categories);
         
         if (success) {
-            console.log('✅ Category added:', newCategory);
             return newCategory;
         } else {
             // Rollback on failure
@@ -114,7 +109,6 @@ export class CategoriesModule {
         const success = await this.storage.save('categories', this.categories);
         
         if (success) {
-            console.log('✅ Category updated:', oldName, '→', newName);
             return this.categories[categoryIndex];
         } else {
             // Rollback on failure
@@ -146,7 +140,6 @@ export class CategoriesModule {
         const success = await this.storage.save('categories', this.categories);
         
         if (success) {
-            console.log('✅ Category deleted:', name);
             return deletedCategory;
         } else {
             // Rollback on failure
