@@ -15,7 +15,7 @@ export class ContractorModalManager {
     open(contractorId) {
         const contractor = this.dataModule.getContractor(contractorId);
         if (!contractor) {
-            console.error('Contractor not found:', contractorId);
+            console.error('Service Provider not found:', contractorId);
             return;
         }
 
@@ -88,7 +88,7 @@ export class ContractorModalManager {
                 <div class="modal-content material-dialog">
                     <div class="modal-header material-dialog-header">
                         <div class="header-content">
-                            <h2 class="dialog-title">Contractor Details</h2>
+                            <h2 class="dialog-title">Service Provider Details</h2>
                             <div class="dialog-subtitle">
                                 <!-- Enhanced subtitle with badges will be populated dynamically -->
                             </div>

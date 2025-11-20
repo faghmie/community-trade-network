@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin - Contractor Reviews</title>
+    <title>Admin - Community Trade Network</title>
     <link rel="icon"
         href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⭐</text></svg>">
     <link rel="stylesheet" href="css/main.css">
@@ -21,7 +21,7 @@
             <div class="app-bar-content">
                 <div class="app-bar-title">
                     <span class="material-icons app-bar-icon">admin_panel_settings</span>
-                    <h1>Contractor Reviews Admin</h1>
+                    <h1>Community Trade Network Admin</h1>
                 </div>
 
                 <div class="app-bar-actions">
@@ -62,7 +62,7 @@
                 <div class="stat-card stat-card--primary">
                     <div class="stat-content">
                         <span class="stat-number" id="totalContractors"></span>
-                        <span class="stat-label">Total Contractors</span>
+                        <span class="stat-label">Total Service Providers</span>
                     </div>
                 </div>
                 <div class="stat-card stat-card--accent">
@@ -89,13 +89,19 @@
                         <span class="stat-label">Pending Reviews</span>
                     </div>
                 </div>
+                <div class="stat-card stat-card--accent">
+                    <div class="stat-content">
+                        <span class="stat-number" id="unreadFeedback"></span>
+                        <span class="stat-label">Unread Feedback</span>
+                    </div>
+                </div>
             </div>
 
             <!-- Tabs Navigation - Using tabs.css component -->
             <div class="tabs-navigation">
                 <button class="tab-button active" data-tab="contractors-tab">
                     <span class="material-icons">business_center</span>
-                    <span class="tab-text">Contractors</span>
+                    <span class="tab-text">Service Providers</span>
                 </button>
                 <button class="tab-button" data-tab="categories-tab">
                     <span class="material-icons">category</span>
@@ -105,24 +111,29 @@
                     <span class="material-icons">reviews</span>
                     <span class="tab-text">Reviews</span>
                 </button>
+                <button class="tab-button" data-tab="feedback-tab">
+                    <span class="material-icons">feedback</span>
+                    <span class="tab-text">User Feedback</span>
+                    <span class="notification-badge" id="feedbackBadge" style="display: none;">0</span>
+                </button>
             </div>
 
-            <!-- Contractors Tab -->
+            <!-- Service Providers Tab -->
             <div id="contractors-tab" class="tab-content active">
                 <div class="material-card">
                     <div class="search-filter-container">
                         <div class="material-search">
                             <span class="material-icons">search</span>
-                            <input type="text" id="searchInput" placeholder="Search contractors..."
+                            <input type="text" id="searchInput" placeholder="Search service providers..."
                                 class="material-search-input">
                         </div>
                         <button class="material-button contained" id="addContractorBtn">
                             <span class="material-icons">add</span>
-                            Add Contractor
+                            Add Service Provider
                         </button>
                     </div>
 
-                    <!-- Contractors Table -->
+                    <!-- Service Providers Table -->
                     <div class="table-container">
                         <table class="table">
                             <thead>
@@ -135,7 +146,7 @@
                                 </tr>
                             </thead>
                             <tbody id="contractorsTableBody">
-                                <!-- Contractors will be loaded dynamically -->
+                                <!-- Service providers will be loaded dynamically -->
                             </tbody>
                         </table>
                     </div>
@@ -168,7 +179,7 @@
                         <div class="stat-card stat-card--accent">
                             <div class="stat-content">
                                 <span class="stat-number" id="totalCategorizedContractors"></span>
-                                <span class="stat-label">Categorized Contractors</span>
+                                <span class="stat-label">Categorized Service Providers</span>
                             </div>
                         </div>
                     </div>
@@ -192,8 +203,8 @@
                         <div class="filter-group">
                             <div class="material-form-group" style="margin: 0;">
                                 <select id="reviewContractorFilter" class="material-select">
-                                    <option value="all">All Contractors</option>
-                                    <!-- Contractors will be populated dynamically -->
+                                    <option value="all">All Service Providers</option>
+                                    <!-- Service providers will be populated dynamically -->
                                 </select>
                             </div>
                             <div class="material-form-group" style="margin: 0;">
@@ -241,9 +252,86 @@
                     </div>
                 </div>
             </div>
+
+            <!-- Feedback Tab -->
+            <div id="feedback-tab" class="tab-content">
+                <div class="material-card">
+                    <div class="search-filter-container">
+                        <div class="material-search">
+                            <span class="material-icons">search</span>
+                            <input type="text" id="feedbackSearch" placeholder="Search feedback content..."
+                                class="material-search-input">
+                        </div>
+                        <div class="filter-group">
+                            <div class="material-form-group" style="margin: 0;">
+                                <select id="feedbackStatusFilter" class="material-select">
+                                    <option value="all">All Status</option>
+                                    <option value="new">New</option>
+                                    <option value="reviewed">Reviewed</option>
+                                    <option value="actioned">Actioned</option>
+                                </select>
+                            </div>
+                            <div class="material-form-group" style="margin: 0;">
+                                <select id="feedbackRatingFilter" class="material-select">
+                                    <option value="all">All Ratings</option>
+                                    <option value="1">1 Star</option>
+                                    <option value="2">2 Stars</option>
+                                    <option value="3">3 Stars</option>
+                                    <option value="4">4 Stars</option>
+                                    <option value="5">5 Stars</option>
+                                </select>
+                            </div>
+                            <button class="material-button outlined" id="markAllReviewedBtn">
+                                <span class="material-icons">check</span>
+                                Mark All Reviewed
+                            </button>
+                            <button class="material-button contained" id="exportFeedbackBtn">
+                                <span class="material-icons">download</span>
+                                Export
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Feedback Stats -->
+                    <div class="admin-stats compact">
+                        <div class="stat-card stat-card--primary">
+                            <div class="stat-content">
+                                <span class="stat-number" id="totalFeedbackCount"></span>
+                                <span class="stat-label">Total Feedback</span>
+                            </div>
+                        </div>
+                        <div class="stat-card stat-card--warning">
+                            <div class="stat-content">
+                                <span class="stat-number" id="newFeedbackCount"></span>
+                                <span class="stat-label">New</span>
+                            </div>
+                        </div>
+                        <div class="stat-card stat-card--success">
+                            <div class="stat-content">
+                                <span class="stat-number" id="reviewedFeedbackCount"></span>
+                                <span class="stat-label">Reviewed</span>
+                            </div>
+                        </div>
+                        <div class="stat-card stat-card--accent">
+                            <div class="stat-content">
+                                <span class="stat-number" id="actionedFeedbackCount"></span>
+                                <span class="stat-label">Actioned</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Feedback List -->
+                    <div class="feedback-list" id="feedbackList">
+                        <!-- Feedback items will be loaded dynamically -->
+                        <div class="empty-state" id="emptyFeedbackState" style="display: none;">
+                            <span class="material-icons empty-icon">feedback</span>
+                            <h3>No Feedback Yet</h3>
+                            <p>User feedback submissions will appear here.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </section>
-
-
 
         <!-- Review Details Modal - Updated with Material Design -->
         <div class="modal" id="reviewDetailsModal">

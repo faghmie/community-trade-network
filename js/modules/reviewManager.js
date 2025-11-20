@@ -64,7 +64,7 @@ export class ReviewManager {
             return {
                 ...review,
                 contractorId: review.contractor_id,
-                contractorName: contractor ? contractor.name : 'Unknown Contractor',
+                contractorName: contractor ? contractor.name : 'Unknown Service Provider',
                 contractorCategory: contractor ? contractor.category : 'Unknown Category'
             };
         });
@@ -89,8 +89,8 @@ export class ReviewManager {
     async addReview(contractorId, reviewData) {
         const contractor = this.contractorManager.getById(contractorId);
         if (!contractor) {
-            console.error('Contractor not found:', contractorId);
-            throw new Error(`Contractor with ID ${contractorId} not found`);
+            console.error('Service Provider not found:', contractorId);
+            throw new Error(`Service Provider with ID ${contractorId} not found`);
         }
 
         // Calculate overall rating from category ratings
@@ -126,7 +126,7 @@ export class ReviewManager {
         await this.save();
         
         // IMPORTANT: Do NOT update contractor stats for pending reviews
-        // Contractor stats should only reflect approved reviews
+        // Service Provider stats should only reflect approved reviews
         // this.updateContractorStats(contractorId); // REMOVED
 
         showNotification('Review submitted successfully! It will be visible after approval by our team.', 'success');
@@ -196,7 +196,7 @@ export class ReviewManager {
     updateContractorStats(contractorId) {
         const contractor = this.contractorManager.getById(contractorId);
         if (!contractor) {
-            console.error('Contractor not found for stats update:', contractorId);
+            console.error('Service Provider not found for stats update:', contractorId);
             return;
         }
 

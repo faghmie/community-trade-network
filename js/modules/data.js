@@ -156,7 +156,7 @@ export class DataModule {
         return Promise.resolve();
     }
 
-    // Contractor methods - pure data operations
+    // Service Provider methods - pure data operations
     getContractors = () => this.contractorManager.getAll();
 
     getContractor = (id) => this.contractorManager.getById(id);

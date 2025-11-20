@@ -259,7 +259,7 @@ export class PWAInstallManager {
         } else if (isAndroid) {
             message += '1. Tap the menu (⋮)\n2. Tap "Install App" or "Add to Home screen"\n3. Tap "Install" to confirm';
         } else {
-            message += '1. Look for "Install" or "Add to Home Screen" in your browser menu\n2. Or use Chrome/Edge: Three dots menu → "Install Contractor Reviews"';
+            message += '1. Look for "Install" or "Add to Home Screen" in your browser menu\n2. Or use Chrome/Edge: Three dots menu → "Install Service Provider Reviews"';
         }
         
         // Use alert for now, could be replaced with a custom modal

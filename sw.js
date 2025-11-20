@@ -1,7 +1,7 @@
-// sw.js - Service Worker for Contractor Reviews App
-const CACHE_NAME = 'contractor-reviews-v3.0.0';
-const API_CACHE_NAME = 'contractor-reviews-api-v1';
-const DYNAMIC_CACHE_NAME = 'contractor-reviews-dynamic-v1';
+// sw.js - Service Worker for Community Trade Network
+const CACHE_NAME = 'contractor-reviews-v1.0.0';
+const API_CACHE_NAME = 'contractor-reviews-api-v01';
+const DYNAMIC_CACHE_NAME = 'contractor-reviews-dynamic-v01';
 
 // Configuration
 const CACHE_CONFIG = {
@@ -648,7 +648,7 @@ self.addEventListener('push', (event) => {
     };
     
     event.waitUntil(
-        self.registration.showNotification(data.title || 'Contractor Reviews', options)
+        self.registration.showNotification(data.title || 'Service Provider Reviews', options)
     );
 });
 

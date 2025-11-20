@@ -48,7 +48,7 @@ export class FavoritesManager {
 
             if (success) {
                 // Get contractor name for notification
-                let contractorName = 'Contractor';
+                let contractorName = 'Service Provider';
                 try {
                     const contractor = this.dataModule.getContractor(contractorId);
                     if (contractor && contractor.name) {

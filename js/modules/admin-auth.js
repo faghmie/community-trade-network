@@ -56,7 +56,7 @@ class AdminAuthModule {
                 <div class="auth-card">
                     <div class="auth-header">
                         <h1 class="auth-title">Admin Login</h1>
-                        <p class="auth-subtitle">Contractor Reviews Management</p>
+                        <p class="auth-subtitle">Service Provider Reviews Management</p>
                     </div>
 
                     <form id="loginForm" class="auth-form">

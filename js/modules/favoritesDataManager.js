@@ -83,7 +83,7 @@ export class FavoritesDataManager {
                 this.favorites.push(contractorId);
                 isNowFavorite = true;
             } else {
-                console.error('Cannot add favorite: Contractor does not exist:', contractorId);
+                console.error('Cannot add favorite: Service Provider does not exist:', contractorId);
                 return { success: false, isNowFavorite: false };
             }
         }

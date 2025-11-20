@@ -92,7 +92,7 @@ class AdminReviewsModule {
             this.modalEventListeners.push({ element: reviewSearch, event: 'input', handler });
         }
 
-        // Contractor filter
+        // Service Provider filter
         const contractorFilter = document.getElementById('reviewContractorFilter');
         if (contractorFilter) {
             const handler = (e) => {
@@ -202,7 +202,7 @@ class AdminReviewsModule {
     async renderContractorFilter() {
         const contractorFilter = document.getElementById('reviewContractorFilter');
         if (!contractorFilter) {
-            console.error('❌ Contractor filter element not found');
+            console.error('❌ Service Provider filter element not found');
             return;
         }
 
@@ -217,7 +217,7 @@ class AdminReviewsModule {
         const currentValue = contractorFilter.value;
         
         console.log('🔍 Available contractors for filter:', contractors);
-        console.log('🔍 Contractor count:', contractors.length);
+        console.log('🔍 Service Provider count:', contractors.length);
         
         if (contractors.length === 0) {
             console.warn('⚠️ No contractors found in dataModule');
@@ -239,7 +239,7 @@ class AdminReviewsModule {
             contractorFilter.value = currentValue;
         }
         
-        console.log('✅ Contractor filter rendered');
+        console.log('✅ Service Provider filter rendered');
     }
 
     async renderReviewsList(filteredReviews = null) {
@@ -286,7 +286,7 @@ class AdminReviewsModule {
             
             // FIX: Use the enhanced review data that already has contractor info
             // The getReviewsWithContractorInfo() method adds contractorName and contractorCategory
-            const contractorName = review.contractorName || 'Unknown Contractor';
+            const contractorName = review.contractorName || 'Unknown Service Provider';
             const contractorCategory = review.contractorCategory || 'Unknown Category';
             
             console.log(`🔍 Review ${review.id}: contractorId=${review.contractor_id}, contractorName:`, contractorName);
@@ -309,7 +309,7 @@ class AdminReviewsModule {
                         </div>
                     </div>
                     <div class="review-contractor">
-                        <strong>Contractor:</strong> ${sanitizeHtml(contractorName)} (${sanitizeHtml(contractorCategory)})
+                        <strong>Service Provider:</strong> ${sanitizeHtml(contractorName)} (${sanitizeHtml(contractorCategory)})
                         <br><strong>Project Type:</strong> ${sanitizeHtml(review.projectType || 'Not specified')}
                     </div>
                     ${hasCategoryRatings ? `
@@ -523,7 +523,7 @@ class AdminReviewsModule {
         const allReviews = this.reviewManager.getReviewsWithContractorInfo();
         const review = allReviews.find(r => r.id === reviewId);
         
-        console.log('🔍 Contractor lookup result:', contractor);
+        console.log('🔍 Service Provider lookup result:', contractor);
         console.log('🔍 Review lookup result:', review);
         
         if (!review) {
@@ -546,7 +546,7 @@ class AdminReviewsModule {
         // Handle missing contractor gracefully
         const contractorInfo = contractor ? `
             <div class="detail-group">
-                <h3>Contractor Information</h3>
+                <h3>Service Provider Information</h3>
                 <div class="detail-item">
                     <strong>Name:</strong> ${sanitizeHtml(contractor.name)}
                 </div>
@@ -562,10 +562,10 @@ class AdminReviewsModule {
             </div>
         ` : `
             <div class="detail-group">
-                <h3>Contractor Information</h3>
+                <h3>Service Provider Information</h3>
                 <div class="detail-item warning">
                     <span class="material-icons">warning</span>
-                    Contractor not found (may have been deleted)
+                    Service Provider not found (may have been deleted)
                 </div>
             </div>
         `;

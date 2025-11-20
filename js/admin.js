@@ -6,6 +6,7 @@ import { CategoriesModule } from './modules/categories.js';
 import AdminCategoriesModule from './modules/admin-categories.js';
 import AdminContractorsModule from './modules/admin-contractors.js';
 import AdminReviewsModule from './modules/admin-reviews.js';
+import AdminFeedbackManager from './modules/admin-feedback.js';
 
 // Modern Admin Dashboard with Authentication
 class AdminModule {
@@ -15,6 +16,7 @@ class AdminModule {
         this.adminContractorsModule = null;
         this.adminCategoriesModule = null;
         this.adminReviewsModule = null;
+        this.adminFeedbackManager = null;
         this.tabsModule = null;
         this.dataModule = null;
         this.categoriesModule = null;
@@ -73,6 +75,10 @@ class AdminModule {
                 this.getLocationData()
             );
             this.adminReviewsModule = new AdminReviewsModule(this.dataModule);
+            
+            // Initialize feedback manager with the existing FeedbackDataManager from dataModule
+            const feedbackDataManager = this.dataModule.getFeedbackDataManager();
+            this.adminFeedbackManager = new AdminFeedbackManager(feedbackDataManager);
 
             // Initialize tabs module
             this.tabsModule = new TabsModule();
@@ -85,6 +91,7 @@ class AdminModule {
             this.adminCategoriesModule.init();
             this.adminContractorsModule.init();
             await this.adminReviewsModule.init();
+            await this.adminFeedbackManager.init();
         } catch (error) {
             console.error('Error initializing admin modules:', error);
         }
@@ -114,6 +121,12 @@ class AdminModule {
         this.tabsModule.onTabChange('reviews-tab', () => {
             this.adminReviewsModule.renderReviews();
         });
+
+        this.tabsModule.onTabChange('feedback-tab', () => {
+            if (this.adminFeedbackManager) {
+                this.adminFeedbackManager.renderFeedbackList();
+            }
+        });
     }
 
     bindEvents() {
@@ -134,7 +147,7 @@ class AdminModule {
         //     }
         // });
 
-        // Add Contractor Button
+        // Add Service Provider Button
         const addContractorBtn = document.getElementById('addContractorBtn');
         if (addContractorBtn) {
             addContractorBtn.addEventListener('click', () => {
@@ -188,9 +201,83 @@ class AdminModule {
             });
         }
 
+        // Feedback search and filters
+        const feedbackSearch = document.getElementById('feedbackSearch');
+        if (feedbackSearch) {
+            feedbackSearch.addEventListener('input', (e) => {
+                if (this.adminFeedbackManager) {
+                    this.adminFeedbackManager.searchTerm = e.target.value.toLowerCase();
+                    this.adminFeedbackManager.renderFeedbackList();
+                }
+            });
+        }
+
+        const feedbackStatusFilter = document.getElementById('feedbackStatusFilter');
+        if (feedbackStatusFilter) {
+            feedbackStatusFilter.addEventListener('change', (e) => {
+                if (this.adminFeedbackManager) {
+                    this.adminFeedbackManager.currentFilter = e.target.value;
+                    this.adminFeedbackManager.renderFeedbackList();
+                }
+            });
+        }
+
+        const feedbackRatingFilter = document.getElementById('feedbackRatingFilter');
+        if (feedbackRatingFilter) {
+            feedbackRatingFilter.addEventListener('change', (e) => {
+                if (this.adminFeedbackManager) {
+                    this.adminFeedbackManager.currentRatingFilter = e.target.value;
+                    this.adminFeedbackManager.renderFeedbackList();
+                }
+            });
+        }
+
+        const markAllReviewedBtn = document.getElementById('markAllReviewedBtn');
+        if (markAllReviewedBtn) {
+            markAllReviewedBtn.addEventListener('click', () => {
+                if (this.adminFeedbackManager) {
+                    this.adminFeedbackManager.handleMarkAllReviewed();
+                }
+            });
+        }
+
+        const exportFeedbackBtn = document.getElementById('exportFeedbackBtn');
+        if (exportFeedbackBtn) {
+            exportFeedbackBtn.addEventListener('click', () => {
+                if (this.adminFeedbackManager) {
+                    this.adminFeedbackManager.handleExport();
+                }
+            });
+        }
+
         // Listen for data updates to refresh stats
         document.addEventListener('adminDataUpdated', () => {
             this.refreshDashboard();
+        });
+
+        // Listen for feedback updates to refresh feedback stats
+        document.addEventListener('feedbackSubmitted', () => {
+            if (this.adminFeedbackManager) {
+                this.adminFeedbackManager.updateStats();
+            }
+        });
+
+        document.addEventListener('feedbackUpdated', () => {
+            if (this.adminFeedbackManager) {
+                this.adminFeedbackManager.updateStats();
+            }
+        });
+
+        document.addEventListener('feedbackDeleted', () => {
+            if (this.adminFeedbackManager) {
+                this.adminFeedbackManager.updateStats();
+            }
+        });
+
+        document.addEventListener('feedbackBulkUpdated', () => {
+            if (this.adminFeedbackManager) {
+                this.adminFeedbackManager.updateStats();
+            }
         });
     }
 
@@ -209,6 +296,11 @@ class AdminModule {
                 break;
             case 'reviews-tab':
                 this.adminReviewsModule.renderReviews();
+                break;
+            case 'feedback-tab':
+                if (this.adminFeedbackManager) {
+                    this.adminFeedbackManager.renderFeedbackList();
+                }
                 break;
         }
     }
@@ -233,12 +325,26 @@ class AdminModule {
         const reviewStats = this.dataModule.getReviewStats();
         const pendingReviews = reviewStats ? reviewStats.pendingReviews : 0;
 
+        // Get feedback stats if available - with proper error handling
+        let unreadFeedback = 0;
+        try {
+            // Use the dataModule method directly instead of relying on adminFeedbackManager
+            const feedbackStats = this.dataModule.getFeedbackStats();
+            if (feedbackStats && feedbackStats.byStatus) {
+                unreadFeedback = feedbackStats.byStatus.new || 0;
+            }
+        } catch (error) {
+            console.warn('Could not load feedback stats:', error);
+            unreadFeedback = 0;
+        }
+
         // Update stats elements
         this.updateElementText('totalContractors', contractors ? contractors.length : 0);
         this.updateElementText('totalReviews', totalReviews);
         this.updateElementText('averageRating', averageRating.toFixed(1));
         this.updateElementText('totalCategories', totalCategories);
         this.updateElementText('pendingReviews', pendingReviews);
+        this.updateElementText('unreadFeedback', unreadFeedback);
     }
 
     updateElementText(elementId, text) {

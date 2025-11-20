@@ -11,7 +11,7 @@ export class CardManager {
 
     /**
      * Create contractor card HTML
-     * @param {Object} contractor - Contractor data object
+     * @param {Object} contractor - Service Provider data object
      * @returns {string} HTML string for the contractor card
      */
     createContractorCard(contractor) {

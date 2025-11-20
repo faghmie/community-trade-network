@@ -57,7 +57,7 @@ class AdminContractorsModule {
         <div class="modal" id="contractorFormModal" style="display: none;">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h2 id="formTitle">Add Contractor</h2>
+                    <h2 id="formTitle">Add Service Provider</h2>
                     <button type="button" class="close" id="closeContractorFormModal" aria-label="Close dialog">
                         <span class="material-icons">close</span>
                     </button>
@@ -69,7 +69,7 @@ class AdminContractorsModule {
 
                         <div class="form-fields">
                             <div class="material-form-group">
-                                <label for="contractorName" class="material-input-label">Contractor Name</label>
+                                <label for="contractorName" class="material-input-label">Service Provider Name</label>
                                 <input type="text" id="contractorName" name="name" class="material-input" required>
                             </div>
 
@@ -120,7 +120,7 @@ class AdminContractorsModule {
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="material-button text-button" id="cancelContractorForm">Cancel</button>
-                    <button type="button" class="material-button contained" id="saveContractorBtn">Save Contractor</button>
+                    <button type="button" class="material-button contained" id="saveContractorBtn">Save Service Provider</button>
                 </div>
             </div>
         </div>
@@ -138,7 +138,7 @@ class AdminContractorsModule {
                 return;
             }
 
-            console.log('✅ AdminContractorsModule: Contractor form modal created successfully');
+            console.log('✅ AdminContractorsModule: Service Provider form modal created successfully');
 
         } catch (error) {
             console.error('❌ AdminContractorsModule: Error creating modal:', error);
@@ -150,7 +150,7 @@ class AdminContractorsModule {
         // Remove any existing event listeners to prevent duplicates
         this.removeEventListeners();
 
-        // Contractor form - bind to dynamically created elements
+        // Service Provider form - bind to dynamically created elements
         const addContractorBtn = document.getElementById('addContractorBtn');
         if (addContractorBtn) {
             const handler = () => {
@@ -327,10 +327,10 @@ class AdminContractorsModule {
                         <button class="btn btn-icon btn-small btn-secondary" onclick="adminModule.viewContractor('${contractor.id}')" title="View Details">
                             <span class="material-icons">visibility</span>
                         </button>
-                        <button class="btn btn-icon btn-small btn-primary" onclick="adminModule.editContractor('${contractor.id}')" title="Edit Contractor">
+                        <button class="btn btn-icon btn-small btn-primary" onclick="adminModule.editContractor('${contractor.id}')" title="Edit Service Provider">
                             <span class="material-icons">edit</span>
                         </button>
-                        <button class="btn btn-icon btn-small btn-danger" onclick="adminModule.deleteContractor('${contractor.id}')" title="Delete Contractor">
+                        <button class="btn btn-icon btn-small btn-danger" onclick="adminModule.deleteContractor('${contractor.id}')" title="Delete Service Provider">
                             <span class="material-icons">delete</span>
                         </button>
                     </div>
@@ -346,7 +346,7 @@ class AdminContractorsModule {
         this.createContractorFormModal();
 
         if (!this.contractorFormModal) {
-            console.error('❌ AdminContractorsModule: Contractor form modal not available even after creation attempt');
+            console.error('❌ AdminContractorsModule: Service Provider form modal not available even after creation attempt');
             showNotification('Failed to open contractor form. Please refresh the page.', 'error');
             return;
         }
@@ -412,13 +412,13 @@ class AdminContractorsModule {
                 this.findProvinceForArea(area);
             }
 
-            document.getElementById('formTitle').textContent = 'Edit Contractor';
+            document.getElementById('formTitle').textContent = 'Edit Service Provider';
         } else {
             // Add mode
             const form = document.getElementById('contractorForm');
             if (form) form.reset();
             document.getElementById('contractorId').value = '';
-            document.getElementById('formTitle').textContent = 'Add Contractor';
+            document.getElementById('formTitle').textContent = 'Add Service Provider';
         }
 
         // Show the modal
@@ -431,7 +431,7 @@ class AdminContractorsModule {
             document.getElementById('contractorName')?.focus();
         }, 100);
 
-        console.log('✅ AdminContractorsModule: Contractor form displayed successfully');
+        console.log('✅ AdminContractorsModule: Service Provider form displayed successfully');
     }
 
     // Helper function to find province for a given area
@@ -524,11 +524,11 @@ class AdminContractorsModule {
         if (contractorId) {
             // Update existing contractor
             this.dataModule.updateContractor(contractorId, contractorData);
-            showNotification('Contractor updated successfully', 'success');
+            showNotification('Service Provider updated successfully', 'success');
         } else {
             // Add new contractor
             this.dataModule.addContractor(contractorData);
-            showNotification('Contractor added successfully', 'success');
+            showNotification('Service Provider added successfully', 'success');
         }
 
         this.closeModal('contractorFormModal');
@@ -560,7 +560,7 @@ class AdminContractorsModule {
         if (confirm('Are you sure you want to delete this contractor? This action cannot be undone.')) {
             this.dataModule.deleteContractor(id);
             this.renderContractorsTable();
-            showNotification('Contractor deleted successfully', 'success');
+            showNotification('Service Provider deleted successfully', 'success');
 
             // Update stats in main admin module
             if (window.adminModule) {

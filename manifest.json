@@ -1,7 +1,7 @@
 {
-    "name": "Contractor Reviews",
-    "short_name": "ContractorRev",
-    "description": "Find and review local contractors",
+    "name": "Community Trade Network",
+    "short_name": "CommunityTrade",
+    "description": "Your Community's Directory of Trusted Local Services",
     "start_url": "/",
     "display": "standalone",
     "background_color": "#ffffff",
