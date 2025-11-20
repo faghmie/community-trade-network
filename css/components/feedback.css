@@ -1,0 +1,115 @@
+/* Feedback System Styles - MINIMAL ADDITIONS ONLY */
+/* Leverages existing modal, material, ratings, and forms styles */
+
+/* Feedback-specific modal variations */
+.feedback-modal .modal-content {
+    max-width: 520px; /* Slightly wider for better form layout */
+}
+
+/* Feedback form specific layout */
+.feedback-form {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-xl);
+}
+
+.feedback-section {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-md);
+}
+
+/* Feedback-specific rating stars (different from contractor ratings) */
+.feedback-rating-stars {
+    display: flex;
+    gap: var(--space-sm);
+    justify-content: center;
+    padding: var(--space-md) 0;
+}
+
+.star-rating-btn {
+    background: none;
+    border: none;
+    padding: var(--space-xs);
+    cursor: pointer;
+    border-radius: 50%;
+    transition: var(--material-transition);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.star-rating-btn:hover {
+    background-color: var(--surface-container-highest);
+}
+
+.star-rating-btn:focus {
+    outline: 2px solid var(--primary-color);
+    outline-offset: 2px;
+}
+
+.star-icon {
+    font-size: 2.25rem;
+    color: var(--surface-400);
+    transition: var(--material-transition);
+    line-height: 1;
+}
+
+.star-rating-btn:hover .star-icon {
+    color: var(--primary-container);
+}
+
+/* Rating text display */
+.rating-text {
+    text-align: center;
+    font-size: var(--font-size-sm);
+    color: var(--on-surface-variant);
+    font-weight: var(--font-weight-medium);
+    min-height: 1.5em;
+}
+
+/* Feedback form actions (uses existing button styles) */
+.feedback-actions {
+    display: flex;
+    gap: var(--space-md);
+    justify-content: flex-end;
+    padding-top: var(--space-lg);
+    border-top: 1px solid var(--outline-variant);
+}
+
+/* Responsive design for feedback modal */
+@media (max-width: 600px) {
+    .feedback-modal .modal-content {
+        margin: 0;
+        max-height: 100vh;
+        height: 100vh;
+        max-width: none;
+        border-radius: 0;
+    }
+
+    .feedback-actions {
+        flex-direction: column-reverse;
+    }
+
+    .feedback-actions .btn {
+        width: 100%;
+    }
+
+    .star-icon {
+        font-size: 1.875rem;
+    }
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+    .star-icon {
+        text-stroke: 1px var(--on-surface);
+    }
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+    .star-rating-btn {
+        transition: none;
+    }
+}

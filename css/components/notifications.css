@@ -1,4 +1,4 @@
-/* css/components/notifications.css */
+/* css/components/notifications.css - FIXED BACKGROUND */
 /* Enhanced Material Design Notification System with Sync Status Support */
 
 /* Notification Container */
@@ -17,7 +17,7 @@
 
 /* Base Notification Styles */
 .notification {
-    background: var(--bg-card);
+    background: var(--surface);
     border-radius: var(--border-radius);
     padding: var(--space-md);
     box-shadow: var(--elevation-3);
@@ -47,47 +47,123 @@
     margin-bottom: 0;
 }
 
-/* Notification Content */
-.notification-content {
-    flex: 1;
-    min-width: 0;
+/* PWA Install Banner - FIXED BACKGROUND */
+.pwa-install-banner {
+    position: fixed;
+    bottom: var(--space-lg);
+    left: 50%;
+    transform: translateX(-50%) translateY(100px);
+    background: var(--surface);
+    border-radius: var(--border-radius-lg);
+    padding: var(--space-md);
+    box-shadow: var(--elevation-6);
+    border: 1px solid var(--outline-variant);
+    z-index: var(--z-modal);
+    max-width: 400px;
+    width: calc(100% - var(--space-xl));
+    opacity: 0;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    pointer-events: none;
+    /* Ensure solid background */
+    backdrop-filter: none;
+    background-color: var(--surface) !important;
 }
 
-.notification-title {
+.pwa-install-banner:not(.hidden) {
+    transform: translateX(-50%) translateY(0);
+    opacity: 1;
+    pointer-events: all;
+}
+
+/* FIXED: Text spans full width on top, icon and buttons below */
+.pwa-install-content {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-md);
+    width: 100%;
+}
+
+/* Text section spans full width */
+.pwa-install-text {
+    width: 100%;
+    text-align: center;
+}
+
+.pwa-install-text strong {
+    display: block;
     font-size: var(--font-size-sm);
     font-weight: var(--font-weight-medium);
     color: var(--text-primary);
-    margin: 0 0 var(--space-xs) 0;
+    margin-bottom: var(--space-xxs);
     line-height: var(--line-height-tight);
-}
-
-.notification-message {
-    font-size: var(--font-size-sm);
-    color: var(--text-secondary);
-    margin: 0;
-    line-height: var(--line-height-normal);
+    white-space: normal;
     word-wrap: break-word;
 }
 
-/* Notification Types */
+.pwa-install-text span {
+    display: block;
+    font-size: var(--font-size-xs);
+    color: var(--text-secondary);
+    line-height: var(--line-height-normal);
+    white-space: normal;
+    word-wrap: break-word;
+}
+
+/* Icon and buttons in a row below the text */
+.pwa-install-bottom-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-md);
+    width: 100%;
+}
+
+.pwa-install-icon {
+    flex-shrink: 0;
+    width: 40px;
+    height: 40px;
+    background: var(--primary-50);
+    border-radius: var(--border-radius-full);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--primary-color);
+}
+
+.pwa-install-icon .material-icons {
+    font-size: 20px;
+}
+
+.pwa-install-actions {
+    display: flex;
+    gap: var(--space-xs);
+    flex-shrink: 0;
+}
+
+/* Notification Types - FIXED BACKGROUNDS */
 .notification-success {
     border-left-color: var(--success-color);
+    background-color: var(--surface) !important;
 }
 
 .notification-error {
     border-left-color: var(--error-color);
+    background-color: var(--surface) !important;
 }
 
 .notification-warning {
     border-left-color: var(--warning-color);
+    background-color: var(--surface) !important;
 }
 
 .notification-info {
     border-left-color: var(--primary-color);
+    background-color: var(--surface) !important;
 }
 
 .notification-sync {
     border-left-color: var(--accent-color);
+    background-color: var(--surface) !important;
 }
 
 /* Notification Actions */
@@ -126,7 +202,6 @@
     font-size: var(--font-size-sm);
     font-weight: var(--font-weight-medium);
     transition: var(--material-transition);
-    margin-left: auto;
     flex-shrink: 0;
 }
 
@@ -203,6 +278,31 @@
     .notification-message {
         font-size: var(--font-size-sm);
     }
+
+    /* PWA Install Banner Mobile */
+    .pwa-install-banner {
+        bottom: calc(var(--bottom-nav-height) + var(--space-md));
+        max-width: calc(100% - var(--space-lg));
+        padding: var(--space-sm);
+    }
+
+    .pwa-install-content {
+        gap: var(--space-sm);
+    }
+
+    .pwa-install-icon {
+        width: 36px;
+        height: 36px;
+    }
+
+    .pwa-install-icon .material-icons {
+        font-size: 18px;
+    }
+
+    .pwa-install-actions {
+        flex-direction: column;
+        gap: var(--space-xxs);
+    }
 }
 
 @media (max-width: 480px) {
@@ -230,6 +330,23 @@
     .progress-bar {
         height: 3px;
     }
+
+    /* PWA Install Banner Small Mobile */
+    .pwa-install-banner {
+        bottom: calc(var(--bottom-nav-height) + var(--space-sm));
+        padding: var(--space-sm) var(--space-md);
+    }
+
+    .pwa-install-bottom-row {
+        flex-direction: column;
+        gap: var(--space-sm);
+    }
+
+    .pwa-install-actions {
+        flex-direction: row;
+        width: 100%;
+        justify-content: center;
+    }
 }
 
 /* Landscape Mobile Optimization */
@@ -242,6 +359,11 @@
     
     .notification {
         max-height: 120px;
+    }
+
+    .pwa-install-banner {
+        bottom: var(--space-sm);
+        max-width: 320px;
     }
 }
 
@@ -266,6 +388,27 @@
     .progress-bar {
         background: var(--surface-600);
     }
+
+    /* PWA Install Banner Dark Theme */
+    .pwa-install-banner {
+        background: var(--surface-800) !important;
+        border-color: var(--surface-600);
+    }
+
+    .pwa-install-icon {
+        background: var(--primary-900);
+        color: var(--primary-200);
+    }
+    
+    /* Ensure all notifications have solid backgrounds in dark mode */
+    .notification,
+    .notification-success,
+    .notification-error,
+    .notification-warning,
+    .notification-info,
+    .notification-sync {
+        background-color: var(--surface-800) !important;
+    }
 }
 
 /* High Contrast Mode Support */
@@ -276,6 +419,11 @@
     
     .progress-bar {
         border: 1px solid currentColor;
+    }
+
+    .pwa-install-banner {
+        border-width: 2px;
+        border-color: currentColor;
     }
 }
 
@@ -288,6 +436,10 @@
     .progress-fill {
         transition: none;
     }
+
+    .pwa-install-banner {
+        transition: none;
+    }
 }
 
 /* Print Styles */
@@ -295,4 +447,21 @@
     .notification-container {
         display: none !important;
     }
+
+    .pwa-install-banner {
+        display: none !important;
+    }
+}
+
+/* Force solid backgrounds for all notification elements */
+.notification,
+.pwa-install-banner,
+.notification-success,
+.notification-error,
+.notification-warning,
+.notification-info,
+.notification-sync {
+    background-color: var(--surface) !important;
+    background-image: none !important;
+    backdrop-filter: none !important;
 }

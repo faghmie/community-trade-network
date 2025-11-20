@@ -12,6 +12,7 @@ export class ContractorManager {
             southAfricanCityCoordinates,
             southAfricanProvinces
         };
+        this.reviewManager = null; // Add reference to review manager
     }
 
     async init(storage) {
@@ -33,6 +34,11 @@ export class ContractorManager {
             this.contractors = [];
             console.log('🔧 No contractors in storage, starting with empty array');
         }
+    }
+
+    // Set review manager reference for cleanup operations
+    setReviewManager(reviewManager) {
+        this.reviewManager = reviewManager;
     }
 
     save = () => {
@@ -97,9 +103,89 @@ export class ContractorManager {
         if (index !== -1) {
             this.contractors.splice(index, 1);
             this.save();
+            
+            // Clean up reviews for this contractor
+            this.cleanupContractorReviews(id);
+            
             return true;
         }
         return false;
+    }
+
+    // Clean up all reviews for a deleted contractor
+    async cleanupContractorReviews(contractorId) {
+        try {
+            console.log(`🔧 Cleaning up reviews for deleted contractor: ${contractorId}`);
+            
+            // Load current reviews from storage
+            const currentReviews = await this.storage.load('reviews');
+            
+            if (currentReviews && Array.isArray(currentReviews)) {
+                // Filter out reviews for the deleted contractor
+                const updatedReviews = currentReviews.filter(review => review.contractor_id !== contractorId);
+                
+                // Save the filtered reviews back to storage WITH Supabase sync
+                await this.storage.save('reviews', updatedReviews, { syncToSupabase: true });
+                
+                console.log(`🔧 Removed ${currentReviews.length - updatedReviews.length} reviews for contractor ${contractorId}`);
+                
+                // Wait for Supabase sync to complete before refreshing
+                await this.waitForSupabaseSync();
+                
+                // Force refresh the review manager to update its cache
+                await this.forceRefreshReviewManager();
+            }
+        } catch (error) {
+            console.error('🔧 Error cleaning up contractor reviews:', error);
+        }
+    }
+
+    // Wait for Supabase sync to complete
+    async waitForSupabaseSync() {
+        return new Promise((resolve) => {
+            // Check if Supabase is available and has pending sync
+            if (this.storage.supabase && this.storage.supabase.hasPendingSync) {
+                // Wait a moment for sync to complete
+                setTimeout(resolve, 500);
+            } else {
+                resolve();
+            }
+        });
+    }
+
+    // Force refresh the review manager to ensure it has the latest data
+    async forceRefreshReviewManager() {
+        try {
+            console.log('🔄 Force refreshing review manager...');
+            
+            // First, force a sync from Supabase to localStorage
+            if (this.storage && this.storage.forceRefreshAll) {
+                console.log('🔄 Triggering storage force refresh...');
+                await this.storage.forceRefreshAll();
+            }
+            
+            // Method 1: Use global dataModule if available
+            if (window.dataModule && window.dataModule.getReviewManager) {
+                const reviewManager = window.dataModule.getReviewManager();
+                if (reviewManager && typeof reviewManager.refresh === 'function') {
+                    await reviewManager.refresh();
+                    console.log('✅ Review manager refreshed via dataModule');
+                }
+            }
+            
+            // Method 2: Use the stored review manager reference
+            else if (this.reviewManager && typeof this.reviewManager.refresh === 'function') {
+                await this.reviewManager.refresh();
+                console.log('✅ Review manager refreshed via direct reference');
+            }
+            
+            // Dispatch event to notify UI components to refresh
+            document.dispatchEvent(new CustomEvent('reviewsUpdated'));
+            console.log('📢 Dispatched reviewsUpdated event');
+            
+        } catch (error) {
+            console.error('❌ Error refreshing review manager:', error);
+        }
     }
 
     search(searchTerm, categoryFilter = '', ratingFilter = '', locationFilter = '') {

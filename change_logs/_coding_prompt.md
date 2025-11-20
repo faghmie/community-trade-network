@@ -14,7 +14,13 @@ let's stop the session here and update the project-structure. Based on the code 
 
 give a high level summary of what was achieved. Next only mention files that has been changed and what changed about them. Then give the current status of the project. Finally, purpose a prompt to start the next session with.
 
-## Prompt to prevent LLM from going off script
+
+## END OF WEEK - prompt to get project status
+
+summarise the following in a project-status report. It contains the project structure and various change logs.
+
+
+## BETTER CODING - Prompt to prevent LLM from going off script
 
 remember to provide complete file where changes are needed and do them one at a time, if you have have recently generated the file then do not prompt for the file I have otherwise prompt me for my current file and then providing the updated file. then asking for the next file
 

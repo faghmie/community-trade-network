@@ -1,4 +1,4 @@
-// Admin Reviews Management - ES6 MODULE
+// Admin Reviews Management - ES6 MODULE (SELF-CONTAINED WITH MODAL)
 import { showNotification } from './notifications.js';
 import { sanitizeHtml } from './utilities.js';
 
@@ -7,104 +7,269 @@ class AdminReviewsModule {
         this.dataModule = dataModule;
         this.reviewManager = dataModule.getReviewManager();
         this.initialized = false;
+        this.reviewDetailsModal = null;
+        this.modalEventListeners = [];
     }
 
     async init() {
         if (this.initialized) return;
         
         console.log('🔧 AdminReviewsModule initializing...');
+        console.log('🔧 DataModule initialized:', this.dataModule.initialized);
+        console.log('🔧 DataModule initializing:', this.dataModule.initializing);
+        
+        // Create modal before binding events
+        this.createReviewDetailsModal();
         this.bindEvents();
-        this.renderReviews();
+        await this.renderReviews();
         this.initialized = true;
         console.log('✅ AdminReviewsModule initialized');
     }
 
+    createReviewDetailsModal() {
+        // Check if modal already exists
+        if (this.reviewDetailsModal) {
+            console.log('🔧 AdminReviewsModule: Modal already exists');
+            return;
+        }
+
+        console.log('🔧 AdminReviewsModule: Creating review details modal...');
+
+        const modalHTML = `
+            <div class="modal" id="reviewDetailsModal" style="display: none;">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h2>Review Details</h2>
+                        <button type="button" class="close" id="closeReviewDetailsModal" aria-label="Close dialog">
+                            <span class="material-icons">close</span>
+                        </button>
+                    </div>
+                    <div class="modal-body" id="reviewDetailsContent">
+                        <!-- Review details will be loaded dynamically -->
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" id="cancelReviewDetailsModal">Close</button>
+                        <div class="action-group" id="reviewModalActions">
+                            <!-- Action buttons will be loaded dynamically -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+
+        try {
+            // Insert modal HTML into the DOM
+            document.body.insertAdjacentHTML('beforeend', modalHTML);
+            
+            // Get reference to the modal
+            this.reviewDetailsModal = document.getElementById('reviewDetailsModal');
+            
+            if (!this.reviewDetailsModal) {
+                console.error('❌ AdminReviewsModule: Failed to create modal - element not found after insertion');
+                return;
+            }
+            
+            console.log('✅ AdminReviewsModule: Review details modal created successfully');
+            
+        } catch (error) {
+            console.error('❌ AdminReviewsModule: Error creating modal:', error);
+        }
+    }
+
     bindEvents() {
+        console.log('🔧 AdminReviewsModule: Binding events...');
+        
+        // Remove any existing event listeners to prevent duplicates
+        this.removeEventListeners();
+        
         // Search reviews
         const reviewSearch = document.getElementById('reviewSearch');
         if (reviewSearch) {
-            reviewSearch.addEventListener('input', (e) => {
+            const handler = (e) => {
                 this.filterReviews();
-            });
+            };
+            reviewSearch.addEventListener('input', handler);
+            this.modalEventListeners.push({ element: reviewSearch, event: 'input', handler });
         }
 
         // Contractor filter
         const contractorFilter = document.getElementById('reviewContractorFilter');
         if (contractorFilter) {
-            contractorFilter.addEventListener('change', (e) => {
+            const handler = (e) => {
                 this.filterReviews();
-            });
+            };
+            contractorFilter.addEventListener('change', handler);
+            this.modalEventListeners.push({ element: contractorFilter, event: 'change', handler });
         }
 
         // Status filter
         const statusFilter = document.getElementById('reviewStatusFilter');
         if (statusFilter) {
-            statusFilter.addEventListener('change', (e) => {
+            const handler = (e) => {
                 this.filterReviews();
-            });
+            };
+            statusFilter.addEventListener('change', handler);
+            this.modalEventListeners.push({ element: statusFilter, event: 'change', handler });
         }
 
-        // Close modal events
-        const reviewModal = document.getElementById('reviewDetailsModal');
-        if (reviewModal) {
-            reviewModal.addEventListener('click', (e) => {
-                if (e.target === reviewModal) {
-                    this.closeModal('reviewDetailsModal');
-                }
-            });
+        // Modal close events - bind after modal is created
+        setTimeout(() => {
+            const closeModalHandler = (e) => {
+                console.log('🔧 AdminReviewsModule: Close button clicked');
+                e.preventDefault();
+                e.stopImmediatePropagation();
+                this.closeModal('reviewDetailsModal');
+            };
 
-            const closeBtn = reviewModal.querySelector('.close-modal');
-            if (closeBtn) {
-                closeBtn.addEventListener('click', () => {
-                    this.closeModal('reviewDetailsModal');
-                });
+            // Close button in header
+            const closeBtn = document.getElementById('closeReviewDetailsModal');
+            if (closeBtn && !closeBtn.hasListener) {
+                closeBtn.addEventListener('click', closeModalHandler, true);
+                closeBtn.hasListener = true;
+                this.modalEventListeners.push({ element: closeBtn, event: 'click', handler: closeModalHandler });
             }
-        }
 
-        // Escape key to close modal
-        document.addEventListener('keydown', (e) => {
-            if (e.key === 'Escape') {
+            // Close button in footer
+            const closeFooterBtn = document.getElementById('cancelReviewDetailsModal');
+            if (closeFooterBtn && !closeFooterBtn.hasListener) {
+                closeFooterBtn.addEventListener('click', closeModalHandler, true);
+                closeFooterBtn.hasListener = true;
+                this.modalEventListeners.push({ element: closeFooterBtn, event: 'click', handler: closeModalHandler });
+            }
+        }, 100);
+
+        // Backdrop click to close modal
+        const backdropHandler = (e) => {
+            if (e.target === this.reviewDetailsModal) {
+                console.log('🔧 AdminReviewsModule: Backdrop clicked');
+                e.preventDefault();
+                e.stopImmediatePropagation();
                 this.closeModal('reviewDetailsModal');
             }
-        });
+        };
+        document.addEventListener('click', backdropHandler, true);
+        this.modalEventListeners.push({ element: document, event: 'click', handler: backdropHandler });
+
+        // Escape key to close modal
+        const escapeHandler = (e) => {
+            if (e.key === 'Escape' && this.reviewDetailsModal?.style.display === 'flex') {
+                console.log('🔧 AdminReviewsModule: Escape key pressed');
+                e.preventDefault();
+                e.stopImmediatePropagation();
+                this.closeModal('reviewDetailsModal');
+            }
+        };
+        document.addEventListener('keydown', escapeHandler, true);
+        this.modalEventListeners.push({ element: document, event: 'keydown', handler: escapeHandler });
+
+        // Listen for reviews updated event (when contractor is deleted)
+        const reviewsUpdatedHandler = () => {
+            console.log('📢 AdminReviewsModule: Received reviewsUpdated event, refreshing...');
+            this.refresh();
+        };
+        document.addEventListener('reviewsUpdated', reviewsUpdatedHandler);
+        this.modalEventListeners.push({ element: document, event: 'reviewsUpdated', handler: reviewsUpdatedHandler });
+
+        // Listen for data ready event
+        const dataReadyHandler = () => {
+            console.log('📢 AdminReviewsModule: Data is ready, initializing...');
+            this.init();
+        };
+        document.addEventListener('dataReady', dataReadyHandler);
+        this.modalEventListeners.push({ element: document, event: 'dataReady', handler: dataReadyHandler });
+
+        console.log('✅ AdminReviewsModule: Events bound successfully');
     }
 
-    renderReviews() {
-        this.renderContractorFilter();
-        this.renderReviewsList();
+    removeEventListeners() {
+        console.log('🔧 AdminReviewsModule: Removing existing event listeners');
+        this.modalEventListeners.forEach(({ element, event, handler }) => {
+            if (element && handler) {
+                element.removeEventListener(event, handler);
+            }
+        });
+        this.modalEventListeners = [];
+    }
+
+    async renderReviews() {
+        console.log('🔄 AdminReviewsModule.renderReviews() called');
+        await this.renderContractorFilter();
+        await this.renderReviewsList();
         this.renderReviewStats();
     }
 
     // Populate contractor filter dropdown
-    renderContractorFilter() {
+    async renderContractorFilter() {
         const contractorFilter = document.getElementById('reviewContractorFilter');
-        if (!contractorFilter) return;
+        if (!contractorFilter) {
+            console.error('❌ Contractor filter element not found');
+            return;
+        }
 
+        console.log('🔍 renderContractorFilter() - Starting...');
+        
+        // Ensure data is loaded
+        console.log('🔍 Checking if dataModule is initialized...');
+        await this.dataModule.ensureInitialized();
+        console.log('🔍 DataModule initialization confirmed');
+        
         const contractors = this.dataModule.getContractors();
         const currentValue = contractorFilter.value;
+        
+        console.log('🔍 Available contractors for filter:', contractors);
+        console.log('🔍 Contractor count:', contractors.length);
+        
+        if (contractors.length === 0) {
+            console.warn('⚠️ No contractors found in dataModule');
+        }
         
         contractorFilter.innerHTML = '<option value="all">All Contractors</option>';
         
         contractors.forEach(contractor => {
-            contractorFilter.innerHTML += `<option value="${contractor.id}">${contractor.name}</option>`;
+            if (contractor && contractor.id && contractor.name) {
+                console.log(`🔍 Adding contractor to filter: ${contractor.name} (${contractor.id})`);
+                contractorFilter.innerHTML += `<option value="${contractor.id}">${contractor.name}</option>`;
+            } else {
+                console.warn('⚠️ Invalid contractor found:', contractor);
+            }
         });
         
         // Restore the selected value if it still exists
-        if (currentValue && contractors.some(c => c.id === currentValue)) {
+        if (currentValue && contractors.some(c => c && c.id === currentValue)) {
             contractorFilter.value = currentValue;
         }
+        
+        console.log('✅ Contractor filter rendered');
     }
 
-    renderReviewsList(filteredReviews = null) {
-        const reviews = filteredReviews || this.dataModule.getAllReviews();
+    async renderReviewsList(filteredReviews = null) {
+        console.log('🔄 renderReviewsList() - Starting...');
+        
+        // Ensure data is loaded
+        console.log('🔍 Ensuring dataModule is initialized...');
+        await this.dataModule.ensureInitialized();
+        console.log('🔍 DataModule initialization complete');
+        
+        // FIX: Use getReviewsWithContractorInfo instead of getAllReviews to get enhanced reviews with contractor info
+        const reviews = filteredReviews || this.reviewManager.getReviewsWithContractorInfo();
+        const contractors = this.dataModule.getContractors();
         const container = document.getElementById('reviewsList');
         
-        if (!container) return;
+        if (!container) {
+            console.error('❌ Reviews list container not found');
+            return;
+        }
+
+        console.log('🔍 Reviews data:', reviews);
+        console.log('🔍 Reviews count:', reviews.length);
+        console.log('🔍 Contractors data:', contractors);
+        console.log('🔍 Contractors count:', contractors.length);
 
         // Sort reviews by date (newest first)
         reviews.sort((a, b) => new Date(b.date) - new Date(a.date));
         
         if (reviews.length === 0) {
+            console.log('📝 No reviews to display');
             container.innerHTML = `
                 <div class="no-reviews">
                     <p>No reviews found matching your criteria.</p>
@@ -113,9 +278,18 @@ class AdminReviewsModule {
             return;
         }
         
+        console.log('📝 Rendering reviews list with', reviews.length, 'reviews');
+        
         container.innerHTML = reviews.map(review => {
             const statusClass = this.getStatusClass(review.status);
             const statusLabel = this.getStatusLabel(review.status);
+            
+            // FIX: Use the enhanced review data that already has contractor info
+            // The getReviewsWithContractorInfo() method adds contractorName and contractorCategory
+            const contractorName = review.contractorName || 'Unknown Contractor';
+            const contractorCategory = review.contractorCategory || 'Unknown Category';
+            
+            console.log(`🔍 Review ${review.id}: contractorId=${review.contractor_id}, contractorName:`, contractorName);
             
             // Get category ratings if they exist
             const categoryRatings = review.categoryRatings || {};
@@ -135,7 +309,7 @@ class AdminReviewsModule {
                         </div>
                     </div>
                     <div class="review-contractor">
-                        <strong>Contractor:</strong> ${sanitizeHtml(review.contractorName)} (${sanitizeHtml(review.contractorCategory)})
+                        <strong>Contractor:</strong> ${sanitizeHtml(contractorName)} (${sanitizeHtml(contractorCategory)})
                         <br><strong>Project Type:</strong> ${sanitizeHtml(review.projectType || 'Not specified')}
                     </div>
                     ${hasCategoryRatings ? `
@@ -150,38 +324,45 @@ class AdminReviewsModule {
                     <p class="review-comment">${sanitizeHtml(review.comment)}</p>
                     <div class="review-actions">
                         ${review.status === 'pending' ? `
-                            <button class="btn btn-small btn-success" onclick="adminModule.approveReview('${review.id}')">
-                                Approve
+                            <button class="btn btn-success btn-small btn-icon" onclick="adminModule.approveReview('${review.id}')" title="Approve Review">
+                                <span class="material-icons">check_circle</span>
                             </button>
-                            <button class="btn btn-small btn-warning" onclick="adminModule.rejectReview('${review.id}')">
-                                Reject
+                            <button class="btn btn-warning btn-small btn-icon" onclick="adminModule.rejectReview('${review.id}')" title="Reject Review">
+                                <span class="material-icons">cancel</span>
                             </button>
                         ` : ''}
                         ${review.status === 'approved' ? `
-                            <button class="btn btn-small btn-warning" onclick="adminModule.rejectReview('${review.id}')">
-                                Reject
+                            <button class="btn btn-warning btn-small btn-icon" onclick="adminModule.rejectReview('${review.id}')" title="Reject Review">
+                                <span class="material-icons">block</span>
                             </button>
                         ` : ''}
                         ${review.status === 'rejected' ? `
-                            <button class="btn btn-small btn-success" onclick="adminModule.approveReview('${review.id}')">
-                                Approve
+                            <button class="btn btn-success btn-small btn-icon" onclick="adminModule.approveReview('${review.id}')" title="Approve Review">
+                                <span class="material-icons">check_circle</span>
                             </button>
                         ` : ''}
-                        <button class="btn btn-small btn-secondary" onclick="adminModule.viewReview('${review.contractorId}', '${review.id}')">
-                            View Details
+                        <button class="btn btn-secondary btn-small btn-icon" onclick="adminModule.viewReview('${review.contractor_id}', '${review.id}')" title="View Details">
+                            <span class="material-icons">visibility</span>
                         </button>
-                        <button class="btn btn-small btn-danger" 
-                                onclick="adminModule.deleteReview('${review.id}')">
-                            Delete
+                        <button class="btn btn-danger btn-small btn-icon" 
+                                onclick="adminModule.deleteReview('${review.id}')"
+                                title="Delete Review">
+                            <span class="material-icons">delete</span>
                         </button>
                     </div>
                 </div>
             `;
         }).join('');
+        
+        console.log('✅ Reviews list rendered successfully');
     }
 
     renderReviewStats() {
+        console.log('📊 renderReviewStats() - Starting...');
+        
         const allReviews = this.dataModule.getAllReviews();
+        
+        console.log('📊 All reviews for stats:', allReviews);
         
         const stats = {
             totalReviews: allReviews.length,
@@ -190,17 +371,31 @@ class AdminReviewsModule {
             rejectedReviews: allReviews.filter(r => r.status === 'rejected').length
         };
         
+        console.log('📊 Calculated stats:', stats);
+        
         const totalReviewsEl = document.getElementById('totalReviewsCount');
         const approvedReviewsEl = document.getElementById('approvedReviewsCount');
         const pendingReviewsEl = document.getElementById('pendingReviewsCount');
         const rejectedReviewsEl = document.getElementById('rejectedReviewsCount');
         
-        if (totalReviewsEl) totalReviewsEl.textContent = stats.totalReviews;
-        if (approvedReviewsEl) approvedReviewsEl.textContent = stats.approvedReviews;
-        if (pendingReviewsEl) pendingReviewsEl.textContent = stats.pendingReviews;
-        if (rejectedReviewsEl) rejectedReviewsEl.textContent = stats.rejectedReviews;
+        if (totalReviewsEl) {
+            totalReviewsEl.textContent = stats.totalReviews;
+            console.log('📊 Set total reviews:', stats.totalReviews);
+        }
+        if (approvedReviewsEl) {
+            approvedReviewsEl.textContent = stats.approvedReviews;
+            console.log('📊 Set approved reviews:', stats.approvedReviews);
+        }
+        if (pendingReviewsEl) {
+            pendingReviewsEl.textContent = stats.pendingReviews;
+            console.log('📊 Set pending reviews:', stats.pendingReviews);
+        }
+        if (rejectedReviewsEl) {
+            rejectedReviewsEl.textContent = stats.rejectedReviews;
+            console.log('📊 Set rejected reviews:', stats.rejectedReviews);
+        }
 
-        console.log('📊 Review stats updated:', stats);
+        console.log('✅ Review stats updated');
     }
 
     getStatusClass(status) {
@@ -221,28 +416,41 @@ class AdminReviewsModule {
         }
     }
 
-    filterReviews() {
+    async filterReviews() {
+        console.log('🔍 filterReviews() - Starting...');
+        
         const searchTerm = document.getElementById('reviewSearch')?.value || '';
         const statusFilter = document.getElementById('reviewStatusFilter')?.value || 'all';
         const contractorFilter = document.getElementById('reviewContractorFilter')?.value || 'all';
         
-        let filteredReviews = this.dataModule.searchReviews(searchTerm, statusFilter);
+        console.log('🔍 Filter criteria:', { searchTerm, statusFilter, contractorFilter });
+        
+        // Ensure data is loaded
+        await this.dataModule.ensureInitialized();
+        
+        // FIX: Use searchReviews which already uses getReviewsWithContractorInfo
+        let filteredReviews = this.reviewManager.searchReviews(searchTerm, statusFilter);
+        
+        console.log('🔍 Reviews after search filter:', filteredReviews.length);
         
         // Apply contractor filter
         if (contractorFilter && contractorFilter !== 'all') {
-            filteredReviews = filteredReviews.filter(review => review.contractorId === contractorFilter);
+            filteredReviews = filteredReviews.filter(review => review.contractor_id === contractorFilter);
+            console.log('🔍 Reviews after contractor filter:', filteredReviews.length);
         }
         
-        this.renderReviewsList(filteredReviews);
+        await this.renderReviewsList(filteredReviews);
+        console.log('✅ Filter applied successfully');
     }
 
     async approveReview(reviewId) {
+        console.log(`✅ Approving review: ${reviewId}`);
         if (confirm('Are you sure you want to approve this review? It will become visible to users and affect contractor ratings.')) {
             try {
                 const success = await this.dataModule.updateReviewStatus(reviewId, 'approved');
                 if (success) {
                     showNotification('Review approved successfully!', 'success');
-                    this.renderReviews();
+                    await this.renderReviews();
                     // Trigger global stats update
                     this.triggerStatsUpdate();
                 } else {
@@ -256,12 +464,13 @@ class AdminReviewsModule {
     }
 
     async rejectReview(reviewId) {
+        console.log(`❌ Rejecting review: ${reviewId}`);
         if (confirm('Are you sure you want to reject this review? It will be hidden from users.')) {
             try {
                 const success = await this.dataModule.updateReviewStatus(reviewId, 'rejected');
                 if (success) {
                     showNotification('Review rejected successfully!', 'success');
-                    this.renderReviews();
+                    await this.renderReviews();
                     // Trigger global stats update
                     this.triggerStatsUpdate();
                 } else {
@@ -275,12 +484,13 @@ class AdminReviewsModule {
     }
 
     async deleteReview(reviewId) {
+        console.log(`🗑️ Deleting review: ${reviewId}`);
         if (confirm('Are you sure you want to delete this review? This action cannot be undone.')) {
             try {
                 const success = await this.dataModule.deleteReview(reviewId);
                 if (success) {
                     showNotification('Review deleted successfully!', 'success');
-                    this.renderReviews();
+                    await this.renderReviews();
                     // Trigger global stats update
                     this.triggerStatsUpdate();
                 } else {
@@ -293,157 +503,180 @@ class AdminReviewsModule {
         }
     }
 
-    viewReview(contractorId, reviewId) {
-        const contractor = this.dataModule.getContractor(contractorId);
-        if (contractor) {
-            const review = this.dataModule.getAllReviews().find(r => r.id === reviewId);
-            if (review) {
-                const modal = document.getElementById('reviewDetailsModal');
-                const content = document.getElementById('reviewDetailsContent');
-                
-                const statusClass = this.getStatusClass(review.status);
-                const statusLabel = this.getStatusLabel(review.status);
-                
-                // Get category ratings if they exist
-                const categoryRatings = review.categoryRatings || {};
-                const hasCategoryRatings = categoryRatings.quality || categoryRatings.communication || 
-                                         categoryRatings.timeliness || categoryRatings.value;
-                
-                content.innerHTML = `
-                    <div class="review-details">
-                        <div class="modal-header">
-                            <h2>Review Details</h2>
-                            <button class="close-modal">&times;</button>
-                        </div>
-                        <div class="modal-body">
-                            <div class="detail-section">
-                                <h3>Review Information</h3>
-                                <div class="detail-grid">
-                                    <div class="detail-item">
-                                        <strong>Reviewer:</strong> ${sanitizeHtml(review.reviewerName)}
-                                    </div>
-                                    <div class="detail-item">
-                                        <strong>Overall Rating:</strong> ${this.generateStarIcons(review.rating)} (${review.rating}/5)
-                                    </div>
-                                    <div class="detail-item">
-                                        <strong>Project Type:</strong> ${sanitizeHtml(review.projectType || 'Not specified')}
-                                    </div>
-                                    <div class="detail-item">
-                                        <strong>Date:</strong> ${this.dataModule.formatDate(review.date)}
-                                    </div>
-                                    <div class="detail-item">
-                                        <strong>Status:</strong> <span class="review-status ${statusClass}">${statusLabel}</span>
-                                    </div>
-                                </div>
-                            </div>
-                            
-                            ${hasCategoryRatings ? `
-                            <div class="detail-section">
-                                <h3>Category Ratings</h3>
-                                <div class="category-ratings-detail">
-                                    ${categoryRatings.quality ? `
-                                    <div class="category-rating-item">
-                                        <strong>Quality of Work:</strong> 
-                                        <span>${this.generateStarIcons(categoryRatings.quality)} (${categoryRatings.quality}/5)</span>
-                                    </div>
-                                    ` : ''}
-                                    ${categoryRatings.communication ? `
-                                    <div class="category-rating-item">
-                                        <strong>Communication:</strong> 
-                                        <span>${this.generateStarIcons(categoryRatings.communication)} (${categoryRatings.communication}/5)</span>
-                                    </div>
-                                    ` : ''}
-                                    ${categoryRatings.timeliness ? `
-                                    <div class="category-rating-item">
-                                        <strong>Timeliness:</strong> 
-                                        <span>${this.generateStarIcons(categoryRatings.timeliness)} (${categoryRatings.timeliness}/5)</span>
-                                    </div>
-                                    ` : ''}
-                                    ${categoryRatings.value ? `
-                                    <div class="category-rating-item">
-                                        <strong>Value for Money:</strong> 
-                                        <span>${this.generateStarIcons(categoryRatings.value)} (${categoryRatings.value}/5)</span>
-                                    </div>
-                                    ` : ''}
-                                </div>
-                            </div>
-                            ` : ''}
-                            
-                            <div class="detail-section">
-                                <h3>Contractor Information</h3>
-                                <div class="detail-grid">
-                                    <div class="detail-item">
-                                        <strong>Name:</strong> ${sanitizeHtml(contractor.name)}
-                                    </div>
-                                    <div class="detail-item">
-                                        <strong>Category:</strong> ${sanitizeHtml(contractor.category)}
-                                    </div>
-                                    <div class="detail-item">
-                                        <strong>Email:</strong> ${sanitizeHtml(contractor.email || 'Not provided')}
-                                    </div>
-                                    <div class="detail-item">
-                                        <strong>Phone:</strong> ${sanitizeHtml(contractor.phone || 'Not provided')}
-                                    </div>
-                                </div>
-                            </div>
-                            
-                            <div class="detail-section">
-                                <h3>Review Comment</h3>
-                                <div class="review-comment-detail">
-                                    ${sanitizeHtml(review.comment)}
-                                </div>
-                            </div>
-                        </div>
-                        <div class="modal-footer">
-                            <div class="detail-actions">
-                                ${review.status === 'pending' ? `
-                                    <button class="btn btn-success" onclick="adminModule.approveReview('${review.id}'); adminModule.closeModal('reviewDetailsModal')">
-                                        Approve Review
-                                    </button>
-                                    <button class="btn btn-warning" onclick="adminModule.rejectReview('${review.id}'); adminModule.closeModal('reviewDetailsModal')">
-                                        Reject Review
-                                    </button>
-                                ` : ''}
-                                ${review.status === 'approved' ? `
-                                    <button class="btn btn-warning" onclick="adminModule.rejectReview('${review.id}'); adminModule.closeModal('reviewDetailsModal')">
-                                        Reject Review
-                                    </button>
-                                ` : ''}
-                                ${review.status === 'rejected' ? `
-                                    <button class="btn btn-success" onclick="adminModule.approveReview('${review.id}'); adminModule.closeModal('reviewDetailsModal')">
-                                        Approve Review
-                                    </button>
-                                ` : ''}
-                                <button class="btn btn-danger" 
-                                        onclick="adminModule.deleteReview('${review.id}'); adminModule.closeModal('reviewDetailsModal')">
-                                    Delete Review
-                                </button>
-                                <button class="btn btn-secondary" onclick="adminModule.closeModal('reviewDetailsModal')">
-                                    Close
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                `;
-                
-                if (modal) {
-                    modal.style.display = 'block';
-                    // Re-bind close button event
-                    const closeBtn = modal.querySelector('.close-modal');
-                    if (closeBtn) {
-                        closeBtn.addEventListener('click', () => {
-                            this.closeModal('reviewDetailsModal');
-                        });
-                    }
-                }
-            }
+    async viewReview(contractorId, reviewId) {
+        console.log(`👀 Viewing review: ${reviewId} for contractor: ${contractorId}`);
+        
+        // Ensure modal is created
+        this.createReviewDetailsModal();
+        
+        if (!this.reviewDetailsModal) {
+            console.error('❌ AdminReviewsModule: Review details modal not available');
+            showNotification('Failed to open review details. Please refresh the page.', 'error');
+            return;
         }
+
+        // Ensure data is loaded
+        await this.dataModule.ensureInitialized();
+        
+        const contractor = this.dataModule.getContractor(contractorId);
+        // FIX: Use getReviewsWithContractorInfo to get enhanced review data
+        const allReviews = this.reviewManager.getReviewsWithContractorInfo();
+        const review = allReviews.find(r => r.id === reviewId);
+        
+        console.log('🔍 Contractor lookup result:', contractor);
+        console.log('🔍 Review lookup result:', review);
+        
+        if (!review) {
+            console.error('Review not found:', reviewId);
+            showNotification('Review not found', 'error');
+            return;
+        }
+
+        const content = document.getElementById('reviewDetailsContent');
+        const actions = document.getElementById('reviewModalActions');
+        
+        const statusClass = this.getStatusClass(review.status);
+        const statusLabel = this.getStatusLabel(review.status);
+        
+        // Get category ratings if they exist
+        const categoryRatings = review.categoryRatings || {};
+        const hasCategoryRatings = categoryRatings.quality || categoryRatings.communication || 
+                                 categoryRatings.timeliness || categoryRatings.value;
+        
+        // Handle missing contractor gracefully
+        const contractorInfo = contractor ? `
+            <div class="detail-group">
+                <h3>Contractor Information</h3>
+                <div class="detail-item">
+                    <strong>Name:</strong> ${sanitizeHtml(contractor.name)}
+                </div>
+                <div class="detail-item">
+                    <strong>Category:</strong> ${sanitizeHtml(contractor.category)}
+                </div>
+                <div class="detail-item">
+                    <strong>Email:</strong> ${sanitizeHtml(contractor.email || 'Not provided')}
+                </div>
+                <div class="detail-item">
+                    <strong>Phone:</strong> ${sanitizeHtml(contractor.phone || 'Not provided')}
+                </div>
+            </div>
+        ` : `
+            <div class="detail-group">
+                <h3>Contractor Information</h3>
+                <div class="detail-item warning">
+                    <span class="material-icons">warning</span>
+                    Contractor not found (may have been deleted)
+                </div>
+            </div>
+        `;
+
+        // Determine which action buttons to show based on review status
+        let actionButtons = '';
+        if (review.status === 'pending') {
+            actionButtons = `
+                <button class="btn btn-success" onclick="adminModule.approveReview('${review.id}'); adminModule.closeModal('reviewDetailsModal')">
+                    Approve
+                </button>
+                <button class="btn btn-warning" onclick="adminModule.rejectReview('${review.id}'); adminModule.closeModal('reviewDetailsModal')">
+                    Reject
+                </button>
+            `;
+        } else if (review.status === 'approved') {
+            actionButtons = `
+                <button class="btn btn-warning" onclick="adminModule.rejectReview('${review.id}'); adminModule.closeModal('reviewDetailsModal')">
+                    Reject
+                </button>
+            `;
+        } else if (review.status === 'rejected') {
+            actionButtons = `
+                <button class="btn btn-success" onclick="adminModule.approveReview('${review.id}'); adminModule.closeModal('reviewDetailsModal')">
+                    Approve
+                </button>
+            `;
+        }
+        
+        // Add delete button to actions
+        actionButtons += `
+            <button class="btn btn-danger" onclick="adminModule.deleteReview('${review.id}'); adminModule.closeModal('reviewDetailsModal')">
+                Delete
+            </button>
+        `;
+
+        // Set the modal content
+        content.innerHTML = `
+            <div class="review-details">
+                <div class="detail-group">
+                    <h3>Review Information</h3>
+                    <div class="detail-item">
+                        <strong>Reviewer:</strong> ${sanitizeHtml(review.reviewerName)}
+                    </div>
+                    <div class="detail-item">
+                        <strong>Overall Rating:</strong> ${this.generateStarIcons(review.rating)} (${review.rating}/5)
+                    </div>
+                    <div class="detail-item">
+                        <strong>Project Type:</strong> ${sanitizeHtml(review.projectType || 'Not specified')}
+                    </div>
+                    <div class="detail-item">
+                        <strong>Date:</strong> ${this.dataModule.formatDate(review.date)}
+                    </div>
+                    <div class="detail-item">
+                        <strong>Status:</strong> <span class="review-status ${statusClass}">${statusLabel}</span>
+                    </div>
+                </div>
+                
+                ${hasCategoryRatings ? `
+                <div class="detail-group">
+                    <h3>Category Ratings</h3>
+                    ${categoryRatings.quality ? `
+                    <div class="detail-item">
+                        <strong>Quality of Work:</strong> ${this.generateStarIcons(categoryRatings.quality)} (${categoryRatings.quality}/5)
+                    </div>
+                    ` : ''}
+                    ${categoryRatings.communication ? `
+                    <div class="detail-item">
+                        <strong>Communication:</strong> ${this.generateStarIcons(categoryRatings.communication)} (${categoryRatings.communication}/5)
+                    </div>
+                    ` : ''}
+                    ${categoryRatings.timeliness ? `
+                    <div class="detail-item">
+                        <strong>Timeliness:</strong> ${this.generateStarIcons(categoryRatings.timeliness)} (${categoryRatings.timeliness}/5)
+                    </div>
+                    ` : ''}
+                    ${categoryRatings.value ? `
+                    <div class="detail-item">
+                        <strong>Value for Money:</strong> ${this.generateStarIcons(categoryRatings.value)} (${categoryRatings.value}/5)
+                    </div>
+                    ` : ''}
+                </div>
+                ` : ''}
+                
+                ${contractorInfo}
+                
+                <div class="detail-group">
+                    <h3>Review Comment</h3>
+                    <div class="review-comment">
+                        <p>${sanitizeHtml(review.comment)}</p>
+                    </div>
+                </div>
+            </div>
+        `;
+
+        // Set the action buttons in the footer
+        actions.innerHTML = actionButtons;
+        
+        // Show the modal
+        this.reviewDetailsModal.style.display = 'flex';
+        document.body.style.overflow = 'hidden';
+        
+        console.log('✅ Review details modal opened');
     }
 
     closeModal(modalId) {
+        console.log(`❌ Closing modal: ${modalId}`);
         const modal = document.getElementById(modalId);
         if (modal) {
             modal.style.display = 'none';
+            document.body.style.overflow = '';
         }
     }
 
@@ -453,6 +686,7 @@ class AdminReviewsModule {
     }
 
     triggerStatsUpdate() {
+        console.log('📊 Triggering stats update...');
         // Dispatch event to update main admin stats
         document.dispatchEvent(new CustomEvent('adminDataUpdated'));
     }
@@ -460,8 +694,20 @@ class AdminReviewsModule {
     // Refresh all data
     async refresh() {
         console.log('🔄 Refreshing admin reviews data...');
+        // Force refresh the review manager first
         await this.dataModule.getReviewManager().refresh();
-        this.renderReviews();
+        // Then refresh our display
+        await this.renderReviews();
+        console.log('✅ Admin reviews data refreshed');
+    }
+
+    // Cleanup method
+    destroy() {
+        this.removeEventListeners();
+        if (this.reviewDetailsModal) {
+            this.reviewDetailsModal.remove();
+            this.reviewDetailsModal = null;
+        }
     }
 }
 

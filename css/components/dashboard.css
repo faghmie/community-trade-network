@@ -1,11 +1,86 @@
-/* Material Design Dashboard Styles - Stats cards moved to separate file */
-.dashboard-controls {
-    background: var(--bg-card);
+/* Material Design Dashboard Styles - Enhanced Visual Hierarchy */
+
+/* Main Dashboard Container */
+.dashboard {
+    background: var(--surface-container-lowest);
+    min-height: 100vh;
     padding: var(--space-xl);
-    border-radius: var(--border-radius-lg);
+}
+
+/* Dashboard Controls - Elevated Surface */
+.dashboard-controls {
+    background: var(--surface);
+    padding: var(--space-xl);
+    border-radius: var(--shape-large);
     box-shadow: var(--elevation-2);
     margin-bottom: var(--space-xl);
-    border: 1px solid var(--border-light);
+    border: 1px solid var(--outline-variant);
+    position: relative;
+    z-index: 1;
+}
+
+/* Dashboard Sections with Proper Layering */
+.dashboard-section {
+    margin-bottom: var(--space-xxl);
+    background: var(--surface-container-low);
+    border-radius: var(--shape-large);
+    box-shadow: var(--elevation-1);
+    border: 1px solid var(--outline-variant);
+    overflow: hidden;
+    position: relative;
+}
+
+.dashboard-section:last-child {
+    margin-bottom: 0;
+}
+
+/* Section Header - Elevated */
+.dashboard-section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: var(--space-xl);
+    background: var(--surface-container);
+    border-bottom: 1px solid var(--outline-variant);
+    margin-bottom: 0;
+}
+
+.dashboard-section-title {
+    font-size: var(--font-size-xxl);
+    font-weight: var(--font-weight-medium);
+    color: var(--on-surface);
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: var(--space-md);
+    letter-spacing: 0.25px;
+}
+
+.dashboard-section-actions {
+    display: flex;
+    gap: var(--space-sm);
+    align-items: center;
+}
+
+/* Section Content Area - FIXED: Proper background for content */
+.dashboard-section-content {
+    padding: var(--space-xl);
+    background: var(--surface);
+}
+
+/* Contractors Grid Container */
+.contractors-grid-container {
+    background: transparent;
+    padding: 0;
+}
+
+/* Cards Container with Subtle Background - FIXED: Enhanced contrast */
+.cards-container {
+    background: var(--surface-container-lowest);
+    border-radius: var(--shape-medium);
+    padding: var(--space-lg);
+    margin: 0;
+    border: 1px solid var(--outline-variant);
 }
 
 /* Hide old filter sections that are no longer used */
@@ -17,118 +92,292 @@
     display: none !important;
 }
 
-.section-header {
-    margin-bottom: var(--space-lg);
-    padding-bottom: var(--space-md);
-    border-bottom: 2px solid var(--border-light);
-}
-
-.sort-options select {
-    padding: var(--space-sm) var(--space-md);
-    border: 1px solid var(--border-color);
-    border-radius: var(--border-radius);
-    background: var(--bg-white);
-    font-family: var(--font-family);
-}
-
-/* Dashboard Section Headers */
-.dashboard-section {
-    margin-bottom: var(--space-xxl);
-}
-
-.dashboard-section:last-child {
-    margin-bottom: 0;
-}
-
-.dashboard-section-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: var(--space-lg);
-    padding-bottom: var(--space-md);
-    border-bottom: 1px solid var(--border-light);
-}
-
-.dashboard-section-title {
-    font-size: var(--font-size-xxl);
-    font-weight: var(--font-weight-medium);
-    color: var(--text-primary);
-    margin: 0;
-    display: flex;
-    align-items: center;
-    gap: var(--space-md);
-}
-
-.dashboard-section-actions {
-    display: flex;
-    gap: var(--space-sm);
-    align-items: center;
-}
-
 /* Ensure favorites count is always visible */
 .favorites-count {
     display: inline !important;
 }
 
-/* Responsive dashboard */
+/* ===== ENHANCED RESPONSIVE DESIGN ===== */
+
+/* Tablets and smaller desktops */
+@media (max-width: 1200px) {
+    .dashboard {
+        padding: var(--space-lg);
+    }
+    
+    .dashboard-controls,
+    .dashboard-section-header,
+    .dashboard-section-content {
+        padding: var(--space-lg);
+    }
+    
+    .cards-container {
+        padding: var(--space-md);
+    }
+}
+
+/* Mobile devices */
 @media (max-width: 768px) {
-    .section-header {
-        flex-direction: column;
-        gap: var(--space-md);
-        align-items: flex-start;
+    .dashboard {
+        padding: var(--space-md);
+    }
+    
+    .dashboard-controls,
+    .dashboard-section-header,
+    .dashboard-section-content {
+        padding: var(--space-lg);
     }
     
     .dashboard-section-header {
         flex-direction: column;
-        align-items: flex-start;
+        align-items: stretch;
         gap: var(--space-md);
     }
     
     .dashboard-section-actions {
         width: 100%;
         justify-content: space-between;
-    }
-}
-
-@media (max-width: 480px) {
-    .dashboard-controls {
-        padding: var(--space-lg);
-    }
-}
-
-/* Dark Theme Support */
-@media (prefers-color-scheme: dark) {
-    .dashboard-controls {
-        background: var(--surface-800);
-        border-color: var(--surface-600);
-    }
-}
-
-/* High Contrast Mode Support */
-@media (prefers-contrast: high) {
-    .dashboard-controls {
-        border-width: 2px;
+        flex-wrap: wrap;
+        gap: var(--space-sm);
     }
     
-    .section-header,
+    .cards-container {
+        padding: var(--space-sm);
+        border-radius: var(--shape-small);
+    }
+}
+
+/* Small mobile devices */
+@media (max-width: 480px) {
+    .dashboard {
+        padding: var(--space-sm);
+    }
+    
+    .dashboard-controls,
+    .dashboard-section-header,
+    .dashboard-section-content {
+        padding: var(--space-md);
+        border-radius: var(--shape-medium);
+    }
+    
+    .dashboard-section-title {
+        font-size: var(--font-size-xl);
+    }
+    
+    .cards-container {
+        padding: var(--space-xs);
+        border-radius: var(--shape-small);
+    }
+}
+
+/* ===== DARK THEME ENHANCEMENTS ===== */
+@media (prefers-color-scheme: dark) {
+    .dashboard {
+        background: var(--surface-container-lowest);
+    }
+    
+    .dashboard-controls {
+        background: var(--surface);
+        border-color: var(--outline-variant);
+    }
+    
+    .dashboard-section {
+        background: var(--surface-container-low);
+        border-color: var(--outline-variant);
+    }
+    
+    .dashboard-section-header {
+        background: var(--surface-container);
+        border-color: var(--outline-variant);
+    }
+    
+    .dashboard-section-content {
+        background: var(--surface);
+    }
+    
+    .cards-container {
+        background: var(--surface-container-lowest);
+        border-color: var(--outline-variant);
+    }
+    
+    .dashboard-empty-state {
+        background: var(--surface-container);
+        border-color: var(--outline-variant);
+    }
+}
+
+/* ===== ACCESSIBILITY ENHANCEMENTS ===== */
+@media (prefers-contrast: high) {
+    .dashboard-controls,
+    .dashboard-section {
+        border-width: 2px;
+        border-color: var(--outline);
+    }
+    
     .dashboard-section-header {
         border-bottom-width: 3px;
+        border-color: var(--outline);
+    }
+    
+    .cards-container {
+        border: 2px solid var(--outline);
     }
 }
 
-/* Reduced Motion Support */
+/* ===== REDUCED MOTION SUPPORT ===== */
 @media (prefers-reduced-motion: reduce) {
-    .dashboard-section-header,
-    .section-header {
+    .dashboard-section,
+    .dashboard-controls {
         transition: none;
     }
+    
+    .dashboard.loading .dashboard-section-content::after {
+        animation: none;
+    }
 }
 
-/* Print Styles */
+/* ===== PRINT STYLES ===== */
 @media print {
+    .dashboard {
+        background: white;
+        padding: 0;
+    }
+    
     .dashboard-controls {
         background: white;
         border: 1px solid #000;
         box-shadow: none;
+        margin-bottom: var(--space-lg);
     }
+    
+    .dashboard-section {
+        background: #f8f8f8;
+        border: 1px solid #000;
+        box-shadow: none;
+        break-inside: avoid;
+    }
+    
+    .dashboard-section-header {
+        background: #e8e8e8;
+        border-bottom: 2px solid #000;
+    }
+    
+    .dashboard-section-content {
+        background: white;
+    }
+    
+    .cards-container {
+        background: white;
+        border: 1px solid #000;
+    }
+    
+    .dashboard-empty-state {
+        background: white;
+        border: 2px dashed #000;
+    }
+}
+
+/* ===== LOADING STATES ===== */
+.dashboard.loading .dashboard-section-content {
+    position: relative;
+    min-height: 200px;
+}
+
+.dashboard.loading .dashboard-section-content::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(
+        90deg,
+        transparent,
+        rgba(var(--primary-rgb, 33, 150, 243), 0.1),
+        transparent
+    );
+    animation: dashboardLoading 2s infinite;
+}
+
+@keyframes dashboardLoading {
+    0% { transform: translateX(-100%); }
+    100% { transform: translateX(100%); }
+}
+
+/* ===== EMPTY STATES ===== */
+.dashboard-empty-state {
+    text-align: center;
+    padding: var(--space-xxl);
+    background: var(--surface-container-low);
+    border-radius: var(--shape-large);
+    border: 2px dashed var(--outline-variant);
+}
+
+.dashboard-empty-state .material-icons {
+    font-size: 4rem;
+    color: var(--on-surface-variant);
+    opacity: 0.5;
+    margin-bottom: var(--space-lg);
+}
+
+.dashboard-empty-state h3 {
+    color: var(--on-surface);
+    margin-bottom: var(--space-sm);
+    font-weight: var(--font-weight-medium);
+}
+
+.dashboard-empty-state p {
+    color: var(--on-surface-variant);
+    margin: 0;
+}
+
+/* ===== VISUAL HIERARCHY FIXES ===== */
+
+/* Enhanced elevation system for proper layering */
+.dashboard-controls {
+    z-index: 10;
+}
+
+.dashboard-section {
+    z-index: 5;
+}
+
+.cards-container {
+    z-index: 1;
+}
+
+/* Better spacing between sections */
+.dashboard-section + .dashboard-section {
+    margin-top: var(--space-xxl);
+}
+
+/* Improved card contrast within containers */
+.cards-container .contractor-card {
+    background: var(--surface);
+    border: 1px solid var(--outline-variant);
+    box-shadow: var(--elevation-1);
+}
+
+.cards-container .contractor-card:hover {
+    box-shadow: var(--elevation-3);
+    border-color: var(--outline);
+}
+
+/* Stats section specific styling */
+.dashboard-section.stats-section {
+    background: var(--surface-container);
+}
+
+.dashboard-section.stats-section .dashboard-section-content {
+    background: transparent;
+}
+
+/* Quick filters section */
+.dashboard-section.filters-section {
+    background: var(--surface-container-low);
+}
+
+.dashboard-section.filters-section .dashboard-section-content {
+    background: transparent;
+    padding-top: 0;
 }

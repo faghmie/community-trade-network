@@ -82,25 +82,40 @@
     --neutral-800: #424242;
     --neutral-900: #212121;
     
-    /* Surface Colors - Updated to Material Naming */
-    --surface-50: var(--neutral-50);
-    --surface-100: var(--neutral-100);
-    --surface-200: var(--neutral-200);
-    --surface-300: var(--neutral-300);
-    --surface-400: var(--neutral-400);
-    --surface-500: var(--neutral-500);
-    --surface-600: var(--neutral-600);
-    --surface-700: var(--neutral-700);
-    --surface-800: var(--neutral-800);
-    --surface-900: var(--neutral-900);
+    /* FIXED: Material Design Surface Container Tokens - Proper Hierarchy */
+    --surface: #ffffff;
+    --surface-dim: #f5f5f5;
+    --surface-bright: #ffffff;
+    
+    --surface-container-lowest: var(--neutral-50);
+    --surface-container-low: var(--neutral-100);
+    --surface-container: var(--neutral-200);
+    --surface-container-high: var(--neutral-300);
+    --surface-container-highest: var(--neutral-400);
+    
+    /* FIXED: Material Design On-Surface Tokens */
+    --on-surface: var(--text-primary);
+    --on-surface-variant: var(--text-secondary);
+    --on-surface-medium: var(--text-secondary);
+    --on-surface-disabled: var(--text-disabled);
+    
+    /* FIXED: Material Design Outline Tokens */
+    --outline: var(--border-color);
+    --outline-variant: var(--border-light);
+    
+    /* FIXED: Material Design Shape Tokens */
+    --shape-extra-small: var(--border-radius-xs);
+    --shape-small: var(--border-radius-sm);
+    --shape-medium: var(--border-radius);
+    --shape-large: var(--border-radius-lg);
+    --shape-extra-large: var(--border-radius-xl);
+    --shape-full: var(--border-radius-full);
     
     /* Semantic Colors (Material Design Compliant) */
     --primary-color: var(--primary-500);
     --primary-color-dark: var(--primary-700);
-    --primary-color-darker: var(--primary-800); /* NEW: For active states */
+    --primary-color-darker: var(--primary-800);
     --primary-color-light: var(--primary-300);
-    --primary-200: var(--primary-200); /* NEW: For focus rings */
-    --primary-300: var(--primary-300); /* NEW: For light variants */
     
     --secondary-color: var(--secondary-500);
     --secondary-color-dark: var(--secondary-700);
@@ -109,22 +124,26 @@
     --accent-color: var(--accent-500);
     --accent-color-dark: var(--accent-700);
     --accent-color-light: var(--accent-300);
-    --accent-400: var(--accent-400); /* NEW: For gradient variants */
     
     --success-color: var(--success-500);
     --success-color-dark: var(--success-700);
-    --success-color-darker: var(--success-800); /* NEW: For active states */
-    --success-600: var(--success-600); /* NEW: For hover states */
+    --success-color-darker: var(--success-800);
     
     --warning-color: var(--warning-700);
-    --warning-color-dark: var(--warning-800); /* NEW: For hover states */
-    --warning-color-darker: var(--warning-900); /* NEW: For active states */
-    --warning-600: var(--warning-600); /* NEW: For hover states */
+    --warning-color-dark: var(--warning-800);
+    --warning-color-darker: var(--warning-900);
     
     --error-color: var(--error-500);
     --error-color-dark: var(--error-700);
-    --error-color-darker: var(--error-800); /* NEW: For active states */
-    --error-600: var(--error-600); /* NEW: For hover states */
+    --error-color-darker: var(--error-800);
+    
+    /* NEW: Material Design 3 Color System Tokens */
+    --primary-container: var(--primary-50);
+    --on-primary-container: var(--primary-900);
+    --secondary-container: var(--secondary-50);
+    --on-secondary-container: var(--secondary-900);
+    --tertiary-container: var(--accent-50);
+    --on-tertiary-container: var(--accent-900);
     
     /* Text Colors - Material Design Specification */
     --text-primary: rgba(0, 0, 0, 0.87);
@@ -137,17 +156,17 @@
     --text-on-secondary: rgba(255, 255, 255, 0.87);
     --text-on-accent: rgba(255, 255, 255, 0.87);
     
-    /* Background Colors */
-    --background: var(--surface-50);
-    --surface: #ffffff;
-    --surface-variant: var(--surface-100);
+    /* FIXED: Background Colors - Proper Material Design Hierarchy */
+    --background: var(--surface-container-lowest);
+    --surface-variant: var(--surface-container-low);
     
+    /* FIXED: Legacy Background Tokens - Mapped to proper hierarchy */
     --bg-color: var(--background);
     --bg-white: var(--surface);
-    --bg-surface: var(--surface-variant);
+    --bg-surface: var(--surface-container-low);
     --bg-card: var(--surface);
     
-    /* Border Colors */
+    /* Border Colors - UPDATED with Material Design tokens */
     --border-color: rgba(0, 0, 0, 0.12);
     --border-light: rgba(0, 0, 0, 0.08);
     --border-dark: rgba(0, 0, 0, 0.24);
@@ -211,22 +230,22 @@
     --transition: var(--transition-standard);
     
     /* NEW: Material Design specific transitions */
-    --material-transition: var(--transition-standard); /* For consistent Material Design animations */
+    --material-transition: var(--transition-standard);
     
     /* Typography Scale - Material Design Type Scale */
     --font-family: 'Roboto', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
     --font-family-mono: 'Roboto Mono', 'SF Mono', Monaco, Inconsolata, 'Fira Mono', 'DejaVu Sans Mono', monospace;
     
-    --font-size-caption: 0.75rem;      /* 12px */
-    --font-size-helper: 0.8125rem;     /* 13px */
-    --font-size-body2: 0.875rem;       /* 14px */
-    --font-size-body1: 1rem;           /* 16px */
-    --font-size-h6: 1.25rem;           /* 20px */
-    --font-size-h5: 1.5rem;            /* 24px */
-    --font-size-h4: 2.125rem;          /* 34px */
-    --font-size-h3: 3rem;              /* 48px */
-    --font-size-h2: 3.75rem;           /* 60px */
-    --font-size-h1: 6rem;              /* 96px */
+    --font-size-caption: 0.75rem;
+    --font-size-helper: 0.8125rem;
+    --font-size-body2: 0.875rem;
+    --font-size-body1: 1rem;
+    --font-size-h6: 1.25rem;
+    --font-size-h5: 1.5rem;
+    --font-size-h4: 2.125rem;
+    --font-size-h3: 3rem;
+    --font-size-h2: 3.75rem;
+    --font-size-h1: 6rem;
     
     /* Legacy Font Sizes */
     --font-size-xs: var(--font-size-caption);
@@ -240,7 +259,7 @@
     /* Font Weights - Material Design */
     --font-weight-light: 300;
     --font-weight-regular: 400;
-    --font-weight-normal: 400; /* NEW: Alias for regular */
+    --font-weight-normal: 400;
     --font-weight-medium: 500;
     --font-weight-semibold: 600;
     --font-weight-bold: 700;
@@ -267,15 +286,15 @@
     /* Z-index Scale - Material Design - ENHANCED FOR NOTIFICATION FIX */
     --z-mobile-stepper: 1000;
     --z-speed-dial: 1050;
-    --z-app-bar: 1100;        /* Top banner should be here */
+    --z-app-bar: 1100;
     --z-drawer: 1200;
     --z-modal: 1300;
-    --z-snackbar: 1400;       /* Notifications should be here - HIGHER than top banner */
+    --z-snackbar: 1400;
     --z-tooltip: 1500;
 
     /* NEW: Specific component z-indices for clarity and notification fix */
-    --z-top-banner: var(--z-app-bar);        /* 1100 */
-    --z-notification: var(--z-snackbar);     /* 1400 - HIGHER than top banner */
+    --z-top-banner: var(--z-app-bar);
+    --z-notification: var(--z-snackbar);
     --z-dropdown: var(--z-mobile-stepper);
     --z-sticky: var(--z-app-bar);
     --z-fixed: var(--z-app-bar);
@@ -305,14 +324,41 @@
         --text-disabled: rgba(255, 255, 255, 0.38);
         --text-hint: rgba(255, 255, 255, 0.38);
         
-        --background: #121212;
+        /* FIXED: Dark theme surface hierarchy */
         --surface: #1e1e1e;
-        --surface-variant: #2d2d2d;
+        --surface-dim: #121212;
+        --surface-bright: #2d2d2d;
+        
+        --surface-container-lowest: #0d0d0d;
+        --surface-container-low: #1a1a1a;
+        --surface-container: #232323;
+        --surface-container-high: #2e2e2e;
+        --surface-container-highest: #3a3a3a;
+        
+        --on-surface: rgba(255, 255, 255, 0.87);
+        --on-surface-variant: rgba(255, 255, 255, 0.6);
+        --on-surface-medium: rgba(255, 255, 255, 0.6);
+        --on-surface-disabled: rgba(255, 255, 255, 0.38);
+        
+        --outline: rgba(255, 255, 255, 0.12);
+        --outline-variant: rgba(255, 255, 255, 0.08);
+        
+        /* NEW: Material Design 3 Color System Tokens for Dark Theme */
+        --primary-container: var(--primary-900);
+        --on-primary-container: var(--primary-100);
+        --secondary-container: var(--secondary-900);
+        --on-secondary-container: var(--secondary-100);
+        --tertiary-container: var(--accent-900);
+        --on-tertiary-container: var(--accent-100);
+        
+        /* FIXED: Dark theme legacy background mappings */
+        --background: var(--surface-dim);
+        --surface-variant: var(--surface-container-low);
         
         --bg-color: var(--background);
         --bg-card: var(--surface);
-        --bg-surface: var(--surface-variant);
-        --bg-white: var(--surface); /* NEW: Ensure bg-white works in dark mode */
+        --bg-surface: var(--surface-container-low);
+        --bg-white: var(--surface);
         
         --border-color: rgba(255, 255, 255, 0.12);
         --border-light: rgba(255, 255, 255, 0.08);

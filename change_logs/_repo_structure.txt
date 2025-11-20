@@ -38,10 +38,23 @@
 |   |   |-- 2025_11_17_08.md
 |   |   |-- 2025_11_17_09.md
 |   |   |-- 2025_11_17_10.md
-|   |   `-- 2025_11_17_11.md
-|   |-- 2025_11_18_01.md
-|   |-- 2025_11_18_02.md
-|   |-- 2025_11_18_03.md
+|   |   |-- 2025_11_17_11.md
+|   |   |-- 2025_11_18_01.md
+|   |   |-- 2025_11_18_02.md
+|   |   |-- 2025_11_18_03.md
+|   |   |-- 2025_11_18_04.md
+|   |   |-- 2025_11_18_05.md
+|   |   |-- 2025_11_18_06.md
+|   |   `-- 2025_11_18_07.md
+|   |-- 2025_11_19_01.md
+|   |-- 2025_11_19_02.md
+|   |-- 2025_11_19_03.md
+|   |-- 2025_11_19_04.md
+|   |-- 2025_11_19_05.md
+|   |-- 2025_11_19_06.md
+|   |-- 2025_11_19_07.md
+|   |-- 2025_11_19_08.md
+|   |-- 2025_11_19_09.md
 |   |-- _coding_prompt.md
 |   |-- _project_structure.md
 |   `-- _repo_structure.txt
@@ -63,6 +76,7 @@
 |   |   |-- modals.css
 |   |   |-- notifications.css
 |   |   |-- ratings.css
+|   |   |-- review-modal.css
 |   |   |-- stats-cards.css
 |   |   |-- tables.css
 |   |   |-- tabs.css
@@ -111,9 +125,12 @@
 |   |   |-- contractorManager.js
 |   |   |-- data.js
 |   |   |-- favoritesDataManager.js
+|   |   |-- loadingScreen.js
 |   |   |-- mapManager.js
 |   |   |-- notifications.js
+|   |   |-- pwa-install-manager.js
 |   |   |-- reviewManager.js
+|   |   |-- service-worker-manager.js
 |   |   |-- statsDataManager.js
 |   |   |-- storage.js
 |   |   |-- supabase.js
@@ -135,4 +152,4 @@
 |-- sw.js
 `-- unsaved file 1
 
-13 directories, 123 files
+13 directories, 140 files

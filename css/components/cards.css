@@ -1,745 +1,491 @@
-/* Material Design Card System with Enhanced Favorites & Mobile Responsiveness */
+/* Material Design Card System - PERFECTED MATERIAL DESIGN COMPLIANCE */
 
-/* Base Card Styles - Material Design with Mobile First */
+/* ===== BASE CARD STYLES ===== */
 .card {
-    background: var(--bg-card);
-    border-radius: var(--border-radius);
+    background: var(--surface);
+    border-radius: var(--shape-medium);
     box-shadow: var(--elevation-1);
     overflow: hidden;
-    transition: var(--material-transition);
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
     position: relative;
-    border: 1px solid transparent;
-    min-height: 120px; /* Ensure minimum touch target */
+    border: 1px solid var(--outline-variant);
+    min-height: 120px;
+    display: flex;
+    flex-direction: column;
 }
 
-.card:hover {
+.card:hover,
+.card:focus-within {
     box-shadow: var(--elevation-3);
     transform: translateY(-2px);
+    border-color: var(--outline);
 }
 
-/* Mobile-First Card Layout */
-.card-header {
-    padding: var(--space-sm) var(--space-md);
-    border-bottom: 1px solid var(--border-light);
-    position: relative;
-    background: var(--bg-card);
+/* Material Design Touch Target Enhancement */
+.card * {
+    -webkit-tap-highlight-color: transparent;
 }
 
-.card-body {
-    padding: var(--space-sm) var(--space-md);
-    display: flex;
-    flex-direction: column;
-    gap: var(--space-xs);
-    flex: 1;
-    background: var(--bg-card);
-}
-
-.card-footer {
-    padding: var(--space-sm) var(--space-md);
-    border-top: 1px solid var(--border-light);
-    background-color: var(--surface);
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    gap: var(--space-sm);
-    min-height: 52px; /* Consistent touch target */
-}
-
-/* Contractor Card - Mobile First Design */
+/* ===== PERFECTED CONTRACTOR CARD ===== */
 .contractor-card {
     cursor: pointer;
-    position: relative;
-    height: 100%;
-    display: flex;
-    flex-direction: column;
-    background: var(--bg-card);
-    border-radius: var(--border-radius);
+    background: var(--surface);
+    border-radius: var(--shape-medium);
     box-shadow: var(--elevation-1);
-    transition: var(--material-transition);
-    min-height: 140px; /* Minimum touch target for mobile */
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: hidden;
+    min-height: 140px;
+    border: 1px solid var(--outline-variant);
 }
 
 .contractor-card:hover {
     box-shadow: var(--elevation-3);
     transform: translateY(-2px);
+    border-color: var(--outline);
 }
 
-/* Enhanced Touch Targets for Mobile */
+.contractor-card:active {
+    transform: translateY(0);
+    box-shadow: var(--elevation-2);
+}
+
+/* Card Content Area - Simplified & Clean */
+.contractor-card .card-content {
+    padding: var(--space-lg);
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-sm);
+    flex: 1;
+    position: relative;
+}
+
+/* ===== REFINED TYPOGRAPHY HIERARCHY ===== */
 .contractor-card .contractor-name {
-    font-size: var(--font-size-base); /* Start smaller for mobile */
+    font-size: var(--font-size-lg);
     font-weight: var(--font-weight-medium);
-    color: var(--text-primary);
+    color: var(--on-surface);
     margin: 0;
     line-height: var(--line-height-tight);
-    background: transparent !important;
-    min-height: 1.5em; /* Ensure consistent line height */
+    padding-right: 48px; /* Space for favorite button */
+    letter-spacing: 0.15px; /* Material Design letter spacing */
 }
 
-.contractor-card .contractor-category {
-    color: var(--text-secondary);
-    font-size: var(--font-size-sm);
+.contractor-card .contractor-meta {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-xs);
     margin: 0;
+}
+
+.contractor-card .meta-item {
     display: flex;
     align-items: center;
-    gap: var(--space-xs);
-    background: transparent !important;
-    min-height: 1.4em;
+    gap: var(--space-sm);
+    color: var(--on-surface-variant);
+    font-size: var(--font-size-sm);
+    line-height: var(--line-height-normal);
 }
 
-.contractor-card .contractor-location {
-    color: var(--text-secondary);
-    font-size: var(--font-size-sm);
-    margin: 0;
+.contractor-card .meta-item .material-icons {
+    font-size: 1.125rem;
+    width: 1.125rem;
+    height: 1.125rem;
+    color: var(--on-surface-variant);
+    opacity: 0.8;
+}
+
+/* ===== ENHANCED RATING DISPLAY - MORE PROMINENT ===== */
+.contractor-card .rating-section {
     display: flex;
     align-items: center;
-    gap: var(--space-xs);
-    background: transparent !important;
-    min-height: 1.4em;
+    gap: var(--space-md);
+    margin: var(--space-xs) 0 0 0;
+    padding: 0;
 }
 
-/* Enhanced Mobile-Friendly Rating Display */
 .contractor-card .rating-display {
     display: flex;
     align-items: center;
-    gap: var(--space-xs);
-    margin: 0;
-    padding: 0;
-    min-height: auto;
-    line-height: 1;
-    background: transparent !important;
-    border: none !important;
-    flex-wrap: wrap; /* Allow wrapping on small screens */
+    gap: var(--space-sm);
+    background: var(--surface-container-low);
+    padding: var(--space-xs) var(--space-sm);
+    border-radius: var(--shape-small);
+    border: 1px solid var(--outline-variant);
 }
 
 .contractor-card .rating-stars {
     display: flex;
     align-items: center;
-    gap: 1px;
-    background: transparent !important;
-    margin: 0;
-    padding: 0;
-    border: none !important;
-    flex-shrink: 0; /* Prevent stars from shrinking */
+    gap: 2px;
 }
 
 .contractor-card .rating-star {
     color: var(--warning-color);
-    font-size: 14px;
-    width: 14px;
-    height: 14px;
+    font-size: 1.125rem;
+    width: 1.125rem;
+    height: 1.125rem;
     display: flex;
     align-items: center;
     justify-content: center;
-    line-height: 1;
-    background: transparent !important;
-    margin: 0;
-    padding: 0;
-    border: none !important;
 }
 
 .contractor-card .rating-value {
     font-size: var(--font-size-sm);
     font-weight: var(--font-weight-medium);
-    color: var(--text-primary);
+    color: var(--on-surface);
     line-height: 1;
-    margin: 0;
-    background: transparent !important;
-    border: none !important;
-    flex-shrink: 0;
 }
 
 .contractor-card .review-count {
-    font-size: var(--font-size-xs);
-    color: var(--text-disabled);
+    font-size: var(--font-size-sm);
+    color: var(--on-surface-variant);
     line-height: 1;
-    margin: 0;
-    background: transparent !important;
-    border: none !important;
-    flex-shrink: 0;
+    font-weight: var(--font-weight-regular);
 }
 
-/* Enhanced Favorite Button - Mobile Optimized */
+/* ===== PERFECTED FAVORITE BUTTON - MATERIAL FAB ===== */
 .favorite-btn {
     position: absolute;
-    top: var(--space-sm);
-    right: var(--space-sm);
-    background: var(--bg-card);
-    border: 2px solid var(--surface-300);
-    border-radius: var(--border-radius-full);
-    width: 44px; /* Larger touch target */
-    height: 44px;
+    top: var(--space-md);
+    right: var(--space-md);
+    width: 40px;
+    height: 40px;
+    border-radius: var(--shape-full);
+    border: none;
+    background: var(--surface);
+    color: var(--on-surface-variant);
+    cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: center;
-    cursor: pointer;
-    transition: var(--material-transition);
-    font-size: 1.2rem;
-    color: var(--surface-500);
-    z-index: 10;
-    backdrop-filter: blur(10px);
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
     box-shadow: var(--elevation-1);
-    /* Ensure proper touch interaction */
-    touch-action: manipulation;
-    -webkit-tap-highlight-color: transparent;
+    font-size: 1.25rem;
+    z-index: 2;
+    border: 1px solid var(--outline-variant);
 }
 
 .favorite-btn:hover {
-    background: var(--bg-card);
+    background: var(--surface-container);
     transform: scale(1.1);
-    border-color: var(--accent-color);
-    color: var(--accent-color);
     box-shadow: var(--elevation-2);
+    border-color: var(--outline);
 }
 
 .favorite-btn:active {
-    transform: scale(0.95); /* Touch feedback */
+    transform: scale(0.95);
 }
 
-/* Favorited State - Material Design */
 .favorite-btn.favorited {
-    background: linear-gradient(135deg, var(--accent-color), var(--accent-400));
-    border-color: var(--accent-color);
+    background: var(--primary-color);
     color: var(--text-on-primary);
-    animation: materialFavoritePulse 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+    border-color: var(--primary-color);
+    animation: favoritePulse 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .favorite-btn.favorited:hover {
-    background: linear-gradient(135deg, var(--accent-600), var(--accent-color));
-    border-color: var(--accent-600);
+    background: var(--primary-color-dark);
+    border-color: var(--primary-color-dark);
     transform: scale(1.05);
-    box-shadow: var(--elevation-3);
 }
 
-@keyframes materialFavoritePulse {
-    0% { 
-        transform: scale(1);
-        box-shadow: var(--elevation-1);
-    }
-    50% { 
-        transform: scale(1.2);
-        box-shadow: 0 8px 25px rgba(233, 30, 99, 0.4);
-    }
-    100% { 
-        transform: scale(1);
-        box-shadow: var(--elevation-2);
-    }
+@keyframes favoritePulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.15); }
+    100% { transform: scale(1); }
 }
 
-/* Enhanced Card Footer Actions - Mobile Optimized */
-.contractor-card .card-footer {
-    background-color: var(--surface);
-    padding: var(--space-sm) var(--space-md);
-    border-top: 1px solid var(--border-light);
+/* ===== REFINED CARD ACTIONS - SUBTLE & ELEGANT ===== */
+.contractor-card .card-actions {
+    padding: var(--space-md) var(--space-lg) var(--space-lg);
     display: flex;
-    justify-content: space-between;
-    align-items: center;
     gap: var(--space-sm);
-    min-height: 56px; /* Larger touch target */
+    background: var(--surface-container-low);
+    border-top: 1px solid var(--outline-variant);
+    min-height: 56px;
+    align-items: center;
 }
 
-.contractor-card .card-footer .btn {
-    min-height: 40px; /* Better touch target */
-    padding: var(--space-xs) var(--space-sm);
-    border-radius: var(--border-radius-sm);
+.contractor-card .card-action {
+    flex: 1;
+    min-height: 36px;
+    padding: 8px 16px;
+    border: 1px solid var(--outline);
+    border-radius: var(--shape-small);
+    background: transparent;
+    color: var(--primary-color);
     font-size: var(--font-size-sm);
     font-weight: var(--font-weight-medium);
-    text-transform: none;
-    letter-spacing: var(--letter-spacing-normal);
-    transition: var(--material-transition);
-    flex: 1;
-    max-width: 140px;
-    /* Touch optimization */
-    touch-action: manipulation;
-    -webkit-tap-highlight-color: transparent;
+    cursor: pointer;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    position: relative;
+    overflow: hidden;
+    line-height: 1.25;
+    letter-spacing: 0.25px;
 }
 
-.contractor-card .card-footer .btn-primary {
-    background-color: var(--primary-color);
-    color: var(--text-on-primary);
-    border: none;
-    box-shadow: var(--elevation-1);
+/* Material Design Ripple Effect */
+.card-action::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: currentColor;
+    opacity: 0;
+    transition: opacity 0.2s;
+    border-radius: inherit;
 }
 
-.contractor-card .card-footer .btn-primary:hover {
-    background-color: var(--primary-color-dark);
-    box-shadow: var(--elevation-2);
+.card-action:hover::before {
+    opacity: 0.08;
 }
 
-.contractor-card .card-footer .btn-primary:active {
-    background-color: var(--primary-color-darker);
-    box-shadow: var(--elevation-1);
-    transform: translateY(1px); /* Touch feedback */
+.card-action:active::before {
+    opacity: 0.12;
 }
 
-.contractor-card .card-footer .btn-secondary {
-    background-color: transparent;
-    color: var(--primary-color);
-    border: 1px solid var(--border-color);
+.card-action .material-icons {
+    font-size: 1.125rem;
+    width: 1.125rem;
+    height: 1.125rem;
 }
 
-.contractor-card .card-footer .btn-secondary:hover {
-    background-color: rgba(0, 0, 0, 0.04);
+.card-action:hover {
+    background: var(--surface-container);
     border-color: var(--primary-color);
 }
 
-.contractor-card .card-footer .btn-secondary:active {
-    background-color: rgba(0, 0, 0, 0.08);
-    transform: translateY(1px); /* Touch feedback */
+.card-action:active {
+    transform: translateY(1px);
 }
 
-/* Favorites Section - Mobile Optimized */
-.favorites-section {
-    margin: var(--space-lg) 0;
-    padding: var(--space-lg);
-    background: var(--bg-surface);
-    border-radius: var(--border-radius-lg);
-    border-left: 4px solid var(--accent-color);
-    box-shadow: var(--elevation-1);
-    animation: materialSlideIn 0.5s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.favorites-section .section-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin-bottom: var(--space-lg);
-    padding-bottom: var(--space-md);
-    border-bottom: 1px solid var(--border-light);
-    flex-wrap: wrap; /* Allow wrapping on mobile */
-    gap: var(--space-sm);
-}
-
-.favorites-section .section-header h2 {
-    color: var(--accent-color);
-    margin: 0;
-    font-size: var(--font-size-xl); /* Start smaller */
-    font-weight: var(--font-weight-medium);
-    display: flex;
-    align-items: center;
-    gap: var(--space-md);
-    flex-wrap: wrap;
-}
-
-.favorites-badge {
-    background: linear-gradient(135deg, var(--accent-color), var(--accent-400));
+/* Primary Action - Filled Style for Better Hierarchy */
+.card-action.primary {
+    background: var(--primary-color);
     color: var(--text-on-primary);
-    padding: var(--space-xs) var(--space-md);
-    border-radius: var(--border-radius-sm);
-    font-size: var(--font-size-sm);
-    font-weight: var(--font-weight-medium);
+    border-color: var(--primary-color);
     box-shadow: var(--elevation-1);
-    min-height: 24px; /* Consistent height */
-    display: inline-flex;
-    align-items: center;
 }
 
-/* Contractor List Section - Mobile Optimized */
-.contractor-list {
-    margin: var(--space-lg) 0;
-    padding: var(--space-lg);
-    background: var(--bg-surface);
-    border-radius: var(--border-radius-lg);
+.card-action.primary:hover {
+    box-shadow: var(--elevation-2);
+    background: var(--primary-color-dark);
+    border-color: var(--primary-color-dark);
+}
+
+.card-action.primary:active {
     box-shadow: var(--elevation-1);
-    border: 1px solid var(--border-light);
+    transform: translateY(1px);
 }
 
-.contractor-list .section-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin-bottom: var(--space-lg);
-    padding-bottom: var(--space-md);
-    border-bottom: 1px solid var(--border-light);
-    flex-wrap: wrap; /* Allow wrapping on mobile */
-    gap: var(--space-sm);
+.card-action.primary::before {
+    background: var(--text-on-primary);
 }
 
-.contractor-list .section-header h2 {
-    color: var(--text-primary);
+/* ===== MATERIAL DESIGN GRID LAYOUT ===== */
+.contractors-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: var(--space-lg);
+    padding: 0;
     margin: 0;
-    font-size: var(--font-size-xl); /* Start smaller */
-    font-weight: var(--font-weight-medium);
-    display: flex;
-    align-items: center;
-    gap: var(--space-md);
-    flex-wrap: wrap;
 }
 
-/* Enhanced Mobile Responsiveness */
-@media (min-width: 480px) {
+/* ===== RESPONSIVE BREAKPOINTS ===== */
+
+/* Small tablets and large phones (600px+) */
+@media (min-width: 600px) {
+    .contractors-grid {
+        grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+        gap: var(--space-xl);
+    }
+    
     .contractor-card .contractor-name {
-        font-size: var(--font-size-lg);
+        font-size: var(--font-size-xl);
     }
     
-    .card-header,
-    .card-body,
-    .card-footer {
-        padding: var(--space-sm) var(--space-lg);
-    }
-    
-    .favorites-section,
-    .contractor-list {
+    .contractor-card .card-content {
         padding: var(--space-xl);
-        margin: var(--space-xl) 0;
+        gap: var(--space-md);
     }
     
-    .favorites-section .section-header h2,
-    .contractor-list .section-header h2 {
-        font-size: var(--font-size-xxl);
+    .contractor-card .card-actions {
+        padding: var(--space-lg) var(--space-xl) var(--space-xl);
     }
 }
 
-@media (min-width: 768px) {
+/* Desktop (1200px+) */
+@media (min-width: 1200px) {
+    .contractors-grid {
+        grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));
+        gap: var(--space-xxl);
+    }
+    
     .contractor-card {
-        min-height: 160px; /* More space for desktop */
-    }
-    
-    .favorite-btn {
-        width: 40px;
-        height: 40px;
-    }
-    
-    .contractor-card .card-footer .btn {
-        min-height: 36px;
-        font-size: var(--font-size-sm);
+        min-height: 160px;
     }
 }
 
-@media (min-width: 1024px) {
-    .contractor-card:hover .card-footer .btn {
-        transform: translateY(0);
-    }
-}
-
-/* Small Mobile Devices (320px - 479px) */
-@media (max-width: 479px) {
-    .card-body, .card-header, .card-footer {
-        padding: var(--space-xs) var(--space-sm);
-    }
-    
-    .contractor-card .rating-display {
-        gap: var(--space-xxs);
-        background: transparent !important;
-    }
-    
-    .contractor-card .rating-star {
-        font-size: 12px;
-        width: 12px;
-        height: 12px;
-        background: transparent !important;
-    }
-    
-    .contractor-card .rating-value {
-        font-size: var(--font-size-xs);
-        background: transparent !important;
-    }
-    
-    .favorite-btn {
-        width: 40px;
-        height: 40px;
-        top: var(--space-xs);
-        right: var(--space-xs);
-    }
-    
-    .favorites-section,
-    .contractor-list {
+/* ===== COMPACT MOBILE LAYOUT ===== */
+@media (max-width: 359px) {
+    .contractor-card .card-content {
         padding: var(--space-md);
-        margin: var(--space-md) 0;
-        border-radius: var(--border-radius);
-    }
-    
-    .favorites-actions {
-        flex-direction: column;
-    }
-    
-    .favorites-actions .material-button {
-        width: 100%;
-        justify-content: center;
-        min-height: 44px; /* Better touch targets */
-    }
-    
-    .favorites-notice {
-        padding: var(--space-md);
-    }
-    
-    .no-favorites {
-        padding: var(--space-xl);
-    }
-    
-    .contractor-card .card-footer {
-        padding: var(--space-xs) var(--space-sm);
-        min-height: 60px; /* Larger touch area */
-        flex-direction: column;
         gap: var(--space-xs);
-    }
-    
-    .contractor-card .card-footer .btn {
-        min-height: 40px;
-        padding: var(--space-xs) var(--space-sm);
-        font-size: var(--font-size-sm);
-        width: 100%;
-        max-width: none;
-    }
-    
-    /* Stack section headers vertically on very small screens */
-    .favorites-section .section-header,
-    .contractor-list .section-header {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: var(--space-sm);
-    }
-    
-    .favorites-section .section-header h2,
-    .contractor-list .section-header h2 {
-        font-size: var(--font-size-lg);
-    }
-}
-
-/* Ultra-Compact Mobile Layout */
-@media (max-width: 360px) {
-    .contractor-card .rating-display {
-        flex-wrap: wrap;
-        gap: 2px;
-        background: transparent !important;
-    }
-    
-    .contractor-card .rating-star {
-        font-size: 11px;
-        width: 11px;
-        height: 11px;
-        background: transparent !important;
     }
     
     .contractor-card .contractor-name {
         font-size: var(--font-size-base);
-        line-height: 1.3;
+        padding-right: 44px;
     }
     
-    .contractor-card .contractor-category,
-    .contractor-card .contractor-location {
+    .contractor-card .meta-item {
         font-size: var(--font-size-xs);
-        line-height: 1.3;
+        gap: var(--space-xs);
+    }
+    
+    .contractor-card .rating-section {
+        gap: var(--space-sm);
+    }
+    
+    .contractor-card .rating-display {
+        padding: 6px 8px;
     }
     
     .favorite-btn {
         width: 36px;
         height: 36px;
+        top: var(--space-sm);
+        right: var(--space-sm);
     }
     
-    .favorites-notice p {
-        font-size: var(--font-size-xs);
-    }
-    
-    .favorites-badge {
-        font-size: var(--font-size-xs);
-        padding: var(--space-xxs) var(--space-sm);
-    }
-    
-    .card-body {
-        gap: var(--space-xxs);
+    .contractor-card .card-actions {
+        padding: var(--space-md);
+        min-height: 52px;
     }
 }
 
-/* Landscape Mobile Optimization */
-@media (max-height: 500px) and (orientation: landscape) {
-    .contractor-card {
-        min-height: 120px;
-    }
-    
-    .card-body {
-        padding: var(--space-xs) var(--space-sm);
-    }
-    
-    .contractor-card .contractor-name {
-        font-size: var(--font-size-sm);
-    }
-    
-    .contractor-card .contractor-category,
-    .contractor-card .contractor-location {
-        font-size: var(--font-size-xs);
-    }
-    
+/* ===== DARK THEME ENHANCEMENTS ===== */
+@media (prefers-color-scheme: dark) {
     .favorite-btn {
-        width: 36px;
-        height: 36px;
+        background: var(--surface-container);
+        color: var(--on-surface-variant);
+        border-color: var(--outline-variant);
+    }
+    
+    .favorite-btn:hover {
+        background: var(--surface-container-high);
+        border-color: var(--outline);
+    }
+    
+    .favorite-btn.favorited {
+        background: var(--primary-color);
+        color: var(--text-on-primary);
+        border-color: var(--primary-color);
+    }
+    
+    .favorite-btn.favorited:hover {
+        background: var(--primary-color-dark);
+        border-color: var(--primary-color-dark);
+    }
+    
+    .contractor-card .rating-display {
+        background: var(--surface-container);
+        border-color: var(--outline-variant);
+    }
+    
+    .contractor-card .card-actions {
+        background: var(--surface-container);
+    }
+    
+    .card-action:hover {
+        background: var(--surface-container-high);
+    }
+    
+    .card-action.primary:hover {
+        background: var(--primary-color-dark);
     }
 }
 
-/* Material Design Animations */
-@keyframes materialSlideIn {
-    from {
-        opacity: 0;
-        transform: translateY(-20px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
+/* ===== MATERIAL DESIGN STATES ===== */
+.contractor-card[data-state="selected"] {
+    outline: 2px solid var(--primary-color);
+    outline-offset: 2px;
+}
+
+.contractor-card[data-state="disabled"] {
+    opacity: 0.38;
+    pointer-events: none;
+}
+
+/* ===== LOADING STATE ===== */
+.contractor-card.loading {
+    pointer-events: none;
+}
+
+.contractor-card.loading .card-content > *:not(.favorite-btn) {
+    background: var(--surface-container);
+    border-radius: var(--shape-small);
+    color: transparent;
+    position: relative;
+    overflow: hidden;
+}
+
+.contractor-card.loading .card-content > *:not(.favorite-btn)::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(
+        90deg,
+        transparent,
+        rgba(255, 255, 255, 0.4),
+        transparent
+    );
+    animation: loadingShimmer 1.5s infinite;
+}
+
+@keyframes loadingShimmer {
+    0% { transform: translateX(-100%); }
+    100% { transform: translateX(100%); }
+}
+
+/* ===== CONTRACTOR LIST PADDING ===== */
+.contractor-list-content {
+    padding: var(--space-xl);
+}
+
+/* Responsive padding adjustments */
+@media (max-width: 768px) {
+    .contractor-list-content {
+        padding: var(--space-lg);
     }
 }
 
-/* ... rest of the existing styles (print, high contrast, reduced motion, dark theme, card variants) remain unchanged ... */
+@media (max-width: 480px) {
+    .contractor-list-content {
+        padding: var(--space-md);
+    }
+}
 
 /* Print Styles */
 @media print {
-    .favorite-btn {
+    .favorite-btn,
+    .card-actions {
         display: none;
     }
     
-    .favorites-section,
-    .contractor-list {
-        border: 1px solid var(--border-color);
-        background: var(--bg-white);
-        box-shadow: var(--elevation-0);
+    .contractor-card {
+        box-shadow: none;
+        border: 1px solid var(--outline);
+        break-inside: avoid;
     }
-    
-    .favorites-actions {
-        display: none;
-    }
-    
-    .card {
-        box-shadow: var(--elevation-0);
-        border: 1px solid var(--border-color);
-    }
-    
-    .contractor-card .card-footer {
-        background: var(--bg-white) !important;
-    }
-}
-
-/* High Contrast Mode Support */
-@media (prefers-contrast: high) {
-    .favorite-btn {
-        border-width: 3px;
-    }
-    
-    .favorite-btn.favorited {
-        background: var(--accent-color);
-        border-color: var(--accent-color);
-    }
-    
-    .favorites-section,
-    .contractor-list {
-        border-style: solid;
-        border-width: 3px;
-    }
-    
-    .card {
-        border: 1px solid var(--border-dark);
-    }
-    
-    .contractor-card .card-footer {
-        border-top-width: 2px;
-    }
-}
-
-/* Reduced Motion Support */
-@media (prefers-reduced-motion: reduce) {
-    .favorite-btn {
-        transition: none;
-    }
-    
-    .favorite-btn:hover {
-        transform: none;
-    }
-    
-    .favorite-btn.favorited {
-        animation: none;
-    }
-    
-    .favorites-section {
-        animation: none;
-    }
-    
-    .card:hover {
-        transform: none;
-    }
-    
-    .contractor-card .card-footer .btn {
-        transition: none;
-    }
-    
-    .contractor-card .card-footer .btn:active {
-        transform: none;
-    }
-}
-
-/* Dark Theme Support */
-@media (prefers-color-scheme: dark) {
-    .favorite-btn {
-        background: var(--surface-800);
-        border-color: var(--surface-600);
-        color: var(--surface-400);
-    }
-    
-    .favorite-btn:hover {
-        background: var(--surface-700);
-        border-color: var(--accent-color);
-    }
-    
-    .no-favorites {
-        background: var(--surface-800);
-        border-color: var(--surface-600);
-    }
-    
-    .favorites-notice {
-        background: linear-gradient(135deg, var(--surface-700), var(--surface-600));
-        color: var(--text-on-primary);
-    }
-    
-    .favorites-filter {
-        background: var(--surface-800);
-    }
-    
-    .no-results, .no-favorites {
-        background: var(--surface-800);
-    }
-    
-    .contractor-card .card-footer .btn-secondary:hover {
-        background-color: rgba(255, 255, 255, 0.08);
-    }
-    
-    .contractor-card .card-footer .btn-secondary:active {
-        background-color: rgba(255, 255, 255, 0.16);
-    }
-}
-
-/* Material Design Card Variants */
-.card.elevated {
-    box-shadow: var(--elevation-3);
-}
-
-.card.outlined {
-    box-shadow: var(--elevation-0);
-    border: 1px solid var(--border-color);
-}
-
-.card.filled {
-    background: var(--surface-100);
-    box-shadow: var(--elevation-0);
-}
-
-/* Card Action Areas */
-.card-action-area {
-    cursor: pointer;
-    transition: var(--material-transition);
-}
-
-.card-action-area:hover {
-    background: rgba(0, 0, 0, 0.04);
-}
-
-/* Card Media (for future image support) */
-.card-media {
-    width: 100%;
-    height: 140px;
-    background: var(--surface-200);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: var(--text-disabled);
-}
-
-.card-media .material-icons {
-    font-size: 3rem;
-    opacity: 0.5;
 }

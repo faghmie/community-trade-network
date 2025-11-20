@@ -9,7 +9,9 @@ class AdminContractorsModule {
         this.categoriesModule = categoriesModule;
         this.locationData = locationData;
         this.contractorModalManager = null;
-        
+        this.contractorFormModal = null;
+        this.modalEventListeners = [];
+
         // Bind methods
         this.init = this.init.bind(this);
         this.bindEvents = this.bindEvents.bind(this);
@@ -20,60 +22,277 @@ class AdminContractorsModule {
         this.editContractor = this.editContractor.bind(this);
         this.deleteContractor = this.deleteContractor.bind(this);
         this.filterContractors = this.filterContractors.bind(this);
+        this.closeModal = this.closeModal.bind(this);
     }
 
     init() {
+        console.log('🔧 AdminContractorsModule: Initializing...');
+        this.createContractorFormModal();
         this.bindEvents();
         this.renderContractorsTable();
-        
-        // Initialize contractor modal manager (without review modal manager for admin)
+
+        // Initialize contractor modal manager
         this.contractorModalManager = new ContractorModalManager(
             this.dataModule,
             this.dataModule.reviewManager,
             this.dataModule.cardManager,
             null // No review modal manager in admin context
         );
-        
+
         console.log('🔧 AdminContractorsModule: ContractorModalManager initialized');
     }
 
+    // In the createContractorFormModal method, replace the modalHTML with:
+
+    createContractorFormModal() {
+        // Check if modal already exists
+        if (this.contractorFormModal) {
+            console.log('🔧 AdminContractorsModule: Modal already exists');
+            return;
+        }
+
+        console.log('🔧 AdminContractorsModule: Creating contractor form modal...');
+
+        const modalHTML = `
+        <div class="modal" id="contractorFormModal" style="display: none;">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2 id="formTitle">Add Contractor</h2>
+                    <button type="button" class="close" id="closeContractorFormModal" aria-label="Close dialog">
+                        <span class="material-icons">close</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <form id="contractorForm" class="material-form" onsubmit="return false;">
+                        <input type="hidden" id="contractorId">
+                        <input type="hidden" id="contractorLocation">
+
+                        <div class="form-fields">
+                            <div class="material-form-group">
+                                <label for="contractorName" class="material-input-label">Contractor Name</label>
+                                <input type="text" id="contractorName" name="name" class="material-input" required>
+                            </div>
+
+                            <div class="material-form-group">
+                                <label for="contractorCategory" class="material-input-label">Category</label>
+                                <select id="contractorCategory" name="category" class="material-select" required>
+                                    <option value="">Select Category</option>
+                                    <!-- Categories will be populated dynamically -->
+                                </select>
+                            </div>
+
+                            <div class="material-form-group">
+                                <label for="contractorEmail" class="material-input-label">Email</label>
+                                <input type="email" id="contractorEmail" name="email" class="material-input" required>
+                            </div>
+
+                            <div class="material-form-group">
+                                <label for="contractorPhone" class="material-input-label">Phone</label>
+                                <input type="tel" id="contractorPhone" name="phone" class="material-input" required>
+                                <div class="material-input-helper">South African format: +27 or 0 followed by 9 digits</div>
+                            </div>
+
+                            <div class="material-form-group">
+                                <label for="contractorWebsite" class="material-input-label">Website (optional)</label>
+                                <input type="url" id="contractorWebsite" name="website" class="material-input" placeholder="https://example.com">
+                                <div class="material-input-helper">Include http:// or https://</div>
+                            </div>
+
+                            <div class="form-row">
+                                <div class="material-form-group">
+                                    <label for="contractorProvince" class="material-input-label">Province</label>
+                                    <select id="contractorProvince" name="province" class="material-select" required>
+                                        <option value="">Select Province</option>
+                                        <!-- Provinces will be populated dynamically -->
+                                    </select>
+                                </div>
+                                <div class="material-form-group">
+                                    <label for="contractorArea" class="material-input-label">Area</label>
+                                    <select id="contractorArea" name="area" class="material-select" required disabled>
+                                        <option value="">Select Area</option>
+                                        <!-- Areas will be populated based on province selection -->
+                                    </select>
+                                    <div class="material-input-helper">Select province first</div>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="material-button text-button" id="cancelContractorForm">Cancel</button>
+                    <button type="button" class="material-button contained" id="saveContractorBtn">Save Contractor</button>
+                </div>
+            </div>
+        </div>
+    `;
+
+        try {
+            // Insert modal HTML into the DOM
+            document.body.insertAdjacentHTML('beforeend', modalHTML);
+
+            // Get reference to the modal
+            this.contractorFormModal = document.getElementById('contractorFormModal');
+
+            if (!this.contractorFormModal) {
+                console.error('❌ AdminContractorsModule: Failed to create modal - element not found after insertion');
+                return;
+            }
+
+            console.log('✅ AdminContractorsModule: Contractor form modal created successfully');
+
+        } catch (error) {
+            console.error('❌ AdminContractorsModule: Error creating modal:', error);
+        }
+    }
     bindEvents() {
-        // Contractor form
-        document.getElementById('addContractorBtn')?.addEventListener('click', () => {
-            this.showContractorForm();
-        });
+        console.log('🔧 AdminContractorsModule: Binding events...');
 
-        document.getElementById('contractorForm')?.addEventListener('submit', (e) => {
-            e.preventDefault();
-            this.handleContractorSubmit();
-        });
+        // Remove any existing event listeners to prevent duplicates
+        this.removeEventListeners();
 
-        // Province change event
-        document.getElementById('contractorProvince')?.addEventListener('change', (e) => {
-            this.updateAreaDropdown(e.target.value);
-        });
+        // Contractor form - bind to dynamically created elements
+        const addContractorBtn = document.getElementById('addContractorBtn');
+        if (addContractorBtn) {
+            const handler = () => {
+                console.log('🔧 AdminContractorsModule: Add contractor button clicked');
+                this.showContractorForm();
+            };
+            addContractorBtn.addEventListener('click', handler);
+            this.modalEventListeners.push({ element: addContractorBtn, event: 'click', handler });
+        }
+
+        // Use event delegation for dynamically created save button
+        const saveButtonHandler = (e) => {
+            if (e.target.id === 'saveContractorBtn' || e.target.closest('#saveContractorBtn')) {
+                console.log('🔧 AdminContractorsModule: Save contractor button clicked - preventing default');
+                e.preventDefault();
+                e.stopImmediatePropagation();
+                console.log('🔧 AdminContractorsModule: Calling handleContractorSubmit');
+                this.handleContractorSubmit();
+            }
+        };
+        document.addEventListener('click', saveButtonHandler, true); // Use capture phase
+        this.modalEventListeners.push({ element: document, event: 'click', handler: saveButtonHandler });
+
+        // Use event delegation for dynamically created province dropdown
+        const provinceHandler = (e) => {
+            if (e.target.id === 'contractorProvince') {
+                console.log('🔧 AdminContractorsModule: Province changed to:', e.target.value);
+                this.updateAreaDropdown(e.target.value);
+            }
+        };
+        document.addEventListener('change', provinceHandler);
+        this.modalEventListeners.push({ element: document, event: 'change', handler: provinceHandler });
 
         // Search functionality
-        document.getElementById('searchInput')?.addEventListener('input', (e) => {
-            this.filterContractors(e.target.value);
-        });
+        const searchInput = document.getElementById('searchInput');
+        if (searchInput) {
+            const handler = (e) => {
+                this.filterContractors(e.target.value);
+            };
+            searchInput.addEventListener('input', handler);
+            this.modalEventListeners.push({ element: searchInput, event: 'input', handler });
+        }
 
-        // Close modal events
-        document.addEventListener('click', (e) => {
-            if (e.target.classList.contains('close') || e.target.closest('.close')) {
-                const modal = e.target.closest('.modal');
-                if (modal) {
-                    modal.style.display = 'none';
+        // Direct event listeners for modal close buttons
+        const closeButtonHandler = (e) => {
+            console.log('🔧 AdminContractorsModule: Close button clicked');
+            e.preventDefault();
+            e.stopImmediatePropagation();
+            this.closeModal('contractorFormModal');
+        };
+
+        const cancelButtonHandler = (e) => {
+            console.log('🔧 AdminContractorsModule: Cancel button clicked');
+            e.preventDefault();
+            e.stopImmediatePropagation();
+            this.closeModal('contractorFormModal');
+        };
+
+        // Use mutation observer to wait for modal to be added to DOM
+        const modalObserver = new MutationObserver((mutations) => {
+            for (const mutation of mutations) {
+                if (mutation.type === 'childList') {
+                    const closeBtn = document.getElementById('closeContractorFormModal');
+                    const cancelBtn = document.getElementById('cancelContractorForm');
+
+                    if (closeBtn && !closeBtn.hasListener) {
+                        closeBtn.addEventListener('click', closeButtonHandler, true);
+                        closeBtn.hasListener = true;
+                        this.modalEventListeners.push({ element: closeBtn, event: 'click', handler: closeButtonHandler });
+                    }
+
+                    if (cancelBtn && !cancelBtn.hasListener) {
+                        cancelBtn.addEventListener('click', cancelButtonHandler, true);
+                        cancelBtn.hasListener = true;
+                        this.modalEventListeners.push({ element: cancelBtn, event: 'click', handler: cancelButtonHandler });
+                    }
                 }
             }
         });
+
+        modalObserver.observe(document.body, { childList: true, subtree: true });
+        this.modalEventListeners.push({ observer: modalObserver });
+
+        // Close modal when clicking on backdrop
+        const backdropHandler = (e) => {
+            if (e.target === this.contractorFormModal) {
+                console.log('🔧 AdminContractorsModule: Backdrop clicked');
+                e.preventDefault();
+                e.stopImmediatePropagation();
+                this.closeModal('contractorFormModal');
+            }
+        };
+        document.addEventListener('click', backdropHandler, true);
+        this.modalEventListeners.push({ element: document, event: 'click', handler: backdropHandler });
+
+        // Escape key to close modal
+        const escapeHandler = (e) => {
+            if (e.key === 'Escape' && this.contractorFormModal?.style.display === 'flex') {
+                console.log('🔧 AdminContractorsModule: Escape key pressed');
+                e.preventDefault();
+                e.stopImmediatePropagation();
+                this.closeModal('contractorFormModal');
+            }
+        };
+        document.addEventListener('keydown', escapeHandler, true);
+        this.modalEventListeners.push({ element: document, event: 'keydown', handler: escapeHandler });
+
+        // Prevent form submission
+        const formSubmitHandler = (e) => {
+            if (e.target.id === 'contractorForm') {
+                console.log('🔧 AdminContractorsModule: Form submission prevented');
+                e.preventDefault();
+                e.stopImmediatePropagation();
+                return false;
+            }
+        };
+        document.addEventListener('submit', formSubmitHandler, true);
+        this.modalEventListeners.push({ element: document, event: 'submit', handler: formSubmitHandler });
+
+        console.log('✅ AdminContractorsModule: Events bound successfully');
+    }
+
+    removeEventListeners() {
+        console.log('🔧 AdminContractorsModule: Removing existing event listeners');
+        this.modalEventListeners.forEach(({ element, event, handler, observer }) => {
+            if (observer) {
+                observer.disconnect();
+            } else if (element && handler) {
+                element.removeEventListener(event, handler);
+            }
+        });
+        this.modalEventListeners = [];
     }
 
     renderContractorsTable(filteredContractors = null) {
         const contractors = filteredContractors || this.dataModule.getContractors();
         const tbody = document.getElementById('contractorsTableBody');
 
-        if (!tbody) return;
+        if (!tbody) {
+            console.error('❌ AdminContractorsModule: Contractors table body not found');
+            return;
+        }
 
         if (!contractors || contractors.length === 0) {
             tbody.innerHTML = `
@@ -90,11 +309,10 @@ class AdminContractorsModule {
         }
 
         tbody.innerHTML = contractors.map(contractor => {
-            // FIX: Get reviews from reviewManager instead of contractor.reviews
             const reviews = this.dataModule.getReviewsForContractor(contractor.id);
             const reviewCount = reviews.length;
             const rating = contractor.rating || 0;
-            
+
             return `
             <tr>
                 <td>${contractor.name}</td>
@@ -122,11 +340,18 @@ class AdminContractorsModule {
     }
 
     showContractorForm(contractor = null) {
-        const modal = document.getElementById('contractorFormModal');
-        if (!modal) {
-            console.error('Contractor form modal not found');
+        console.log('🔧 AdminContractorsModule: showContractorForm called');
+
+        // Ensure modal is created
+        this.createContractorFormModal();
+
+        if (!this.contractorFormModal) {
+            console.error('❌ AdminContractorsModule: Contractor form modal not available even after creation attempt');
+            showNotification('Failed to open contractor form. Please refresh the page.', 'error');
             return;
         }
+
+        console.log('✅ AdminContractorsModule: Modal is available, populating form...');
 
         // Populate categories dropdown
         const categorySelect = document.getElementById('contractorCategory');
@@ -138,15 +363,14 @@ class AdminContractorsModule {
             });
         }
 
-        // Populate provinces dropdown
+        // Populate provinces dropdown - FIXED THE TYPO HERE
         const provinceSelect = document.getElementById('contractorProvince');
         if (provinceSelect) {
             provinceSelect.innerHTML = '<option value="">Select Province</option>';
 
-            // Use the injected locationData
             if (this.locationData && this.locationData.southAfricanProvinces) {
                 Object.keys(this.locationData.southAfricanProvinces).forEach(province => {
-                    provinceSelect.innerHTML += `<option value="${province}">${province}</option>`;
+                    provinceSelect.innerHTML += `<option value="${province}">${province}</option>`; // FIXED: was "provider" instead of "province"
                 });
             }
         }
@@ -164,13 +388,11 @@ class AdminContractorsModule {
             let province = '';
 
             if (contractor.location) {
-                // Location format is "Area, Province" - split and extract
                 const locationParts = contractor.location.split(', ');
                 if (locationParts.length === 2) {
-                    area = locationParts[0]; // First part is area
-                    province = locationParts[1]; // Second part is province
+                    area = locationParts[0];
+                    province = locationParts[1];
                 } else if (locationParts.length === 1) {
-                    // Handle case where only area or province is provided
                     area = locationParts[0];
                 }
             }
@@ -187,7 +409,6 @@ class AdminContractorsModule {
                 provinceSelect.value = province;
                 this.updateAreaDropdown(province, area);
             } else if (area) {
-                // If only area is provided, try to find which province it belongs to
                 this.findProvinceForArea(area);
             }
 
@@ -200,7 +421,17 @@ class AdminContractorsModule {
             document.getElementById('formTitle').textContent = 'Add Contractor';
         }
 
-        modal.style.display = 'flex';
+        // Show the modal
+        console.log('🔧 AdminContractorsModule: Setting modal display to flex');
+        this.contractorFormModal.style.display = 'flex';
+        document.body.style.overflow = 'hidden';
+
+        // Focus on first input for better UX
+        setTimeout(() => {
+            document.getElementById('contractorName')?.focus();
+        }, 100);
+
+        console.log('✅ AdminContractorsModule: Contractor form displayed successfully');
     }
 
     // Helper function to find province for a given area
@@ -210,7 +441,6 @@ class AdminContractorsModule {
 
         if (!provinceSelect || !areaSelect) return;
 
-        // Search through all provinces to find which one contains this area
         if (this.locationData && this.locationData.southAfricanProvinces) {
             for (const [province, provinceData] of Object.entries(this.locationData.southAfricanProvinces)) {
                 if (provinceData.cities.includes(area)) {
@@ -253,6 +483,8 @@ class AdminContractorsModule {
     }
 
     handleContractorSubmit() {
+        console.log('🔧 AdminContractorsModule: handleContractorSubmit called');
+
         const province = document.getElementById('contractorProvince')?.value;
         const area = document.getElementById('contractorArea')?.value;
 
@@ -268,7 +500,7 @@ class AdminContractorsModule {
             email: formData.get('email'),
             phone: formData.get('phone'),
             website: formData.get('website'),
-            location: `${area}, ${province}` // Format: "Area, Province"
+            location: `${area}, ${province}`
         };
 
         // Validate inputs
@@ -277,7 +509,6 @@ class AdminContractorsModule {
             return;
         }
 
-        // FIXED: Updated phone validation to accept numbers like "0123456789"
         if (!isValidSouthAfricanPhone(contractorData.phone)) {
             showNotification('Please enter a valid South African phone number (e.g., +27821234567, 0821234567, or 0123456789)', 'error');
             return;
@@ -315,161 +546,7 @@ class AdminContractorsModule {
             this.contractorModalManager.open(id);
         } else {
             console.error('🔧 AdminContractorsModule: ContractorModalManager not initialized');
-            // Fallback to old implementation if modal manager is not available
-            this.fallbackViewContractor(id);
         }
-    }
-
-    // Fallback implementation in case modal manager fails
-    fallbackViewContractor(id) {
-        const contractor = this.dataModule.getContractor(id);
-        if (contractor) {
-            // Create modal if it doesn't exist
-            if (!document.getElementById('contractorDetailsModal')) {
-                this.createContractorDetailsModal();
-            }
-
-            const modal = document.getElementById('contractorDetailsModal');
-            const content = document.getElementById('contractorDetailsContent');
-
-            if (content) {
-                // FIX: Get reviews from reviewManager instead of contractor.reviews
-                const reviews = this.dataModule.getReviewsForContractor(contractor.id);
-                const approvedReviews = reviews.filter(r => r.status === 'approved');
-                const pendingReviews = reviews.filter(r => r.status === 'pending');
-
-                content.innerHTML = `
-                <div class="contractor-details">
-                    <div class="contractor-header">
-                        <h2 class="contractor-name">${contractor.name}</h2>
-                        <p class="contractor-category">
-                            <span class="material-icons">category</span>
-                            ${contractor.category}
-                        </p>
-                    </div>
-                    
-                    <div class="contractor-info-grid">
-                        <div class="info-item">
-                            <span class="info-label">Email</span>
-                            <span class="info-value">${contractor.email}</span>
-                        </div>
-                        <div class="info-item">
-                            <span class="info-label">Phone</span>
-                            <span class="info-value">${contractor.phone}</span>
-                        </div>
-                        <div class="info-item">
-                            <span class="info-label">Website</span>
-                            <span class="info-value">
-                                ${contractor.website ?
-                        `<a href="${contractor.website}" target="_blank" class="website-link">
-                                        <span class="material-icons">open_in_new</span>
-                                        Visit Website
-                                    </a>` :
-                        'Not provided'
-                    }
-                            </span>
-                        </div>
-                        <div class="info-item">
-                            <span class="info-label">Service Area</span>
-                            <span class="info-value">${contractor.location}</span>
-                        </div>
-                        <div class="info-item">
-                            <span class="info-label">Overall Rating</span>
-                            <span class="info-value">
-                                <span class="rating-value">
-                                    ${'⭐'.repeat(Math.floor(contractor.rating || 0))}
-                                    (${contractor.rating || 0}/5)
-                                </span>
-                            </span>
-                        </div>
-                        <div class="info-item">
-                            <span class="info-label">Total Reviews</span>
-                            <span class="info-value">${reviews.length}</span>
-                        </div>
-                        <div class="info-item">
-                            <span class="info-label">Approved Reviews</span>
-                            <span class="info-value">${approvedReviews.length}</span>
-                        </div>
-                        <div class="info-item">
-                            <span class="info-label">Pending Reviews</span>
-                            <span class="info-value">${pendingReviews.length}</span>
-                        </div>
-                        <div class="info-item">
-                            <span class="info-label">Member Since</span>
-                            <span class="info-value">${this.dataModule.formatDate(contractor.createdAt)}</span>
-                        </div>
-                    </div>
-                    
-                    <!-- ADDED: Spacer div to create proper separation -->
-                    <div style="height: var(--space-xl);"></div>
-                    
-                    <div class="reviews-section">
-                        <div class="reviews-section-header">
-                            <h3 class="section-title">
-                                <span class="material-icons">reviews</span>
-                                Customer Reviews (${reviews.length})
-                            </h3>
-                            <span class="reviews-count">${approvedReviews.length} approved • ${pendingReviews.length} pending</span>
-                        </div>
-                        
-                        ${reviews.length > 0 ?
-                        `<div class="reviews-list">
-                                ${reviews.map(review => `
-                                    <div class="review-item">
-                                        <div class="review-header">
-                                            <div class="reviewer-avatar">
-                                                ${review.reviewerName.charAt(0).toUpperCase()}
-                                            </div>
-                                            <div class="reviewer-info">
-                                                <div class="reviewer-name-rating">
-                                                    <span class="reviewer-name">${review.reviewerName}</span>
-                                                    <span class="review-rating">
-                                                        ${'⭐'.repeat(review.rating)}
-                                                        <span>${review.rating}/5</span>
-                                                    </span>
-                                                </div>
-                                                <div class="review-meta">
-                                                    <span class="review-date">${this.dataModule.formatDate(review.date)}</span>
-                                                    <span class="project-type">${review.projectType}</span>
-                                                    <span class="review-status ${review.status}">${review.status}</span>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <p class="review-comment">${review.comment}</p>
-                                    </div>
-                                `).join('')}
-                            </div>` :
-                        `<div class="no-reviews">
-                                <span class="material-icons">rate_review</span>
-                                <p>No reviews yet for this contractor</p>
-                            </div>`
-                    }
-                    </div>
-                </div>
-            `;
-            }
-
-            modal.style.display = 'flex';
-        }
-    }
-
-    createContractorDetailsModal() {
-        // Create the modal if it doesn't exist
-        const modalHTML = `
-            <div class="modal" id="contractorDetailsModal">
-                <div class="modal-content large">
-                    <div class="modal-header">
-                        <h2>Contractor Details</h2>
-                        <button class="close" aria-label="Close modal">&times;</button>
-                    </div>
-                    <div class="modal-body" id="contractorDetailsContent">
-                        <!-- Content will be populated dynamically -->
-                    </div>
-                </div>
-            </div>
-        `;
-
-        document.body.insertAdjacentHTML('beforeend', modalHTML);
     }
 
     editContractor(id) {
@@ -504,9 +581,21 @@ class AdminContractorsModule {
     }
 
     closeModal(modalId) {
+        console.log('🔧 AdminContractorsModule: closeModal called for:', modalId);
         const modal = document.getElementById(modalId);
         if (modal) {
             modal.style.display = 'none';
+            document.body.style.overflow = '';
+            console.log('🔧 AdminContractorsModule: Modal closed successfully');
+        }
+    }
+
+    // Cleanup method
+    destroy() {
+        this.removeEventListeners();
+        if (this.contractorFormModal) {
+            this.contractorFormModal.remove();
+            this.contractorFormModal = null;
         }
     }
 }

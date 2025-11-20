@@ -27,6 +27,48 @@
 </head>
 
 <body class="material-theme">
+    <!-- App Update Notification (Hidden by default) -->
+    <div id="appUpdateNotification" class="update-notification hidden" role="alert" aria-live="polite">
+        <div class="update-notification-content">
+            <div class="update-notification-icon">
+                <i class="material-icons" data-icon="system_update">system_update</i>
+            </div>
+            <div class="update-notification-text">
+                <strong>New version available!</strong>
+                <span>Refresh to get the latest features.</span>
+            </div>
+            <div class="update-notification-actions">
+                <button id="refreshAppBtn" class="btn btn-primary btn-sm" aria-label="Refresh application">
+                    Refresh
+                </button>
+                <button id="dismissUpdateBtn" class="btn btn-text btn-sm" aria-label="Dismiss update notification">
+                    Dismiss
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- PWA Install Banner (Hidden by default) -->
+    <div id="pwaInstallBanner" class="pwa-install-banner hidden" role="dialog" aria-labelledby="pwaInstallTitle" aria-live="polite">
+        <div class="pwa-install-content">
+            <div class="pwa-install-icon">
+                <i class="material-icons" data-icon="install_mobile">install_mobile</i>
+            </div>
+            <div class="pwa-install-text">
+                <strong id="pwaInstallTitle">Install Contractor Reviews</strong>
+                <span>Get quick access from your home screen</span>
+            </div>
+            <div class="pwa-install-actions">
+                <button id="installPwaBtn" class="btn btn-primary btn-sm" aria-label="Install application">
+                    Install
+                </button>
+                <button id="dismissInstallBtn" class="btn btn-text btn-sm" aria-label="Dismiss install prompt">
+                    Later
+                </button>
+            </div>
+        </div>
+    </div>
+
     <div class="container">
         <!-- Hero Section - MOBILE OPTIMIZED -->
         <section class="hero-section">
@@ -45,17 +87,20 @@
             <div id="map-container" class="map-container material-card hidden"></div>
         </section>
 
-        <!-- Contractor List Header - UPDATED: Added contractor count subtitle -->
-        <section class="contractor-list material-card" id="contractorList">
-            <div class="section-header">
-                <div class="section-header-content">
-                    <h2 class="section-title">Available Contractors</h2>
-                    <span class="section-subtitle" id="contractorsCount">0 contractors</span>
+        <!-- Contractor List - Added padding container -->
+        <section class="contractor-list" id="contractorList">
+            <div class="contractor-list-content">
+                <div class="section-header">
+                    <div class="section-header-content">
+                        <h2 class="section-title">Available Contractors</h2>
+                        <span class="section-subtitle" id="contractorsCount">0 contractors</span>
+                    </div>
+                    <!-- REMOVED: Filter button - now accessible via bottom navigation on mobile -->
                 </div>
-                <!-- REMOVED: Filter button - now accessible via bottom navigation on mobile -->
-            </div>
-            <div class="grid grid-3" id="contractorsGrid">
-                <!-- Contractors will be loaded here -->
+                <!-- Simplified: Direct contractors grid without nested card container -->
+                <div class="contractors-grid" id="contractorsGrid">
+                    <!-- Contractors will be loaded here -->
+                </div>
             </div>
         </section>
 
@@ -75,7 +120,7 @@
                     </div>
                     <button class="btn btn-icon bottom-sheet-close" data-action="hide-filters"
                         aria-label="Close filters">
-                        <i class="material-icons">close</i>
+                        <i class="material-icons" data-icon="close">close</i>
                     </button>
                 </div>
 
@@ -84,7 +129,7 @@
                     <!-- Search Input -->
                     <div class="material-form-group">
                         <label for="searchInput" class="material-input-label">
-                            <i class="material-icons">search</i>
+                            <i class="material-icons" data-icon="search">search</i>
                             Search Contractors
                         </label>
                         <input type="text" id="searchInput" placeholder="Search by name, category, or location..."
@@ -96,7 +141,7 @@
                         <!-- Location Filter -->
                         <div class="material-form-group">
                             <label for="locationFilter" class="material-input-label">
-                                <i class="material-icons">location_on</i>
+                                <i class="material-icons" data-icon="location_on">location_on</i>
                                 Location
                             </label>
                             <select id="locationFilter" class="material-select" data-action="filter">
@@ -108,7 +153,7 @@
                         <!-- Category Filter -->
                         <div class="material-form-group">
                             <label for="categoryFilter" class="material-input-label">
-                                <i class="material-icons">category</i>
+                                <i class="material-icons" data-icon="category">category</i>
                                 Category
                             </label>
                             <select id="categoryFilter" class="material-select" data-action="filter">
@@ -120,7 +165,7 @@
                         <!-- Rating Filter -->
                         <div class="material-form-group">
                             <label for="ratingFilter" class="material-input-label">
-                                <i class="material-icons">star</i>
+                                <i class="material-icons" data-icon="star">star</i>
                                 Minimum Rating
                             </label>
                             <select id="ratingFilter" class="material-select" data-action="filter">
@@ -135,7 +180,7 @@
                         <!-- Sort By -->
                         <div class="material-form-group">
                             <label for="sortBy" class="material-input-label">
-                                <i class="material-icons">sort</i>
+                                <i class="material-icons" data-icon="sort">sort</i>
                                 Sort By
                             </label>
                             <select id="sortBy" class="material-select" data-action="sort">
@@ -151,7 +196,7 @@
                 <!-- Actions -->
                 <div class="bottom-sheet-actions">
                     <button class="btn btn-text" data-action="clear-filters">
-                        <i class="material-icons">clear_all</i>
+                        <i class="material-icons" data-icon="clear_all">clear_all</i>
                         <span>Clear All</span>
                     </button>
                     <button class="btn btn-primary" data-action="apply-filters">
@@ -166,25 +211,29 @@
     <nav class="bottom-nav mobile-only">
         <div class="bottom-nav-content">
             <a href="#" class="bottom-nav-item" data-view="home">
-                <i class="material-icons">home</i>
+                <i class="material-icons" data-icon="home">home</i>
                 <span class="bottom-nav-label">Home</span>
             </a>
             <a href="#" class="bottom-nav-item" data-view="favorites">
-                <i class="material-icons">favorite</i>
+                <i class="material-icons" data-icon="favorite">favorite</i>
                 <span class="bottom-nav-label">Favorites</span>
                 <span class="bottom-nav-badge" id="mobileFavBadge">0</span>
             </a>
             <a href="#" class="bottom-nav-item" data-view="search">
-                <i class="material-icons">search</i>
+                <i class="material-icons" data-icon="search">search</i>
                 <span class="bottom-nav-label">Search</span>
                 <span class="bottom-nav-badge filter-badge hidden">0</span>
             </a>
             <a href="#" class="bottom-nav-item" data-view="map">
-                <i class="material-icons">map</i>
+                <i class="material-icons" data-icon="map">map</i>
                 <span class="bottom-nav-label">Map</span>
             </a>
+            <a href="#" class="bottom-nav-item" id="installNavItem" style="display: none;">
+                <i class="material-icons" data-icon="download">download</i>
+                <span class="bottom-nav-label">Install</span>
+            </a>
             <a href="admin.html" class="bottom-nav-item" data-view="admin">
-                <i class="material-icons">admin_panel_settings</i>
+                <i class="material-icons" data-icon="admin_panel_settings">admin_panel_settings</i>
                 <span class="bottom-nav-label">Admin</span>
             </a>
         </div>
@@ -195,19 +244,86 @@
         integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
-    <!-- Service Worker Registration -->
+    <!-- Enhanced Service Worker Registration -->
     <script>
+        // Service Worker Registration with Enhanced Update Handling
         if ('serviceWorker' in navigator) {
-            window.addEventListener('load', function () {
-                navigator.serviceWorker.register('/sw.js')
-                    .then(function (registration) {
-                        console.log('✅ Service Worker registered successfully:', registration.scope);
-                    })
-                    .catch(function (error) {
-                        console.log('❌ Service Worker registration failed:', error);
+            // Enhanced registration with update tracking
+            const registerServiceWorker = async () => {
+                try {
+                    const registration = await navigator.serviceWorker.register('/sw.js');
+                    console.log('✅ Service Worker registered successfully:', registration.scope);
+
+                    // Check for updates periodically
+                    registration.addEventListener('updatefound', () => {
+                        const newWorker = registration.installing;
+                        console.log('🔄 New Service Worker found, installing...');
+                        
+                        newWorker.addEventListener('statechange', () => {
+                            if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                                // New content is available, show update notification
+                                console.log('📦 New content available, please refresh.');
+                                showAppUpdateNotification();
+                            }
+                        });
                     });
+
+                    // Check for updates every hour
+                    setInterval(() => {
+                        registration.update();
+                    }, 60 * 60 * 1000);
+
+                } catch (error) {
+                    console.error('❌ Service Worker registration failed:', error);
+                }
+            };
+
+            // Wait for page load to register SW
+            window.addEventListener('load', registerServiceWorker);
+
+            // Handle controller change (when SW takes control)
+            navigator.serviceWorker.addEventListener('controllerchange', () => {
+                console.log('🎯 Service Worker controller changed');
+                window.location.reload();
             });
         }
+
+        // Global function to show app update notification
+        function showAppUpdateNotification() {
+            const notification = document.getElementById('appUpdateNotification');
+            if (notification) {
+                notification.classList.remove('hidden');
+                notification.setAttribute('aria-hidden', 'false');
+            }
+        }
+
+        // Global function to hide app update notification
+        function hideAppUpdateNotification() {
+            const notification = document.getElementById('appUpdateNotification');
+            if (notification) {
+                notification.classList.add('hidden');
+                notification.setAttribute('aria-hidden', 'true');
+            }
+        }
+
+        // Global refresh function
+        function refreshApplication() {
+            window.location.reload();
+        }
+
+        // Set up global event listeners for update notification
+        document.addEventListener('DOMContentLoaded', function() {
+            const refreshBtn = document.getElementById('refreshAppBtn');
+            const dismissBtn = document.getElementById('dismissUpdateBtn');
+            
+            if (refreshBtn) {
+                refreshBtn.addEventListener('click', refreshApplication);
+            }
+            
+            if (dismissBtn) {
+                dismissBtn.addEventListener('click', hideAppUpdateNotification);
+            }
+        });
     </script>
 
     <!-- Main ES6 Module Entry Point -->

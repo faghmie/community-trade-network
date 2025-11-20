@@ -14,113 +14,84 @@
 </head>
 
 <body class="admin-body">
-    <!-- Login Section (Initially visible) -->
-    <div id="loginSection" class="auth-container">
-        <div class="auth-card">
-            <div class="auth-header">
-                <h1 class="auth-title">Admin Login</h1>
-                <p class="auth-subtitle">Contractor Reviews Management</p>
-            </div>
-
-            <form id="loginForm" class="auth-form">
-                <div id="loginMessage" class="auth-message" style="display: none;"></div>
-
-                <div class="form-group">
-                    <label for="username" class="form-label">Username</label>
-                    <input type="text" id="username" name="username" class="form-input" placeholder="Enter username"
-                        autocomplete="username" required>
-                </div>
-
-                <div class="form-group">
-                    <label for="password" class="form-label">Password</label>
-                    <input type="password" id="password" name="password" class="form-input" placeholder="Enter password"
-                        autocomplete="current-password" required>
-                </div>
-
-                <button type="submit" class="auth-button" id="loginButton">
-                    <span id="loginButtonText">Login</span>
-                    <span id="loginSpinner" class="auth-loading" style="display: none;"></span>
-                </button>
-            </form>
-
-            <div class="auth-footer">
-                <p>Default credentials: admin / admin123</p>
-            </div>
-        </div>
-    </div>
-
     <!-- Admin Content Section (Initially hidden) -->
     <div id="adminContent" class="container" style="display: none;">
-        <!-- Modern App Bar -->
-        <header class="admin-app-bar">
+        <!-- Modern App Bar - Updated to use material.css classes -->
+        <header class="app-bar admin-app-bar">
             <div class="app-bar-content">
-                <div class="app-bar-left">
-                    <div class="app-bar-icon">
-                        <span class="material-icons">admin_panel_settings</span>
-                    </div>
-                    <div class="app-bar-title">
-                        <h1>Contractor Reviews Admin</h1>
-                        <p>Manage contractors, categories, and reviews</p>
-                    </div>
+                <div class="app-bar-title">
+                    <span class="material-icons app-bar-icon">admin_panel_settings</span>
+                    <h1>Contractor Reviews Admin</h1>
                 </div>
 
-                <div class="app-bar-right">
-                    <div class="app-bar-actions">
-                        <div class="user-info">
-                            <div class="user-avatar">
-                                <span class="material-icons">person</span>
-                            </div>
-                            <div class="user-details">
-                                <span class="user-name" id="usernameDisplay">Admin</span>
-                                <span class="user-role" id="sessionInfo">Session active</span>
-                            </div>
+                <div class="app-bar-actions">
+                    <div class="user-info">
+                        <div class="user-avatar">
+                            <span class="material-icons">person</span>
                         </div>
-                        <button class="app-bar-btn logout-btn" id="logoutButton">
-                            <span class="material-icons">logout</span>
-                            <span class="btn-text">Logout</span>
-                        </button>
-                        <a href="index.html" class="app-bar-btn secondary-btn">
-                            <span class="material-icons">home</span>
-                            <span class="btn-text">Main Site</span>
-                        </a>
+                        <div class="user-details">
+                            <span class="user-name" id="usernameDisplay">Admin</span>
+                            <span class="user-role" id="sessionInfo">Session active</span>
+                        </div>
                     </div>
+                    <a href="index.html" class="material-icon-button" title="Main Site">
+                        <span class="material-icons">home</span>
+                    </a>
+                    <button class="material-icon-button logout-btn" id="logoutButton" title="Logout">
+                        <span class="material-icons">logout</span>
+                    </button>
                 </div>
             </div>
         </header>
 
-        <!-- Session Warning (Hidden by default) -->
-        <div id="sessionWarning" class="session-warning" style="display: none;">
-            <span class="material-icons">warning</span>
-            Your session will expire soon. Please save your work.
+        <!-- Session Warning (Hidden by default) - Updated with Material Design -->
+        <div id="sessionWarning" class="material-card session-warning" style="display: none;">
+            <div class="session-warning-content">
+                <span class="material-icons">warning</span>
+                <div>
+                    <strong>Session Expiring Soon</strong>
+                    <p>Your session will expire soon. Please save your work.</p>
+                </div>
+            </div>
         </div>
 
         <!-- Admin Dashboard -->
         <section class="admin-dashboard">
-            <!-- Statistics -->
-            <div class="admin-stats">
+            <!-- Statistics - Using stats-cards.css component -->
+            <div class="stats-overview admin-stats">
                 <div class="stat-card stat-card--primary">
-                    <span class="stat-number" id="totalContractors">0</span>
-                    <span class="stat-label">Total Contractors</span>
+                    <div class="stat-content">
+                        <span class="stat-number" id="totalContractors"></span>
+                        <span class="stat-label">Total Contractors</span>
+                    </div>
                 </div>
                 <div class="stat-card stat-card--accent">
-                    <span class="stat-number" id="totalReviews">0</span>
-                    <span class="stat-label">Total Reviews</span>
+                    <div class="stat-content">
+                        <span class="stat-number" id="totalReviews"></span>
+                        <span class="stat-label">Total Reviews</span>
+                    </div>
                 </div>
                 <div class="stat-card stat-card--success">
-                    <span class="stat-number" id="averageRating">0.0</span>
-                    <span class="stat-label">Average Rating</span>
+                    <div class="stat-content">
+                        <span class="stat-number" id="averageRating"></span>
+                        <span class="stat-label">Average Rating</span>
+                    </div>
                 </div>
                 <div class="stat-card stat-card--warning">
-                    <span class="stat-number" id="totalCategories">0</span>
-                    <span class="stat-label">Total Categories</span>
+                    <div class="stat-content">
+                        <span class="stat-number" id="totalCategories"></span>
+                        <span class="stat-label">Total Categories</span>
+                    </div>
                 </div>
                 <div class="stat-card stat-card--primary">
-                    <span class="stat-number" id="pendingReviews">0</span>
-                    <span class="stat-label">Pending Reviews</span>
+                    <div class="stat-content">
+                        <span class="stat-number" id="pendingReviews"></span>
+                        <span class="stat-label">Pending Reviews</span>
+                    </div>
                 </div>
             </div>
 
-            <!-- Tabs Navigation -->
+            <!-- Tabs Navigation - Using tabs.css component -->
             <div class="tabs-navigation">
                 <button class="tab-button active" data-tab="contractors-tab">
                     <span class="material-icons">business_center</span>
@@ -138,88 +109,95 @@
 
             <!-- Contractors Tab -->
             <div id="contractors-tab" class="tab-content active">
-                <div class="section-header">
+                <div class="material-card">
                     <div class="search-filter-container">
-                        <div class="search-box">
+                        <div class="material-search">
+                            <span class="material-icons">search</span>
                             <input type="text" id="searchInput" placeholder="Search contractors..."
-                                class="input search-input">
+                                class="material-search-input">
                         </div>
-                        <button class="btn btn-primary" id="addContractorBtn">
+                        <button class="material-button contained" id="addContractorBtn">
                             <span class="material-icons">add</span>
                             Add Contractor
                         </button>
                     </div>
-                </div>
 
-                <!-- Contractors Table -->
-                <div class="table-container">
-                    <table class="table">
-                        <thead>
-                            <tr>
-                                <th>Name</th>
-                                <th>Category</th>
-                                <th>Rating</th>
-                                <th>Reviews</th>
-                                <th>Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody id="contractorsTableBody">
-                            <!-- Contractors will be loaded here -->
-                        </tbody>
-                    </table>
+                    <!-- Contractors Table -->
+                    <div class="table-container">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Category</th>
+                                    <th>Rating</th>
+                                    <th>Reviews</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="contractorsTableBody">
+                                <!-- Contractors will be loaded dynamically -->
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
 
             <!-- Categories Tab -->
             <div id="categories-tab" class="tab-content">
-                <div class="section-header">
+                <div class="material-card">
                     <div class="search-filter-container">
-                        <div class="search-box">
+                        <div class="material-search">
+                            <span class="material-icons">search</span>
                             <input type="text" id="categorySearch" placeholder="Search categories..."
-                                class="input search-input">
+                                class="material-search-input">
                         </div>
-                        <button class="btn btn-primary" id="addCategoryBtn">
+                        <button class="material-button contained" id="addCategoryBtn">
                             <span class="material-icons">add</span>
                             Add Category
                         </button>
                     </div>
-                </div>
 
-                <!-- Categories Stats -->
-                <div class="admin-stats compact">
-                    <div class="stat-card stat-card--primary">
-                        <span class="stat-number" id="totalCategoriesCount">0</span>
-                        <span class="stat-label">Total Categories</span>
+                    <!-- Categories Stats -->
+                    <div class="admin-stats compact">
+                        <div class="stat-card stat-card--primary">
+                            <div class="stat-content">
+                                <span class="stat-number" id="totalCategoriesCount"></span>
+                                <span class="stat-label">Total Categories</span>
+                            </div>
+                        </div>
+                        <div class="stat-card stat-card--accent">
+                            <div class="stat-content">
+                                <span class="stat-number" id="totalCategorizedContractors"></span>
+                                <span class="stat-label">Categorized Contractors</span>
+                            </div>
+                        </div>
                     </div>
-                    <div class="stat-card stat-card--accent">
-                        <span class="stat-number" id="totalCategorizedContractors">0</span>
-                        <span class="stat-label">Categorized Contractors</span>
-                    </div>
-                </div>
 
-                <!-- Categories List -->
-                <div class="categories-list" id="categoriesList">
-                    <!-- Categories will be loaded here -->
+                    <!-- Categories List -->
+                    <div class="categories-list" id="categoriesList">
+                        <!-- Categories will be loaded dynamically -->
+                    </div>
                 </div>
             </div>
 
             <!-- Reviews Tab -->
             <div id="reviews-tab" class="tab-content">
-                <div class="section-header">
+                <div class="material-card">
                     <div class="search-filter-container">
-                        <div class="search-box">
+                        <div class="material-search">
+                            <span class="material-icons">search</span>
                             <input type="text" id="reviewSearch" placeholder="Search reviews..."
-                                class="input search-input">
+                                class="material-search-input">
                         </div>
                         <div class="filter-group">
-                            <div class="form-group" style="margin: 0;">
-                                <select id="reviewContractorFilter" class="input">
+                            <div class="material-form-group" style="margin: 0;">
+                                <select id="reviewContractorFilter" class="material-select">
                                     <option value="all">All Contractors</option>
                                     <!-- Contractors will be populated dynamically -->
                                 </select>
                             </div>
-                            <div class="form-group" style="margin: 0;">
-                                <select id="reviewStatusFilter" class="input">
+                            <div class="material-form-group" style="margin: 0;">
+                                <select id="reviewStatusFilter" class="material-select">
                                     <option value="all">All Status</option>
                                     <option value="approved">Approved</option>
                                     <option value="pending">Pending</option>
@@ -228,133 +206,56 @@
                             </div>
                         </div>
                     </div>
-                </div>
 
-                <!-- Reviews Stats -->
-                <div class="admin-stats compact">
-                    <div class="stat-card">
-                        <span class="stat-number" id="totalReviewsCount">0</span>
-                        <span class="stat-label">Total Reviews</span>
+                    <!-- Reviews Stats -->
+                    <div class="admin-stats compact">
+                        <div class="stat-card">
+                            <div class="stat-content">
+                                <span class="stat-number" id="totalReviewsCount"></span>
+                                <span class="stat-label">Total Reviews</span>
+                            </div>
+                        </div>
+                        <div class="stat-card stat-card--success">
+                            <div class="stat-content">
+                                <span class="stat-number" id="approvedReviewsCount"></span>
+                                <span class="stat-label">Approved</span>
+                            </div>
+                        </div>
+                        <div class="stat-card stat-card--warning">
+                            <div class="stat-content">
+                                <span class="stat-number" id="pendingReviewsCount"></span>
+                                <span class="stat-label">Pending</span>
+                            </div>
+                        </div>
+                        <div class="stat-card stat-card--accent">
+                            <div class="stat-content">
+                                <span class="stat-number" id="rejectedReviewsCount"></span>
+                                <span class="stat-label">Rejected</span>
+                            </div>
+                        </div>
                     </div>
-                    <div class="stat-card stat-card--success">
-                        <span class="stat-number" id="approvedReviewsCount">0</span>
-                        <span class="stat-label">Approved</span>
-                    </div>
-                    <div class="stat-card stat-card--warning">
-                        <span class="stat-number" id="pendingReviewsCount">0</span>
-                        <span class="stat-label">Pending</span>
-                    </div>
-                    <div class="stat-card stat-card--accent">
-                        <span class="stat-number" id="rejectedReviewsCount">0</span>
-                        <span class="stat-label">Rejected</span>
-                    </div>
-                </div>
 
-                <!-- Reviews List -->
-                <div class="reviews-list" id="reviewsList">
-                    <!-- Reviews will be loaded here -->
+                    <!-- Reviews List -->
+                    <div class="reviews-list" id="reviewsList">
+                        <!-- Reviews will be loaded dynamically -->
+                    </div>
                 </div>
             </div>
         </section>
 
-        <!-- Contractor Form Modal -->
-        <div class="modal" id="contractorFormModal">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h2 id="formTitle">Add Contractor</h2>
-                    <span class="close" id="closeContractorFormModal">&times;</span>
-                </div>
-                <div class="modal-body">
-                    <form id="contractorForm">
-                        <input type="hidden" id="contractorId">
-                        <input type="hidden" id="contractorLocation">
 
-                        <div class="form-group">
-                            <label for="contractorName">Contractor Name:</label>
-                            <input type="text" id="contractorName" name="name" class="input" required>
-                        </div>
 
-                        <div class="form-group">
-                            <label for="contractorCategory">Category:</label>
-                            <select id="contractorCategory" name="category" class="input" required>
-                                <option value="">Select Category</option>
-                                <!-- Categories will be populated dynamically -->
-                            </select>
-                        </div>
-
-                        <div class="form-group">
-                            <label for="contractorEmail">Email:</label>
-                            <input type="email" id="contractorEmail" name="email" class="input" required>
-                        </div>
-
-                        <div class="form-group">
-                            <label for="contractorPhone">Phone:</label>
-                            <input type="tel" id="contractorPhone" name="phone" class="input" required>
-                            <small class="form-help">South African format: +27 or 0 followed by 9 digits (e.g.,
-                                +27821234567, 0821234567, 0123456789)</small>
-                        </div>
-
-                        <div class="form-group">
-                            <label for="contractorWebsite">Website (optional):</label>
-                            <input type="url" id="contractorWebsite" name="website" class="input"
-                                placeholder="https://example.com">
-                            <small class="form-help">Please enter a valid URL including http:// or https://</small>
-                        </div>
-
-                        <div class="form-group">
-                            <label for="contractorProvince">Province:</label>
-                            <select id="contractorProvince" name="province" class="input" required>
-                                <option value="">Select Province</option>
-                                <!-- Provinces will be populated dynamically -->
-                            </select>
-                        </div>
-
-                        <div class="form-group">
-                            <label for="contractorArea">Area:</label>
-                            <select id="contractorArea" name="area" class="input" required disabled>
-                                <option value="">Select Area</option>
-                                <!-- Areas will be populated based on province selection -->
-                            </select>
-                            <small class="form-help">Please select a province first</small>
-                        </div>
-
-                        <button type="submit" class="btn btn-primary">Save Contractor</button>
-                    </form>
-                </div>
-            </div>
-        </div>
-
-        <!-- Category Form Modal -->
-        <div class="modal" id="categoryFormModal">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h2 id="formCategoryTitle">Add Category</h2>
-                    <span class="close" id="closeCategoryFormModal">&times;</span>
-                </div>
-                <div class="modal-body">
-                    <form id="categoryForm">
-                        <input type="hidden" id="categoryId">
-
-                        <div class="form-group">
-                            <label for="categoryName">Category Name:</label>
-                            <input type="text" id="categoryName" name="name" class="input" required>
-                        </div>
-
-                        <button type="submit" class="btn btn-primary">Save Category</button>
-                    </form>
-                </div>
-            </div>
-        </div>
-
-        <!-- Review Details Modal -->
+        <!-- Review Details Modal - Updated with Material Design -->
         <div class="modal" id="reviewDetailsModal">
-            <div class="modal-content">
+            <div class="modal-content material-card">
                 <div class="modal-header">
                     <h2>Review Details</h2>
-                    <span class="close" id="closeReviewDetailsModal">&times;</span>
+                    <button class="material-icon-button" id="closeReviewDetailsModal">
+                        <span class="material-icons">close</span>
+                    </button>
                 </div>
                 <div class="modal-body" id="reviewDetailsContent">
-                    <!-- Review details will be loaded here -->
+                    <!-- Review details will be loaded dynamically -->
                 </div>
             </div>
         </div>

@@ -1,6 +1,8 @@
 // js/modules/cardManager.js
 // ES6 Module for card management
 
+import { sanitizeHtml } from './utilities.js';
+
 export class CardManager {
     constructor(dataModule, reviewManager) {
         this.dataModule = dataModule;
@@ -33,41 +35,42 @@ export class CardManager {
         const emptyStars = 5 - fullStars - (hasHalfStar ? 1 : 0);
 
         return `
-            <div class="card contractor-card material-card" onclick="app.showContractorDetails('${this.escapeHtml(contractor.id)}')">
-                <div class="card-header">
+            <div class="card contractor-card material-card" onclick="app.showContractorDetails('${sanitizeHtml(contractor.id)}')">
+                <div class="card-content">
                     <button class="favorite-btn ${isFavorite ? 'favorited' : ''}" 
-                            data-contractor-id="${this.escapeHtml(contractor.id)}"
-                            onclick="toggleFavorite('${this.escapeHtml(contractor.id)}'); event.stopPropagation();"
+                            data-contractor-id="${sanitizeHtml(contractor.id)}"
+                            onclick="toggleFavorite('${sanitizeHtml(contractor.id)}'); event.stopPropagation();"
                             title="${isFavorite ? 'Remove from favorites' : 'Add to favorites'}">
                         <i class="material-icons">${isFavorite ? 'favorite' : 'favorite_border'}</i>
                     </button>
-                </div>
-                <div class="card-body">
-                    <h3 class="contractor-name">${this.escapeHtml(contractor.name)}</h3>
-                    <p class="contractor-category">
-                        <i class="material-icons">category</i>
-                        ${this.escapeHtml(contractor.category)}
-                    </p>
-                    <p class="contractor-location">
-                        <i class="material-icons">location_on</i>
-                        ${this.escapeHtml(contractor.location || 'Service area not specified')}
-                    </p>
-                    <div class="card-rating">
-                        <span class="rating-stars">
-                            ${'<span class="rating-star active">★</span>'.repeat(fullStars)}
-                            ${hasHalfStar ? '<span class="rating-star active half">★</span>' : ''}
-                            ${'<span class="rating-star">★</span>'.repeat(emptyStars)}
-                        </span>
-                        <span class="rating-value">${displayRatingFormatted}</span>
+                    
+                    <h3 class="contractor-name">${sanitizeHtml(contractor.name)}</h3>
+                    
+                    <div class="contractor-meta">
+                        <p class="contractor-category">
+                            <i class="material-icons">category</i>
+                            ${sanitizeHtml(contractor.category)}
+                        </p>
+                        <p class="contractor-location">
+                            <i class="material-icons">location_on</i>
+                            ${sanitizeHtml(contractor.location || 'Service area not specified')}
+                        </p>
                     </div>
-                    <p class="review-count">
-                        <i class="material-icons">reviews</i>
-                        ${approvedReviews.length} review${approvedReviews.length !== 1 ? 's' : ''}
-                    </p>
+                    
+                    <div class="rating-display">
+                        <div class="rating-stars">
+                            ${'<span class="rating-star">★</span>'.repeat(fullStars)}
+                            ${hasHalfStar ? '<span class="rating-star">★</span>' : ''}
+                            ${'<span class="rating-star">★</span>'.repeat(emptyStars)}
+                        </div>
+                        <span class="rating-value">${displayRatingFormatted}</span>
+                        <span class="review-count">(${approvedReviews.length})</span>
+                    </div>
                 </div>
-                <div class="card-footer">
-                    <button class="btn btn-primary" 
-                            onclick="app.showReviewForm('${this.escapeHtml(contractor.id)}'); event.stopPropagation();">
+                
+                <div class="card-actions">
+                    <button class="card-action primary" 
+                            onclick="app.showReviewForm('${sanitizeHtml(contractor.id)}'); event.stopPropagation();">
                         <i class="material-icons">rate_review</i>
                         <span>Leave Review</span>
                     </button>
@@ -88,14 +91,14 @@ export class CardManager {
         const emptyStars = maxStars - fullStars - (hasHalfStar ? 1 : 0);
         
         return `
-            <span class="card-rating">
-                <span class="rating-stars">
-                    ${'<span class="rating-star active">★</span>'.repeat(fullStars)}
-                    ${hasHalfStar ? '<span class="rating-star active half">★</span>' : ''}
+            <div class="rating-display">
+                <div class="rating-stars">
+                    ${'<span class="rating-star">★</span>'.repeat(fullStars)}
+                    ${hasHalfStar ? '<span class="rating-star">★</span>' : ''}
                     ${'<span class="rating-star">★</span>'.repeat(emptyStars)}
-                </span>
+                </div>
                 <span class="rating-value">${rating.toFixed(1)}</span>
-            </span>
+            </div>
         `;
     }
 
@@ -124,21 +127,6 @@ export class CardManager {
     }
 
     /**
-     * Utility method to escape HTML for safety
-     * @param {string} unsafe - Unsafe HTML string
-     * @returns {string} Escaped HTML string
-     */
-    escapeHtml(unsafe) {
-        if (typeof unsafe !== 'string') return unsafe;
-        return unsafe
-            .replace(/&/g, "&amp;")
-            .replace(/</g, "&lt;")
-            .replace(/>/g, "&gt;")
-            .replace(/"/g, "&quot;")
-            .replace(/'/g, "&#039;");
-    }
-
-    /**
      * Create empty state for no results
      * @param {string} message - Custom message to display
      * @returns {string} HTML string for empty state
@@ -147,7 +135,7 @@ export class CardManager {
         return `
             <div class="no-results">
                 <i class="material-icons">search_off</i>
-                <h3>${this.escapeHtml(message)}</h3>
+                <h3>${sanitizeHtml(message)}</h3>
                 <p>Try adjusting your search criteria or filters</p>
             </div>
         `;
@@ -166,4 +154,18 @@ export class CardManager {
             </div>
         `;
     }
+
+    /**
+     * Utility method to escape HTML for safety - REMOVED (using sanitizeHtml from utilities.js instead)
+     * @deprecated Use sanitizeHtml from utilities.js instead
+     */
+    // escapeHtml(unsafe) {
+    //     if (typeof unsafe !== 'string') return unsafe;
+    //     return unsafe
+    //         .replace(/&/g, "&amp;")
+    //         .replace(/</g, "&lt;")
+    //         .replace(/>/g, "&gt;")
+    //         .replace(/"/g, "&quot;")
+    //         .replace(/'/g, "&#039;");
+    // }
 }

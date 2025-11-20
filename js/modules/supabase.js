@@ -75,7 +75,7 @@ export class SupabaseClient {
         try {
             // For contractors, all data goes in the data column
             const { id, createdAt, updatedAt, ...contractorData } = contractor;
-            
+
             const doc = {
                 id: id,
                 data: contractorData,
@@ -106,7 +106,7 @@ export class SupabaseClient {
         try {
             // Extract contractor_id and status for top-level columns, rest goes in data
             const { id, contractor_id, status, createdAt, updatedAt, ...reviewData } = review;
-            
+
             const doc = {
                 id: id,
                 contractor_id: contractor_id,
@@ -139,7 +139,7 @@ export class SupabaseClient {
         try {
             // For categories, ALL data goes in the data column - no top-level fields except id
             const { id, created_at, ...categoryData } = category;
-            
+
             const doc = {
                 id: id,
                 data: categoryData,  // All category data goes here
@@ -156,6 +156,29 @@ export class SupabaseClient {
         } catch (error) {
             console.error('Error saving category to Supabase:', error);
             this.addToPendingSync('categories', 'upsert', category);
+            return false;
+        }
+    }
+
+    // NEW: Delete category from Supabase
+    async deleteCategory(categoryId) {
+        if (!this.initialized || this.status !== 'online') {
+            this.addToPendingSync('categories', 'delete', { id: categoryId });
+            return false;
+        }
+
+        try {
+            const { error } = await this.client
+                .from('categories')
+                .delete()
+                .eq('id', categoryId);
+
+            if (error) throw error;
+            console.log('✅ Category deleted from Supabase:', categoryId);
+            return true;
+        } catch (error) {
+            console.error('Error deleting category from Supabase:', error);
+            this.addToPendingSync('categories', 'delete', { id: categoryId });
             return false;
         }
     }
@@ -193,14 +216,36 @@ export class SupabaseClient {
 
             if (error) throw error;
 
-            return (data || []).map(row => ({
-                id: row.id,
-                contractor_id: row.contractor_id,
-                status: row.status,
-                ...row.data,
-                createdAt: row.created_at,
-                updatedAt: row.updated_at
-            }));
+            // CRITICAL FIX: Check if data is valid before mapping
+            if (!data || !Array.isArray(data)) {
+                console.warn('⚠️ Supabase: No reviews data or invalid format received');
+                return [];
+            }
+
+            const reviews = data.map(row => {
+                // Ensure we have valid row data
+                if (!row || typeof row !== 'object') {
+                    console.warn('⚠️ Supabase: Invalid review row:', row);
+                    return null;
+                }
+
+                try {
+                    return {
+                        id: row.id,
+                        contractor_id: row.contractor_id,
+                        status: row.status,
+                        ...row.data,
+                        createdAt: row.created_at,
+                        updatedAt: row.updated_at
+                    };
+                } catch (error) {
+                    console.error('❌ Supabase: Error processing review row:', error, row);
+                    return null;
+                }
+            }).filter(review => review !== null); // Remove any null entries
+
+            console.log(`📥 Supabase: Loaded ${reviews.length} reviews`);
+            return reviews;
         } catch (error) {
             console.error('Error fetching reviews from Supabase:', error);
             return [];
@@ -240,12 +285,12 @@ export class SupabaseClient {
             data,
             timestamp: new Date().toISOString()
         });
-        
+
         // Keep only last 100 pending syncs
         if (this.pendingSync.length > 100) {
             this.pendingSync = this.pendingSync.slice(-100);
         }
-        
+
         console.log(`📝 Added to pending sync: ${table}.${operation}`, data.id);
     }
 
@@ -271,7 +316,11 @@ export class SupabaseClient {
                         success = await this.saveReview(sync.data);
                         break;
                     case 'categories':
-                        success = await this.saveCategory(sync.data);
+                        if (sync.operation === 'delete') {
+                            success = await this.deleteCategory(sync.data.id);
+                        } else {
+                            success = await this.saveCategory(sync.data);
+                        }
                         break;
                 }
 

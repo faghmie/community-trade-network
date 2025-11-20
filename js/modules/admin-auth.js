@@ -21,10 +21,15 @@ class AdminAuthModule {
             // AuthManager is imported as ES6 module
             this.authManager = new AuthManager();
 
+            // Create login section if it doesn't exist
+            this.createLoginSection();
+
             // Check authentication status
             if (this.authManager.isLoggedIn()) {
                 await this.adminModule.showAdminContent();
                 this.startSessionMonitoring();
+                // FIXED: Bind logout event when user is logged in
+                this.bindLogoutEvent();
                 return true;
             } else {
                 this.showLoginForm();
@@ -33,10 +38,53 @@ class AdminAuthModule {
             }
         } catch (error) {
             console.error('Error loading authentication module:', error);
+            this.createLoginSection();
             this.showLoginForm();
             this.bindAuthEvents();
             return false;
         }
+    }
+
+    createLoginSection() {
+        // Check if login section already exists
+        if (document.getElementById('loginSection')) {
+            return;
+        }
+
+        const loginHTML = `
+            <div id="loginSection" class="auth-container">
+                <div class="auth-card">
+                    <div class="auth-header">
+                        <h1 class="auth-title">Admin Login</h1>
+                        <p class="auth-subtitle">Contractor Reviews Management</p>
+                    </div>
+
+                    <form id="loginForm" class="auth-form">
+                        <div id="loginMessage" class="auth-message" style="display: none;"></div>
+
+                        <div class="material-form-group">
+                            <label for="username" class="material-input-label">Username</label>
+                            <input type="text" id="username" name="username" class="material-input" placeholder="Enter username"
+                                autocomplete="username" required>
+                        </div>
+
+                        <div class="material-form-group">
+                            <label for="password" class="material-input-label">Password</label>
+                            <input type="password" id="password" name="password" class="material-input" placeholder="Enter password"
+                                autocomplete="current-password" required>
+                        </div>
+
+                        <button type="submit" class="material-button contained" id="loginButton">
+                            <span id="loginButtonText">Login</span>
+                            <span id="loginSpinner" class="auth-loading" style="display: none;"></span>
+                        </button>
+                    </form>
+                </div>
+            </div>
+        `;
+
+        // Insert login section at the beginning of the body
+        document.body.insertAdjacentHTML('afterbegin', loginHTML);
     }
 
     showLoginForm() {
@@ -44,6 +92,13 @@ class AdminAuthModule {
         const adminContent = document.getElementById('adminContent');
         if (loginSection) loginSection.style.display = 'flex';
         if (adminContent) adminContent.style.display = 'none';
+    }
+
+    hideLoginForm() {
+        const loginSection = document.getElementById('loginSection');
+        if (loginSection) {
+            loginSection.style.display = 'none';
+        }
     }
 
     updateUserInfo() {
@@ -130,7 +185,6 @@ class AdminAuthModule {
 
     bindAuthEvents() {
         const loginForm = document.getElementById('loginForm');
-        const logoutButton = document.getElementById('logoutButton');
         const passwordField = document.getElementById('password');
 
         if (loginForm) {
@@ -140,18 +194,31 @@ class AdminAuthModule {
             });
         }
 
-        if (logoutButton) {
-            logoutButton.addEventListener('click', () => {
-                this.handleLogout();
-            });
-        }
-
         if (passwordField) {
             passwordField.addEventListener('keypress', async (e) => {
                 if (e.key === 'Enter') {
                     await this.handleLogin();
                 }
             });
+        }
+    }
+
+    // FIXED: Separate method to bind logout event
+    bindLogoutEvent() {
+        const logoutButton = document.getElementById('logoutButton');
+        if (logoutButton) {
+            // Remove any existing event listeners to prevent duplicates
+            const newLogoutButton = logoutButton.cloneNode(true);
+            logoutButton.parentNode.replaceChild(newLogoutButton, logoutButton);
+            
+            // Add new event listener
+            newLogoutButton.addEventListener('click', () => {
+                this.handleLogout();
+            });
+            
+            console.log('✅ Logout button event listener bound');
+        } else {
+            console.error('❌ Logout button not found');
         }
     }
 
@@ -183,8 +250,11 @@ class AdminAuthModule {
             if (result.success) {
                 this.showMessage('Login successful! Redirecting...', 'success');
                 setTimeout(() => {
+                    this.hideLoginForm();
                     this.adminModule.showAdminContent();
                     this.startSessionMonitoring();
+                    // FIXED: Bind logout event after successful login
+                    this.bindLogoutEvent();
                 }, 1000);
             } else {
                 this.showMessage(result.message, 'error');
@@ -203,6 +273,7 @@ class AdminAuthModule {
     handleLogout() {
         if (!this.authManager) return;
         
+        console.log('🔐 Logging out user...');
         this.authManager.logout();
         this.stopSessionMonitoring();
         this.adminModule.modulesInitialized = false;
@@ -214,6 +285,8 @@ class AdminAuthModule {
         const password = document.getElementById('password');
         if (username) username.value = '';
         if (password) password.value = '';
+        
+        console.log('✅ User logged out successfully');
     }
 
     showMessage(message, type = 'info') {

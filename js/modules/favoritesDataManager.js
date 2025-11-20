@@ -6,10 +6,12 @@ export class FavoritesDataManager {
         this.favorites = [];
         this.storage = null;
         this.initialized = false;
+        this.contractorManager = null; // Reference to validate favorites
     }
 
-    async init(storage) {
+    async init(storage, contractorManager = null) {
         this.storage = storage;
+        this.contractorManager = contractorManager;
         
         try {
             // Load favorites from storage - await the async load
@@ -17,6 +19,8 @@ export class FavoritesDataManager {
             
             if (saved && Array.isArray(saved)) {
                 this.favorites = saved;
+                // Auto-cleanup on initialization
+                await this.cleanupFavorites();
             } else {
                 this.favorites = [];
                 await this.save();
@@ -33,6 +37,9 @@ export class FavoritesDataManager {
 
     async save() {
         try {
+            // Auto-cleanup before saving
+            await this.cleanupFavorites();
+            
             // Use the dedicated favorites save method if available, otherwise fallback
             let success;
             if (typeof this.storage.saveFavorites === 'function') {
@@ -63,6 +70,9 @@ export class FavoritesDataManager {
             return { success: false, isNowFavorite: false };
         }
 
+        // First ensure we have valid favorites
+        await this.cleanupFavorites();
+
         const index = this.favorites.indexOf(contractorId);
         let isNowFavorite = false;
 
@@ -76,10 +86,15 @@ export class FavoritesDataManager {
             isNowFavorite = false;
             console.log('Removed contractor from favorites:', contractorId);
         } else {
-            // Add to favorites
-            this.favorites.push(contractorId);
-            isNowFavorite = true;
-            console.log('Added contractor to favorites:', contractorId);
+            // Add to favorites - but only if contractor exists
+            if (await this.isContractorValid(contractorId)) {
+                this.favorites.push(contractorId);
+                isNowFavorite = true;
+                console.log('Added contractor to favorites:', contractorId);
+            } else {
+                console.error('Cannot add favorite: Contractor does not exist:', contractorId);
+                return { success: false, isNowFavorite: false };
+            }
         }
 
         const success = await this.save();
@@ -91,23 +106,85 @@ export class FavoritesDataManager {
     }
 
     isFavorite(contractorId) {
+        // Always check against cleaned favorites
         const isFav = this.favorites.includes(contractorId);
         console.log('isFavorite check:', contractorId, '=', isFav);
         return isFav;
     }
 
     getFavorites() {
-        return [...this.favorites]; // Return copy to prevent mutation
+        // Return copy of cleaned favorites
+        return [...this.favorites];
     }
 
     getFavoritesCount() {
+        // Always return count of valid favorites
         return this.favorites.length;
     }
 
-    // REMOVED: Import/export operations including:
-    // - importFavorites()
-    // - exportFavorites() 
-    // - clearFavorites()
+    // Internal cleanup method - automatically removes invalid favorites
+    async cleanupFavorites() {
+        if (!this.contractorManager) {
+            console.warn('FavoritesDataManager: No contractor manager available for cleanup');
+            return false;
+        }
+
+        try {
+            const validContractorIds = await this.getValidContractorIds();
+            const initialCount = this.favorites.length;
+            
+            // Filter out favorites that reference non-existent contractors
+            const cleanedFavorites = this.favorites.filter(contractorId => 
+                validContractorIds.has(contractorId)
+            );
+
+            const removedCount = initialCount - cleanedFavorites.length;
+            
+            if (removedCount > 0) {
+                console.log(`🧹 Cleaned up ${removedCount} favorites for deleted contractors`);
+                this.favorites = cleanedFavorites;
+                await this.save(); // Save the cleaned list
+                return true;
+            }
+
+            return false;
+        } catch (error) {
+            console.error('Error cleaning up favorites:', error);
+            return false;
+        }
+    }
+
+    // Helper method to check if a contractor exists
+    async isContractorValid(contractorId) {
+        if (!this.contractorManager) return false;
+        
+        try {
+            const contractor = this.contractorManager.getById(contractorId);
+            return !!contractor;
+        } catch (error) {
+            console.error('Error checking contractor validity:', error);
+            return false;
+        }
+    }
+
+    // Helper method to get valid contractor IDs
+    async getValidContractorIds() {
+        if (!this.contractorManager) return new Set();
+        
+        try {
+            const contractors = this.contractorManager.getAll();
+            return new Set(contractors.map(c => c.id));
+        } catch (error) {
+            console.error('Error getting valid contractor IDs:', error);
+            return new Set();
+        }
+    }
+
+    // Set contractor manager reference (can be called after init)
+    setContractorManager(contractorManager) {
+        this.contractorManager = contractorManager;
+        console.log('FavoritesDataManager: Contractor manager set');
+    }
 
     // Refresh favorites from storage
     async refresh() {
@@ -115,6 +192,8 @@ export class FavoritesDataManager {
             const saved = await this.storage.load('favorites');
             if (saved && Array.isArray(saved)) {
                 this.favorites = saved;
+                // Auto-cleanup after refresh
+                await this.cleanupFavorites();
                 console.log('Favorites refreshed from storage:', this.favorites.length, 'favorites');
                 return true;
             }

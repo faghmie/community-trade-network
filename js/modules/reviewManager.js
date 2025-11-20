@@ -1,4 +1,4 @@
-// js/modules/reviewManager.js
+// js/modules/reviewManager.js - FIXED CACHE ISSUE
 // ES6 Module for review management
 
 import { generateId } from './uuid.js';
@@ -27,14 +27,18 @@ export class ReviewManager {
             console.log('📝 Loaded reviews from storage:', saved ? saved.length : 'none');
 
             if (saved && saved.length > 0) {
-                // FIX: Use saved reviews if they exist (don't overwrite with defaults)
+                // Use saved reviews if they exist
                 this.reviews = saved;
                 console.log('📝 Using saved reviews:', this.reviews.length);
+            } else if (saved !== null && saved !== undefined) {
+                // CRITICAL FIX: If saved is explicitly null/undefined (no data), but we got a response,
+                // don't load defaults. This means Supabase intentionally has 0 reviews.
+                this.reviews = [];
+                console.log('📝 Using empty reviews array (intentional no data from Supabase)');
             } else {
-                // FIX: Only use defaults if NO saved reviews exist (first-time setup)
+                // Only use defaults if we truly have no saved data (first-time setup)
                 this.reviews = reviewsToUse;
                 console.log('📝 Using default reviews (first load):', this.reviews.length);
-                // DON'T save here - let the main app handle first-time setup
             }
 
             // Update all contractor stats after loading reviews (only approved reviews)
@@ -56,20 +60,26 @@ export class ReviewManager {
         await this.storage.save('reviews', this.reviews);
     }
 
+    // CRITICAL FIX: Return raw reviews without enhancement - enhancement should happen at display time
     getAllReviews = () => {
-        console.log('📋 Getting all reviews:', this.reviews.length);
-        // Ensure we have contractor names and categories for admin display
-        const enhancedReviews = this.reviews.map(review => {
+        console.log('📋 Getting all reviews (raw):', this.reviews.length);
+        return [...this.reviews]; // Return a copy to prevent mutation
+    };
+
+    // NEW: Get reviews with current contractor information (fresh data every time)
+    getReviewsWithContractorInfo = () => {
+        console.log('📋 Getting reviews with fresh contractor info');
+        
+        return this.reviews.map(review => {
+            // ALWAYS get fresh contractor data to ensure no stale information
             const contractor = this.contractorManager.getById(review.contractor_id);
             return {
                 ...review,
-                contractorId: review.contractor_id, // Add contractorId for admin module compatibility
+                contractorId: review.contractor_id,
                 contractorName: contractor ? contractor.name : 'Unknown Contractor',
                 contractorCategory: contractor ? contractor.category : 'Unknown Category'
             };
         });
-        console.log('📋 Enhanced reviews for display:', enhancedReviews.length);
-        return enhancedReviews;
     };
 
     getReviewsByContractor = (contractorId) => {
@@ -199,7 +209,8 @@ export class ReviewManager {
     searchReviews(searchTerm = '', statusFilter = 'all', contractorFilter = 'all') {
         console.log('🔍 Searching reviews:', { searchTerm, statusFilter, contractorFilter });
 
-        const allReviews = this.getAllReviews();
+        // CRITICAL FIX: Use getReviewsWithContractorInfo to ensure fresh contractor data
+        const allReviews = this.getReviewsWithContractorInfo();
         const filteredReviews = allReviews.filter(review => {
             const matchesSearch = !searchTerm ||
                 review.reviewerName.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -277,11 +288,52 @@ export class ReviewManager {
     // Refresh reviews data from storage
     async refresh() {
         console.log('🔄 Refreshing reviews from storage');
-        const saved = await this.storage.load('reviews');
-        if (saved && saved.length > 0) {
-            this.reviews = saved;
-            console.log('🔄 Reviews refreshed:', this.reviews.length);
+        
+        try {
+            // Force a fresh load from storage (bypass any caching)
+            const saved = await this.storage.load('reviews', { forceRefresh: true });
+            
+            // CRITICAL FIX: Always update the reviews array, even if it's empty
+            // This ensures deleted reviews are properly removed from cache
+            this.reviews = saved || [];
+            console.log('🔄 Reviews refreshed from storage:', this.reviews.length);
+            
+            // Update contractor stats after refresh
+            this.updateAllContractorStats();
+            
+        } catch (error) {
+            console.error('❌ Error refreshing reviews:', error);
+            // If refresh fails, clear the cache to prevent stale data
+            this.reviews = [];
+            console.log('🔄 Reviews cache cleared due to error');
         }
+    }
+
+    // Force a complete refresh including Supabase sync
+    async forceRefresh() {
+        console.log('🔄🔄 FORCE refreshing reviews (including Supabase sync)');
+        
+        try {
+            // First, trigger a complete storage refresh
+            if (this.storage && this.storage.forceRefreshAll) {
+                console.log('🔄 Triggering storage force refresh...');
+                await this.storage.forceRefreshAll();
+            }
+            
+            // Then refresh our local cache
+            await this.refresh();
+            
+            console.log('✅ Force refresh completed');
+            
+        } catch (error) {
+            console.error('❌ Error during force refresh:', error);
+        }
+    }
+
+    // NEW: Clear internal cache completely (for admin use)
+    clearCache() {
+        console.log('🧹 Clearing ReviewManager cache');
+        this.reviews = [];
     }
 
     // Debug method to log current state
