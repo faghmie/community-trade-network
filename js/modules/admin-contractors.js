@@ -353,24 +353,33 @@ class AdminContractorsModule {
 
         console.log('✅ AdminContractorsModule: Modal is available, populating form...');
 
-        // Populate categories dropdown
+        // Populate categories dropdown - FIXED: Sort categories alphabetically
         const categorySelect = document.getElementById('contractorCategory');
         if (categorySelect) {
             categorySelect.innerHTML = '<option value="">Select Category</option>';
             const categories = this.categoriesModule.getCategories();
-            categories.forEach(category => {
+
+            // Sort categories alphabetically by name
+            const sortedCategories = [...categories].sort((a, b) =>
+                a.name.localeCompare(b.name)
+            );
+
+            sortedCategories.forEach(category => {
                 categorySelect.innerHTML += `<option value="${category.name}">${category.name}</option>`;
             });
         }
 
-        // Populate provinces dropdown - FIXED THE TYPO HERE
+        // Populate provinces dropdown - FIXED: Sort provinces alphabetically
         const provinceSelect = document.getElementById('contractorProvince');
         if (provinceSelect) {
             provinceSelect.innerHTML = '<option value="">Select Province</option>';
 
             if (this.locationData && this.locationData.southAfricanProvinces) {
-                Object.keys(this.locationData.southAfricanProvinces).forEach(province => {
-                    provinceSelect.innerHTML += `<option value="${province}">${province}</option>`; // FIXED: was "provider" instead of "province"
+                // Sort provinces alphabetically
+                const sortedProvinces = Object.keys(this.locationData.southAfricanProvinces).sort();
+
+                sortedProvinces.forEach(province => {
+                    provinceSelect.innerHTML += `<option value="${province}">${province}</option>`;
                 });
             }
         }
@@ -470,7 +479,11 @@ class AdminContractorsModule {
         const areas = provinceData ? provinceData.cities : [];
 
         areaSelect.innerHTML = '<option value="">Select Area</option>';
-        areas.forEach(area => {
+
+        // Sort areas alphabetically
+        const sortedAreas = [...areas].sort();
+
+        sortedAreas.forEach(area => {
             areaSelect.innerHTML += `<option value="${area}">${area}</option>`;
         });
 
