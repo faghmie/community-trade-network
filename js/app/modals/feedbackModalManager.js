@@ -10,6 +10,7 @@ export class FeedbackModalManager {
         this.isOpen = false;
         this.currentRating = 0;
         this.modalElement = null;
+        this.modalId = 'feedback-modal'; // NEW: Unique identifier for back button manager
         this.callbacks = {
             onSubmit: null,
             onClose: null
@@ -118,6 +119,10 @@ export class FeedbackModalManager {
         const template = document.createElement('template');
         template.innerHTML = modalHTML.trim();
         this.modalElement = template.content.firstChild;
+        
+        // NEW: Set modal ID for back button manager tracking
+        this.modalElement.setAttribute('data-modal-id', this.modalId);
+        
         document.body.appendChild(this.modalElement);
         this.bindModalEvents();
     }
@@ -186,6 +191,13 @@ export class FeedbackModalManager {
 
         // Escape key to close
         document.addEventListener('keydown', this.handleKeydown.bind(this));
+
+        // NEW: Listen for closeModal event from back button manager
+        this.modalElement.addEventListener('closeModal', (event) => {
+            if (event.detail.source === 'backButton') {
+                this.close();
+            }
+        });
     }
 
     handleKeydown(e) {
@@ -278,6 +290,9 @@ export class FeedbackModalManager {
         
         // Show modal
         this.showModal();
+
+        // NEW: Dispatch modal opened event for back button manager
+        this.dispatchModalOpenedEvent();
     }
 
     /**
@@ -307,7 +322,31 @@ export class FeedbackModalManager {
             this.modalElement.style.display = 'none';
             document.body.style.overflow = '';
             this.isOpen = false;
+            
+            // NEW: Dispatch modal closed event for back button manager
+            this.dispatchModalClosedEvent();
         }, 300);
+    }
+
+    // NEW: Dispatch modal opened event
+    dispatchModalOpenedEvent() {
+        const event = new CustomEvent('modalOpened', {
+            detail: {
+                modalId: this.modalId,
+                modalElement: this.modalElement
+            }
+        });
+        document.dispatchEvent(event);
+    }
+
+    // NEW: Dispatch modal closed event
+    dispatchModalClosedEvent() {
+        const event = new CustomEvent('modalClosed', {
+            detail: {
+                modalId: this.modalId
+            }
+        });
+        document.dispatchEvent(event);
     }
 
     /**

@@ -8,6 +8,7 @@ export class ReviewModalManager {
         this.isOpen = false;
         this.currentContractorId = null;
         this.currentContractor = null;
+        this.modalId = 'review-modal'; // NEW: Unique identifier for back button manager
         
         // Form state
         this.currentRatings = {
@@ -40,10 +41,13 @@ export class ReviewModalManager {
         this.showModal();
         
         this.isOpen = true;
+
+        // NEW: Dispatch modal opened event for back button manager
+        this.dispatchModalOpenedEvent();
     }
 
     createMaterialModal() {
-        // Create Material Design modal structure - SIMPLIFIED like contractor modal
+        // Create Material Design modal structure - FIXED: Use proper btn classes
         const modalHTML = `
             <div class="modal review-modal material-modal">
                 <div class="modal-backdrop"></div>
@@ -190,10 +194,10 @@ export class ReviewModalManager {
                         </form>
                     </div>
                     <div class="modal-footer material-dialog-actions">
-                        <button type="button" class="material-button text-button cancel-review-btn">
+                        <button type="button" class="btn btn-secondary cancel-review-btn">
                             <span class="button-text">Cancel</span>
                         </button>
-                        <button type="submit" class="material-button contained-button submit-review-btn" disabled>
+                        <button type="submit" class="btn btn-primary submit-review-btn" disabled>
                             <span class="button-text">Submit Review</span>
                             <span class="material-icons button-icon" aria-hidden="true">send</span>
                         </button>
@@ -205,6 +209,9 @@ export class ReviewModalManager {
         const template = document.createElement('template');
         template.innerHTML = modalHTML.trim();
         this.modalElement = template.content.firstChild;
+        
+        // NEW: Set modal ID for back button manager tracking
+        this.modalElement.setAttribute('data-modal-id', this.modalId);
         
         // Add to DOM
         document.body.appendChild(this.modalElement);
@@ -276,6 +283,13 @@ export class ReviewModalManager {
 
         // Escape key
         document.addEventListener('keydown', (e) => this.handleKeydown(e));
+
+        // NEW: Listen for closeModal event from back button manager
+        this.modalElement.addEventListener('closeModal', (event) => {
+            if (event.detail.source === 'backButton') {
+                this.close();
+            }
+        });
     }
 
     handleKeydown(e) {
@@ -543,7 +557,31 @@ export class ReviewModalManager {
             document.body.style.overflow = '';
             this.isOpen = false;
             this.resetForm();
+            
+            // NEW: Dispatch modal closed event for back button manager
+            this.dispatchModalClosedEvent();
         }, 300);
+    }
+
+    // NEW: Dispatch modal opened event
+    dispatchModalOpenedEvent() {
+        const event = new CustomEvent('modalOpened', {
+            detail: {
+                modalId: this.modalId,
+                modalElement: this.modalElement
+            }
+        });
+        document.dispatchEvent(event);
+    }
+
+    // NEW: Dispatch modal closed event
+    dispatchModalClosedEvent() {
+        const event = new CustomEvent('modalClosed', {
+            detail: {
+                modalId: this.modalId
+            }
+        });
+        document.dispatchEvent(event);
     }
 
     handleReviewSubmit() {

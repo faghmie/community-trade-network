@@ -1,7 +1,7 @@
 // sw.js - Service Worker for Community Trade Network
-const CACHE_NAME = 'community-trade-network-v1.1.2';
+const CACHE_NAME = 'community-trade-network-v1.1.3';
 const API_CACHE_NAME = 'community-trade-network-api-v1';
-const DYNAMIC_CACHE_NAME = 'community-trade-network-dynamic-v1.1.2';
+const DYNAMIC_CACHE_NAME = 'community-trade-network-dynamic-v1.1.3';
 
 // Configuration
 const CACHE_CONFIG = {

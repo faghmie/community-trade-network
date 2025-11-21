@@ -48,6 +48,13 @@ class BackButtonManager {
         const { modalId, modalElement } = event.detail;
         
         if (modalId && modalElement) {
+            // FIXED: Check if modal is already in stack to prevent duplicates
+            const existingModal = this.modalStack.find(modal => modal.id === modalId);
+            if (existingModal) {
+                console.log(`Modal ${modalId} already in stack, skipping`);
+                return;
+            }
+            
             this.modalStack.push({
                 id: modalId,
                 element: modalElement,
@@ -102,18 +109,42 @@ class BackButtonManager {
 
     // Method to manually register a modal (for modals that don't use the event system)
     registerModal(modalId, modalElement) {
-        const modalEvent = new CustomEvent('modalOpened', {
-            detail: { modalId, modalElement }
+        // FIXED: Don't dispatch modalOpened event here - that would cause recursion
+        // Instead, directly add to stack and handle history
+        const existingModal = this.modalStack.find(modal => modal.id === modalId);
+        if (existingModal) {
+            console.log(`Modal ${modalId} already registered, skipping`);
+            return;
+        }
+        
+        this.modalStack.push({
+            id: modalId,
+            element: modalElement,
+            timestamp: Date.now()
         });
-        document.dispatchEvent(modalEvent);
+        
+        // Push a state to the history stack when modal opens
+        if (this.modalStack.length === 1) {
+            window.history.pushState({ modalOpen: true, modalId }, '', window.location.href);
+        }
+        
+        console.log(`Modal registered: ${modalId}, Stack size: ${this.modalStack.length}`);
     }
 
     // Method to manually unregister a modal
     unregisterModal(modalId) {
-        const modalEvent = new CustomEvent('modalClosed', {
-            detail: { modalId }
-        });
-        document.dispatchEvent(modalEvent);
+        // FIXED: Don't dispatch modalClosed event here - that would cause recursion
+        // Instead, directly remove from stack and handle history
+        this.modalStack = this.modalStack.filter(modal => modal.id !== modalId);
+        
+        // If this was the last modal, pop the state we added
+        if (this.modalStack.length === 0) {
+            if (window.history.state && window.history.state.modalOpen) {
+                window.history.back();
+            }
+        }
+        
+        console.log(`Modal unregistered: ${modalId}, Stack size: ${this.modalStack.length}`);
     }
 
     // Get current stack for debugging

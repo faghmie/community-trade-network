@@ -4,6 +4,7 @@
 import { LazyLoader } from './lazyLoader.js';
 import { FavoritesManager } from './favoritesManager.js';
 import { StatsManager } from './statsManager.js';
+import backButtonManager from '../modules/backButtonManager.js';
 
 export class UIManager {
     constructor(cardManager, dataModule, categoriesModule, reviewManager) {
@@ -23,6 +24,8 @@ export class UIManager {
         this.handleCategoriesUpdated = this.handleCategoriesUpdated.bind(this);
         this.handleFiltersChange = this.handleFiltersChange.bind(this);
         this.handleFavoritesUpdated = this.handleFavoritesUpdated.bind(this);
+        this.handleModalOpened = this.handleModalOpened.bind(this);
+        this.handleModalClosed = this.handleModalClosed.bind(this);
     }
 
     // Define the methods as class properties to ensure they exist before binding
@@ -39,9 +42,29 @@ export class UIManager {
         this.updateAllFavoriteButtons();
     }
 
+    handleModalOpened(event) {
+        // Forward modal opened events to back button manager
+        const { modalId, modalElement } = event.detail;
+        if (modalId && modalElement) {
+            backButtonManager.registerModal(modalId, modalElement);
+        }
+    }
+
+    handleModalClosed(event) {
+        // Forward modal closed events to back button manager
+        const { modalId } = event.detail;
+        if (modalId) {
+            backButtonManager.unregisterModal(modalId);
+        }
+    }
+
     async init(filterManager) {
         this.filterManager = filterManager;
         this.cacheElements();
+        
+        // Initialize back button manager first
+        backButtonManager.init();
+        
         await this.setupManagers();
         this.setupCategories();
         this.setupActionHandlers();
@@ -205,6 +228,10 @@ export class UIManager {
 
         // FIXED: Add the missing favoritesUpdated event listener
         document.addEventListener('favoritesUpdated', this.handleFavoritesUpdated);
+
+        // NEW: Listen for modal events to forward to back button manager
+        document.addEventListener('modalOpened', this.handleModalOpened);
+        document.addEventListener('modalClosed', this.handleModalClosed);
     }
 
     handleActionButton(action, button) {
@@ -271,6 +298,11 @@ export class UIManager {
     destroy() {
         document.removeEventListener('categoriesUpdated', this.handleCategoriesUpdated);
         document.removeEventListener('favoritesUpdated', this.handleFavoritesUpdated);
+        document.removeEventListener('modalOpened', this.handleModalOpened);
+        document.removeEventListener('modalClosed', this.handleModalClosed);
+
+        // Clean up back button manager
+        backButtonManager.destroy();
 
         if (this.lazyLoader) {
             this.lazyLoader.destroy();

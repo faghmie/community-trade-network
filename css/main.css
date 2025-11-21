@@ -5,6 +5,7 @@
 @import url('components/buttons.css');
 @import url('components/cards.css');
 @import url('components/modals.css');
+@import url('components/review-modal.css'); /* MOVED: Before other modal-related imports */
 @import url('components/notifications.css');
 @import url('components/forms.css');
 @import url('components/tables.css');
@@ -18,7 +19,6 @@
 @import url('components/auth.css');
 @import url('components/bottom-nav.css');
 @import url('./components/bottom-sheet.css');
-@import url('components/review-modal.css');
 @import url('components/feedback.css');
 @import url('layout.css');
 
@@ -218,6 +218,88 @@ body {
     align-items: center;
     justify-content: center;
     z-index: var(--z-modal);
+}
+
+/* ===== REVIEW MODAL MOBILE OVERRIDES ===== */
+/* Ensure review modal footer is always visible on mobile */
+@media (max-width: 768px) {
+    .modal.review-modal.material-modal .material-dialog.large {
+        display: flex !important;
+        flex-direction: column !important;
+        height: 100vh !important;
+        max-height: 100vh !important;
+        width: 100vw !important;
+        margin: 0 !important;
+        border-radius: 0 !important;
+    }
+    
+    .modal.review-modal.material-modal .material-dialog-header {
+        flex-shrink: 0 !important;
+        padding: calc(var(--space-lg) + env(safe-area-inset-top, 0px)) var(--space-lg) var(--space-md) var(--space-lg) !important;
+    }
+    
+    .modal.review-modal.material-modal .material-dialog-body {
+        flex: 1 !important;
+        min-height: 0 !important;
+        overflow-y: auto !important;
+        padding: 0 !important;
+        max-height: none !important;
+    }
+    
+    .modal.review-modal.material-modal .material-dialog-actions {
+        flex-shrink: 0 !important;
+        margin-top: auto !important;
+        padding: var(--space-lg) var(--space-lg) calc(var(--space-lg) + env(safe-area-inset-bottom, 0px)) var(--space-lg) !important;
+        background: var(--surface) !important;
+        border-top: 1px solid var(--border-light) !important;
+        position: relative !important;
+        z-index: 10 !important;
+    }
+    
+    .modal.review-modal.material-modal .review-form.material-form {
+        flex: 1 !important;
+        min-height: 0 !important;
+        overflow-y: auto !important;
+        padding: var(--space-lg) !important;
+    }
+    
+    /* Ensure buttons are always visible and properly sized */
+    .modal.review-modal.material-modal .material-dialog-actions .material-button {
+        width: 100% !important;
+        min-height: 48px !important;
+        margin: 0 !important;
+        flex: 1 !important;
+    }
+}
+
+/* Small mobile devices */
+@media (max-width: 480px) {
+    .modal.review-modal.material-modal .material-dialog-actions {
+        padding: var(--space-md) var(--space-md) calc(var(--space-md) + env(safe-area-inset-bottom, 0px)) var(--space-md) !important;
+    }
+    
+    .modal.review-modal.material-modal .review-form.material-form {
+        padding: var(--space-md) !important;
+    }
+    
+    .modal.review-modal.material-modal .material-dialog-actions .material-button {
+        min-height: 44px !important;
+    }
+}
+
+/* Ultra-compact mobile devices */
+@media (max-width: 360px) {
+    .modal.review-modal.material-modal .material-dialog-actions {
+        padding: var(--space-sm) var(--space-sm) calc(var(--space-sm) + env(safe-area-inset-bottom, 0px)) var(--space-sm) !important;
+    }
+    
+    .modal.review-modal.material-modal .review-form.material-form {
+        padding: var(--space-sm) !important;
+    }
+    
+    .modal.review-modal.material-modal .material-dialog-actions .material-button {
+        min-height: 40px !important;
+    }
 }
 
 /* ===== MOBILE LIST VIEW FIXES - OVERRIDE ALL CONTAINER PADDING ===== */

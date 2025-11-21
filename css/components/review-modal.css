@@ -14,6 +14,8 @@
     justify-content: center;
     background: rgba(0, 0, 0, 0.5);
     backdrop-filter: blur(4px);
+    /* FIXED: Ensure proper mobile viewport */
+    box-sizing: border-box;
 }
 
 .modal.review-modal.material-modal.modal-open {
@@ -47,6 +49,8 @@
     /* FIXED: Remove any border that might be causing blue outline */
     border: none;
     outline: none;
+    /* FIXED: Ensure proper flex behavior */
+    min-height: min-content;
 }
 
 .modal.review-modal.material-modal.modal-open .material-dialog.large {
@@ -65,6 +69,8 @@
     border-radius: var(--border-radius-lg) var(--border-radius-lg) 0 0;
     /* FIXED: Ensure no focus outline on header */
     outline: none;
+    /* FIXED: Prevent header from shrinking */
+    flex-shrink: 0;
 }
 
 .modal.review-modal.material-modal .header-content {
@@ -87,7 +93,7 @@
     font-weight: var(--font-weight-regular);
 }
 
-/* Dialog Body */
+/* Dialog Body - FIXED: Improved mobile scrolling */
 .modal.review-modal.material-modal .material-dialog-body {
     flex: 1;
     overflow-y: auto;
@@ -95,8 +101,14 @@
     max-height: 60vh;
     /* FIXED: Ensure no focus outline on body */
     outline: none;
+    /* FIXED: Improved mobile scrolling */
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior: contain;
+    /* FIXED: Allow proper content sizing */
+    min-height: 0;
 }
 
+/* Dialog Actions - FIXED: Ensure footer stays visible */
 .modal.review-modal.material-modal .material-dialog-actions {
     display: flex;
     justify-content: flex-end;
@@ -107,6 +119,9 @@
     border-radius: 0 0 var(--border-radius-lg) var(--border-radius-lg);
     /* FIXED: Ensure no focus outline on actions */
     outline: none;
+    /* FIXED: Prevent footer from shrinking and ensure visibility */
+    flex-shrink: 0;
+    margin-top: auto;
 }
 
 /* ===== REVIEW FORM CONTENT ===== */
@@ -117,6 +132,8 @@
     padding: var(--space-xl);
     /* FIXED: Ensure no focus outline on form */
     outline: none;
+    /* FIXED: Allow form to scroll properly */
+    min-height: 0;
 }
 
 /* Section Titles - Match contractor modal pattern */
@@ -426,20 +443,55 @@
     }
 }
 
-/* ===== RESPONSIVE DESIGN ===== */
+/* ===== MOBILE-SPECIFIC FIXES ===== */
 @media (max-width: 768px) {
+    .modal.review-modal.material-modal {
+        padding: 0;
+        align-items: stretch;
+    }
+    
     .modal.review-modal.material-modal .material-dialog.large {
-        width: 95vw;
-        max-height: 95vh;
-        margin: var(--space-md);
+        width: 100%;
+        max-width: 100%;
+        height: 100vh;
+        max-height: 100vh;
+        margin: 0;
+        border-radius: 0;
+        box-shadow: none;
+        /* FIXED: Ensure proper mobile layout */
+        display: flex;
+        flex-direction: column;
     }
     
     .modal.review-modal.material-modal .material-dialog-header {
-        padding: var(--space-lg);
+        padding: calc(var(--space-lg) + env(safe-area-inset-top, 0px)) var(--space-lg) var(--space-md) var(--space-lg);
+        /* FIXED: Prevent header shrinking */
+        flex-shrink: 0;
     }
     
     .review-form.material-form {
         padding: var(--space-lg);
+        /* FIXED: Allow form to scroll properly */
+        flex: 1;
+        min-height: 0;
+        overflow-y: auto;
+    }
+    
+    .modal.review-modal.material-modal .material-dialog-body {
+        /* FIXED: Take available space between header and footer */
+        flex: 1;
+        min-height: 0;
+        max-height: none;
+        padding: 0;
+    }
+    
+    .modal.review-modal.material-modal .material-dialog-actions {
+        padding: var(--space-lg) var(--space-lg) calc(var(--space-lg) + env(safe-area-inset-bottom, 0px)) var(--space-lg);
+        /* FIXED: Ensure footer stays at bottom */
+        flex-shrink: 0;
+        margin-top: auto;
+        flex-direction: column;
+        gap: var(--space-sm);
     }
     
     .category-rating-item {
@@ -457,12 +509,6 @@
         justify-content: center;
     }
     
-    .modal.review-modal.material-modal .material-dialog-actions {
-        padding: var(--space-lg);
-        flex-direction: column;
-        gap: var(--space-sm);
-    }
-    
     .star-rating-display .material-star-button {
         width: 36px;
         height: 36px;
@@ -473,32 +519,34 @@
         width: 28px;
         height: 28px;
     }
+    
+    /* FIXED: Ensure buttons are always visible and properly sized */
+    .material-dialog-actions .material-button {
+        width: 100%;
+        min-height: 48px;
+        margin: 0;
+    }
 }
 
 @media (max-width: 480px) {
-    .modal.review-modal.material-modal .material-dialog.large {
-        width: 100vw;
-        height: 100vh;
-        max-height: 100vh;
-        margin: 0;
-        border-radius: 0;
-    }
-    
     .modal.review-modal.material-modal .dialog-title {
         font-size: var(--font-size-lg);
     }
     
     .review-form.material-form {
         padding: var(--space-md);
+        gap: var(--space-md);
     }
     
     .rating-section .material-section-title,
     .category-ratings .material-section-title {
         font-size: var(--font-size-base);
+        padding-bottom: var(--space-sm);
     }
     
     .section-subtitle {
         font-size: var(--font-size-xs);
+        margin-bottom: var(--space-md);
     }
     
     .category-icon {
@@ -534,8 +582,63 @@
     }
     
     .modal.review-modal.material-modal .material-dialog-actions {
+        padding: var(--space-md) var(--space-md) calc(var(--space-md) + env(safe-area-inset-bottom, 0px)) var(--space-md);
+    }
+    
+    .material-form-group {
+        margin-bottom: var(--space-md);
+    }
+}
+
+/* Ultra-compact mobile devices */
+@media (max-width: 360px) {
+    .modal.review-modal.material-modal .material-dialog-header {
+        padding: calc(var(--space-md) + env(safe-area-inset-top, 0px)) var(--space-md) var(--space-sm) var(--space-md);
+    }
+    
+    .review-form.material-form {
+        padding: var(--space-sm);
+        gap: var(--space-sm);
+    }
+    
+    .modal.review-modal.material-modal .material-dialog-actions {
+        padding: var(--space-sm) var(--space-sm) calc(var(--space-sm) + env(safe-area-inset-bottom, 0px)) var(--space-sm);
+    }
+    
+    .star-rating-display .material-star-button {
+        width: 28px;
+        height: 28px;
+    }
+    
+    .star-rating-display .star-icon {
+        font-size: 20px;
+        width: 20px;
+        height: 20px;
+    }
+}
+
+/* Landscape mobile optimization */
+@media (max-height: 500px) and (orientation: landscape) {
+    .modal.review-modal.material-modal .material-dialog.large {
+        max-height: 100vh;
+    }
+    
+    .modal.review-modal.material-modal .material-dialog-body {
+        max-height: 50vh;
+    }
+    
+    .review-form.material-form {
         padding: var(--space-md);
-        border-radius: 0;
+        gap: var(--space-sm);
+    }
+    
+    .material-form-group {
+        margin-bottom: var(--space-sm);
+    }
+    
+    .star-rating-container,
+    .category-rating-grid {
+        margin-bottom: var(--space-md);
     }
 }
 
