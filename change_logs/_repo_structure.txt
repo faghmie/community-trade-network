@@ -62,6 +62,7 @@
 |   |-- 2025_11_20_03.md
 |   |-- 2025_11_20_04.md
 |   |-- 2025_11_20_05.md
+|   |-- 2025_11_20_06.md
 |   |-- _architecture.md
 |   |-- _coding_prompt.md
 |   |-- next_best_action.md
@@ -94,6 +95,13 @@
 |   |-- admin.css
 |   |-- layout.css
 |   `-- main.css
+|-- docs
+|   |-- ADMIN_GUIDE.md
+|   |-- COMMUNITY_GUIDELINES.md
+|   |-- deployment_decisions.md
+|   |-- PRODUCT_REQUIREMENT_DOCUMENT.md
+|   |-- rate-my-contractor-product-requirements.md
+|   `-- TRACKING_STRATEGY_DECISION.md
 |-- icons
 |   |-- icon-128x128.png
 |   |-- icon-144x144.png
@@ -154,17 +162,17 @@
 |   |   `-- validation.js
 |   |-- admin.js
 |   `-- script.js
+|-- scripts
+|   |-- default_categories.sql
+|   |-- postgresql_supabase_setup.sql
+|   `-- start_server.sh
 |-- admin.html
-|-- deployment_decisions.md
 |-- generate-icons.html
 |-- generate_password.html
 |-- index.html
+|-- LICENSE
 |-- manifest.json
-|-- postgresql_supabase_setup.sql
-|-- rate-my-contractor-product-requirements.md
-|-- start_server.sh
-|-- sw.js
-|-- TRACKING_STRATEGY_DECISION.md
-`-- unsaved file 1
+|-- README
+`-- sw.js
 
-14 directories, 154 files
+16 directories, 160 files

@@ -1,7 +1,7 @@
 // sw.js - Service Worker for Community Trade Network
-const CACHE_NAME = 'contractor-reviews-v1.0.0';
-const API_CACHE_NAME = 'contractor-reviews-api-v01';
-const DYNAMIC_CACHE_NAME = 'contractor-reviews-dynamic-v01';
+const CACHE_NAME = 'community-trade-network-v1.0.0';
+const API_CACHE_NAME = 'community-trade-network-api-v01';
+const DYNAMIC_CACHE_NAME = 'community-trade-network-dynamic-v01';
 
 // Configuration
 const CACHE_CONFIG = {
@@ -12,18 +12,18 @@ const CACHE_CONFIG = {
 
 // Core app files to cache
 const urlsToCache = [
-    '/',
-    '/index.html',
-    '/admin.html',
-    '/generate_password.html',
-    
+    './',
+    './index.html',
+    './admin.html',
+    './generate_password.html',
+
     // CSS Files
     'css/main.css',
     'css/admin.css',
     'css/layout.css',
     'css/base/reset.css',
     'css/base/variables.css',
-    
+
     // Component CSS
     'css/components/auth.css',
     'css/components/buttons.css',
@@ -43,19 +43,19 @@ const urlsToCache = [
     'css/components/tables.css',
     'css/components/tabs.css',
     'css/components/utilities.css',
-    
+
     // JavaScript Files
     'js/script.js',
     'js/admin.js',
     'js/config/supabase-credentials.js',
-    
+
     // Data Files
     'js/data/defaultData.js',
     'js/data/defaultCategories.js',
     'js/data/defaultContractors.js',
     'js/data/defaultLocations.js',
     'js/data/defaultReviews.js',
-    
+
     // Core Modules
     'js/modules/data.js',
     'js/modules/storage.js',
@@ -73,13 +73,13 @@ const urlsToCache = [
     'js/modules/validation.js',
     'js/modules/uuid.js',
     'js/modules/tabs.js',
-    
+
     // Admin Modules
     'js/modules/admin-auth.js',
     'js/modules/admin-contractors.js',
     'js/modules/admin-categories.js',
     'js/modules/admin-reviews.js',
-    
+
     // App Modules
     'js/app/main.js',
     'js/app/uiManager.js',
@@ -91,7 +91,7 @@ const urlsToCache = [
     'js/app/modals/baseModalManager.js',
     'js/app/modals/contractorModalManager.js',
     'js/app/modals/reviewModalManager.js',
-    
+
     // Manifest and Icons
     'manifest.json',
     'icons/icon-72x72.png',
@@ -107,14 +107,14 @@ const urlsToCache = [
 // Install event - Cache core app files
 self.addEventListener('install', (event) => {
     console.log('🛠️ Service Worker installing...');
-    
+
     event.waitUntil(
         caches.open(CACHE_NAME)
             .then((cache) => {
                 console.log('📦 Caching app shell');
                 return Promise.allSettled(
-                    urlsToCache.map(url => 
-                        cache.add(url).catch(err => 
+                    urlsToCache.map(url =>
+                        cache.add(url).catch(err =>
                             console.warn(`⚠️ Failed to cache: ${url}`, err)
                         )
                     )
@@ -170,52 +170,52 @@ self.addEventListener('fetch', (event) => {
 // Only handle resources that belong to OUR app
 function isOurAppResource(request) {
     const url = new URL(request.url);
-    
-    // Our app resources (localhost in development, your domain in production)
-    const ourHosts = [
-        'localhost',        // Development
-        '127.0.0.1',       // Development  
-        'contractor-reviews.com' // Your production domain
-    ];
-    
+
+    // Our app resources - use relative path detection instead of hostnames
+    const isOurAppPath = url.pathname.includes('/community-trade-network/') ||
+        url.pathname === '/' ||
+        url.pathname.startsWith('/community-trade-network') ||
+        !url.hostname.includes('.') || // Local files
+        url.hostname === window.location.hostname; // Same origin
+
     // External CDNs we DON'T handle (let them pass through)
     const externalCDNs = [
         'fonts.googleapis.com',
         'fonts.gstatic.com',
         'cdnjs.cloudflare.com',
         'unpkg.com',
-        'cdn.jsdelivr.net'
+        'cdn.jsdelivr.net',
+        'tevbkmzzwoliozhkcyyb.supabase.co' // Let Supabase through directly
     ];
-    
-    const isOurHost = ourHosts.some(host => url.hostname.includes(host));
+
     const isExternalCDN = externalCDNs.some(cdn => url.hostname.includes(cdn));
-    
+
     // Only handle our own resources, NOT external CDNs
-    return isOurHost && !isExternalCDN;
+    return isOurAppPath && !isExternalCDN;
 }
 
 // Enhanced API Handler: Network First with Smart Caching
 async function handleApiRequestWithFreshness(request) {
     const url = new URL(request.url);
     const cacheKey = request.url;
-    
+
     try {
         // Always try network first for API calls
         const networkResponse = await fetch(request);
-        
+
         if (networkResponse.ok) {
             // Cache the successful response with timestamp
             const responseWithTimestamp = addCacheTimestamp(networkResponse.clone());
             const cache = await caches.open(API_CACHE_NAME);
             await cache.put(cacheKey, responseWithTimestamp);
-            
+
             console.log(`✅ Fresh API data cached: ${url.pathname}`);
             return networkResponse;
         }
         throw new Error('Network response not ok');
     } catch (error) {
         console.log(`📡 Network failed, trying cache: ${url.pathname}`);
-        
+
         // Fall back to cache, but check freshness
         const cachedResponse = await caches.match(cacheKey);
         if (cachedResponse) {
@@ -229,18 +229,18 @@ async function handleApiRequestWithFreshness(request) {
                 refreshCacheInBackground(request);
             }
         }
-        
+
         if (cachedResponse) {
             return cachedResponse; // Return stale data as fallback
         }
-        
+
         // No cached data available
         return new Response(
-            JSON.stringify({ 
+            JSON.stringify({
                 error: 'You are offline and no cached data is available',
                 timestamp: new Date().toISOString()
             }),
-            { 
+            {
                 status: 503,
                 headers: { 'Content-Type': 'application/json' }
             }
@@ -251,18 +251,18 @@ async function handleApiRequestWithFreshness(request) {
 // HTML Handler: Stale-While-Revalidate for best UX
 async function handleHtmlWithStaleWhileRevalidate(request) {
     const cachedResponse = await caches.match(request);
-    
+
     // Always return cached version immediately for fast loading
     if (cachedResponse) {
         // Check if cached HTML is fresh
         const isFresh = await isCachedResponseFresh(cachedResponse, CACHE_CONFIG.HTML_MAX_AGE);
-        
+
         if (!isFresh) {
             // Update cache in background if stale
             console.log('🔄 HTML is stale, updating in background');
             updateCacheInBackground(request);
         }
-        
+
         return cachedResponse;
     }
 
@@ -286,7 +286,7 @@ async function handleHtmlWithStaleWhileRevalidate(request) {
 // Versioned Assets: Cache First with Background Updates
 async function handleVersionedAssets(request) {
     const cachedResponse = await caches.match(request);
-    
+
     if (cachedResponse) {
         // Versioned assets can be cached long-term, but still check for updates
         updateCacheInBackground(request);
@@ -332,15 +332,15 @@ async function handleStaticWithNetworkFirst(request) {
 // Cached Assets with Freshness Check
 async function handleCachedAssetsWithFreshness(request) {
     const cachedResponse = await caches.match(request);
-    
+
     if (cachedResponse) {
         const isFresh = await isCachedResponseFresh(cachedResponse, CACHE_CONFIG.STATIC_MAX_AGE);
-        
+
         if (!isFresh) {
             // Update in background if stale
             updateCacheInBackground(request);
         }
-        
+
         return cachedResponse;
     }
 
@@ -390,7 +390,7 @@ function addCacheTimestamp(response) {
     const timestamp = Date.now();
     const headers = new Headers(response.headers);
     headers.set('sw-cache-timestamp', timestamp.toString());
-    
+
     return new Response(response.body, {
         status: response.status,
         statusText: response.statusText,
@@ -401,17 +401,17 @@ function addCacheTimestamp(response) {
 async function isCachedResponseFresh(cachedResponse, maxAge) {
     const timestampHeader = cachedResponse.headers.get('sw-cache-timestamp');
     if (!timestampHeader) return false; // No timestamp, consider stale
-    
+
     const cacheTime = parseInt(timestampHeader);
     const age = Date.now() - cacheTime;
-    
+
     return age < maxAge;
 }
 
 // Enhanced Background Cache Updates
 async function updateCacheInBackground(request) {
     if (!self.navigator.onLine) return;
-    
+
     try {
         const networkResponse = await fetch(request);
         if (networkResponse.ok) {
@@ -427,7 +427,7 @@ async function updateCacheInBackground(request) {
 
 async function refreshCacheInBackground(request) {
     if (!self.navigator.onLine) return;
-    
+
     try {
         const networkResponse = await fetch(request);
         if (networkResponse.ok) {
@@ -456,15 +456,15 @@ async function notifyClientsAboutUpdate(updatedUrl) {
 // Enhanced Activate Event with Cache Cleanup
 self.addEventListener('activate', (event) => {
     console.log('🔄 Service Worker activating...');
-    
+
     event.waitUntil(
         Promise.all([
             // Clean up old caches
             caches.keys().then((cacheNames) => {
                 return Promise.all(
                     cacheNames.map((cacheName) => {
-                        if (cacheName !== CACHE_NAME && 
-                            cacheName !== API_CACHE_NAME && 
+                        if (cacheName !== CACHE_NAME &&
+                            cacheName !== API_CACHE_NAME &&
                             cacheName !== DYNAMIC_CACHE_NAME) {
                             console.log('🗑️ Deleting old cache:', cacheName);
                             return caches.delete(cacheName);
@@ -472,7 +472,7 @@ self.addEventListener('activate', (event) => {
                     })
                 );
             }),
-            
+
             // Clean up stale dynamic cache entries
             cleanupStaleCacheEntries()
         ]).then(() => {
@@ -486,7 +486,7 @@ self.addEventListener('activate', (event) => {
 async function cleanupStaleCacheEntries() {
     const cache = await caches.open(DYNAMIC_CACHE_NAME);
     const requests = await cache.keys();
-    
+
     const cleanupPromises = requests.map(async (request) => {
         const response = await cache.match(request);
         if (response) {
@@ -497,7 +497,7 @@ async function cleanupStaleCacheEntries() {
             }
         }
     });
-    
+
     await Promise.all(cleanupPromises);
 }
 
@@ -505,7 +505,7 @@ async function cleanupStaleCacheEntries() {
 async function performCacheMaintenance() {
     console.log('🔧 Performing cache maintenance...');
     await cleanupStaleCacheEntries();
-    
+
     // Check for app updates
     checkForAppUpdates();
 }
@@ -513,16 +513,16 @@ async function performCacheMaintenance() {
 // Check for app updates
 async function checkForAppUpdates() {
     try {
-        const response = await fetch('/index.html', { cache: 'no-cache' });
+        const response = await fetch('./index.html', { cache: 'no-cache' }); // Changed to relative path
         if (response.ok) {
             // Compare with cached version
             const cache = await caches.open(CACHE_NAME);
-            const cachedResponse = await cache.match('/index.html');
-            
+            const cachedResponse = await cache.match('./index.html'); // Changed to relative path
+
             if (cachedResponse) {
                 const newContent = await response.text();
                 const oldContent = await cachedResponse.text();
-                
+
                 if (newContent !== oldContent) {
                     console.log('🔄 App update detected!');
                     notifyClientsAboutAppUpdate();
@@ -549,24 +549,24 @@ function notifyClientsAboutAppUpdate() {
 // Enhanced Message Handling
 self.addEventListener('message', (event) => {
     const { data } = event;
-    
+
     switch (data.type) {
         case 'SKIP_WAITING':
             self.skipWaiting();
             break;
-            
+
         case 'UPDATE_CACHE':
             updateCacheWithNewData(data.payload);
             break;
-            
+
         case 'CLEAR_CACHE':
             clearSpecificCache(data.cacheName);
             break;
-            
+
         case 'CHECK_FOR_UPDATES':
             checkForAppUpdates();
             break;
-            
+
         case 'GET_CACHE_INFO':
             sendCacheInfo(event);
             break;
@@ -576,7 +576,7 @@ self.addEventListener('message', (event) => {
 async function sendCacheInfo(event) {
     const cacheNames = await caches.keys();
     const cacheInfo = {};
-    
+
     for (const cacheName of cacheNames) {
         const cache = await caches.open(cacheName);
         const requests = await cache.keys();
@@ -585,7 +585,7 @@ async function sendCacheInfo(event) {
             urls: requests.map(req => req.url)
         };
     }
-    
+
     event.ports[0].postMessage(cacheInfo);
 }
 
@@ -597,7 +597,7 @@ async function clearSpecificCache(cacheName) {
 // Enhanced Background Sync
 self.addEventListener('sync', (event) => {
     console.log('🔄 Background sync:', event.tag);
-    
+
     switch (event.tag) {
         case 'background-sync-reviews':
             event.waitUntil(syncPendingReviews());
@@ -625,7 +625,7 @@ async function syncPendingFavorites() {
 // Push notifications
 self.addEventListener('push', (event) => {
     if (!event.data) return;
-    
+
     const data = event.data.json();
     const options = {
         body: data.body || 'New update available',
@@ -646,7 +646,7 @@ self.addEventListener('push', (event) => {
             }
         ]
     };
-    
+
     event.waitUntil(
         self.registration.showNotification(data.title || 'Service Provider Reviews', options)
     );
@@ -655,7 +655,7 @@ self.addEventListener('push', (event) => {
 // Handle notification clicks
 self.addEventListener('notificationclick', (event) => {
     event.notification.close();
-    
+
     if (event.action === 'view') {
         event.waitUntil(
             clients.openWindow(event.notification.data.url)

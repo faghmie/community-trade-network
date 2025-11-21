@@ -251,7 +251,7 @@
             // Enhanced registration with update tracking
             const registerServiceWorker = async () => {
                 try {
-                    const registration = await navigator.serviceWorker.register('/sw.js');
+                    const registration = await navigator.serviceWorker.register('./sw.js');
                     console.log('✅ Service Worker registered successfully:', registration.scope);
 
                     // Check for updates periodically

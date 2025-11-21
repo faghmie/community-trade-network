@@ -2,7 +2,7 @@
     "name": "Community Trade Network",
     "short_name": "CommunityTrade",
     "description": "Your Community's Directory of Trusted Local Services",
-    "start_url": "/",
+    "start_url": "./",
     "display": "standalone",
     "background_color": "#ffffff",
     "theme_color": "#4f46e5",

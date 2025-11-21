@@ -1,4 +1,4 @@
-# Contractor Review App - Complete Project Architecture & Structure
+# Project Structure & Architecture Documentation
 
 ## 🏗️ **Architecture Overview**
 
@@ -45,12 +45,31 @@ Persistence Layer (LocalStorage + Supabase)
 - **`generate_password.html`** - Admin authentication setup utility
 - **`generate-icons.html`** - PWA icon asset generation tool
 - **`start_server.sh`** - Local development server script
-- **`postgresql_supabase_setup.sql`** - Database schema definition for Supabase
 
-**Documentation:**
-- **`rate-my-contractor-product-requirements.md`** - Product specifications
+**Documentation & Licensing:**
+- **`README`** - Project overview and setup instructions
+- **`LICENSE`** - Open source licensing information
+
+### **📚 DOCUMENTATION (`docs/`)**
+
+**Technical Documentation:**
+- **`PRODUCT_REQUIREMENT_DOCUMENT.md`** - Comprehensive product specifications
+- **`rate-my-contractor-product-requirements.md`** - Detailed feature requirements
+- **`ADMIN_GUIDE.md`** - Administrator operation manual
+- **`COMMUNITY_GUIDELINES.md`** - User community standards
+
+**Architectural Decisions:**
 - **`deployment_decisions.md`** - Infrastructure and deployment choices
 - **`TRACKING_STRATEGY_DECISION.md`** - Analytics and tracking approach
+
+### **📝 CHANGE MANAGEMENT (`change_logs/`)**
+
+**Development Tracking:**
+- **Current logs** (root level) - Latest development sessions
+- **`archive/week_2025_11_13/`** - Historical development sessions
+- **`_architecture.md`** - Architectural decision records
+- **`_coding_prompt.md`** - Development guidelines and patterns
+- **`project_status_2025_11_20.md`** - Current project status snapshot
 
 ---
 
@@ -147,6 +166,30 @@ Persistence Layer (LocalStorage + Supabase)
 
 ### **⚙️ CONFIGURATION (`js/config/`)**
 - **`supabase-credentials.js`** - Environment-specific Supabase configuration
+
+### **📜 ENTRY POINTS**
+- **`script.js`** - Main application entry point
+- **`admin.js`** - Admin portal entry point
+
+---
+
+## 🗄️ **DATABASE & SCRIPTS (`scripts/`)**
+
+**Database Setup:**
+- **`postgresql_supabase_setup.sql`** - Complete database schema definition
+- **`default_categories.sql`** - Initial category data population
+
+**Development Scripts:**
+- **`start_server.sh`** - Local development server initialization
+
+---
+
+## 🖼️ **ASSETS (`icons/`)**
+
+**PWA Icon Set:**
+- Multiple resolutions (72x72 to 512x512) for various devices
+- Progressive Web App installation requirements
+- Touch icon specifications for mobile devices
 
 ---
 
@@ -328,4 +371,4 @@ UI Action → DataModule → Specialized Manager → Storage
 - **CSS variables** for theme management
 - **Modular JavaScript** for maintainability
 
-This architecture provides a production-ready contractor review PWA with clear separation of concerns, robust error handling, and scalable module organization. Each layer has well-defined responsibilities and communication patterns, making the system maintainable and extensible for future development.
+This architecture provides a production-ready Community Trade Network PWA with clear separation of concerns, robust error handling, and scalable module organization. Each layer has well-defined responsibilities and communication patterns, making the system maintainable and extensible for future development.
