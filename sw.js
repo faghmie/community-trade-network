@@ -173,10 +173,16 @@ function isOurAppResource(request) {
 
     // Our app resources - use relative path detection instead of hostnames
     const isOurAppPath = url.pathname.includes('/community-trade-network/') ||
+        url.pathname === '/community-trade-network/' ||
+        url.pathname.startsWith('/community-trade-network/') ||
+        // Also handle root paths for flexibility
         url.pathname === '/' ||
-        url.pathname.startsWith('/community-trade-network') ||
-        !url.hostname.includes('.') || // Local files
-        url.hostname === window.location.hostname; // Same origin
+        url.pathname.startsWith('/css/') ||
+        url.pathname.startsWith('/js/') ||
+        url.pathname.startsWith('/icons/') ||
+        url.pathname === '/index.html' ||
+        url.pathname === '/admin.html' ||
+        url.pathname === '/manifest.json';
 
     // External CDNs we DON'T handle (let them pass through)
     const externalCDNs = [
