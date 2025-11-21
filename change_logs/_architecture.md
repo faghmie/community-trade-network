@@ -1,4 +1,4 @@
-# Project Structure & Architecture Documentation
+# Community Trade Network App - Project Structure & Architecture
 
 ## 🏗️ **Architecture Overview**
 
@@ -6,15 +6,15 @@
 
 **1. Layered Architecture with Clean Separation**
 ```
-Presentation Layer (HTML/CSS/UI Components)
+Presentation Layer (UI Components & Modals)
     ↓
 Application Layer (Managers & Controllers)
     ↓
-Business Logic Layer (Data Managers)
+Business Logic Layer (Data Orchestration)
     ↓
-Data Access Layer (Storage & Supabase)
+Infrastructure Layer (Storage & Services)
     ↓
-Persistence Layer (LocalStorage + Supabase)
+Persistence Layer (LocalStorage + Supabase + Cache API)
 ```
 
 **2. Module-Based Composition**
@@ -27,6 +27,7 @@ Persistence Layer (LocalStorage + Supabase)
 - Service Worker for offline capability
 - Material Design 3 for consistent UX
 - Bottom navigation for mobile optimization
+- Responsive design with mobile breakpoints
 - App-like installation experience
 
 ---
@@ -89,7 +90,7 @@ Persistence Layer (LocalStorage + Supabase)
 - **Data Display**: `tables.css`, `contractor-details.css`, `dashboard.css`
 
 **Application Layer**
-- **`main.css`** - Primary stylesheet orchestrating all imports for main app
+- **`main.css`** - Primary stylesheet orchestrating all imports and global styles
 - **`admin.css`** - Admin-specific overrides and layouts
 - **`layout.css`** - Responsive grid systems and page layouts
 
@@ -108,9 +109,9 @@ Persistence Layer (LocalStorage + Supabase)
 - **`lazyLoader.js`** - Performance optimization for lazy loading
 
 **Modal System (`js/app/modals/`)**
-- **`modalManager.js`** - Central modal coordination system
 - **`baseModalManager.js`** - Abstract base class for modal patterns
 - **`contractorModalManager.js`** - Contractor details display modal
+- **`contractorEditModalManager.js`** - Contractor creation and editing modal
 - **`reviewModalManager.js`** - Review submission interface modal
 - **`feedbackModalManager.js`** - User feedback submission modal (main app)
 - **`adminFeedbackModalManager.js`** - Admin feedback viewing modal
@@ -131,19 +132,22 @@ Persistence Layer (LocalStorage + Supabase)
 - **`statsDataManager.js`** - Analytics and metrics calculation
 - **`feedbackDataManager.js`** - User feedback data operations
 
-**Infrastructure Modules:**
+**Infrastructure Services:**
 - **`supabase.js`** - Cloud integration and real-time sync
+- **`geocodingService.js`** - Location to coordinates conversion with self-contained caching
 - **`validation.js`** - Form validation and sanitization
 - **`utilities.js`** - Common functions and helpers
 - **`uuid.js`** - ID generation for distributed systems
 - **`loadingScreen.js`** - Application loading states
+- **`areaAutocomplete.js`** - Smart location input with suggestions
+- **`backButtonManager.js`** - Android back button handling for modals *(Not yet integrated)*
 
 **PWA Modules:**
 - **`pwa-install-manager.js`** - Installation prompts and PWA lifecycle
 - **`service-worker-manager.js`** - Cache and update management
 
 **UI Components:**
-- **`cardManager.js`** - Contractor card rendering and management
+- **`cardManager.js`** - Contractor card rendering and management with responsive layouts
 - **`mapManager.js`** - Geographic interface and location services
 - **`notifications.js`** - User feedback and status updates
 - **`tabs.js`** - Tab navigation system
@@ -203,7 +207,7 @@ Persistence Layer (LocalStorage + Supabase)
 
 **2. Event-Driven Communication (Asynchronous)**
 - Cross-layer communication via CustomEvents
-- Example: `document.addEventListener('favoritesUpdated', handler)`
+- Example: `document.addEventListener('contractorsUpdated', handler)`
 
 **3. Callback Registration**
 - For cross-cutting concerns and async operations
@@ -231,6 +235,48 @@ UI Action → DataModule → Specialized Manager → Storage
 - Reviews: Preserve local pending reviews, sync approved
 - Favorites: Local-only (user-specific)
 - Feedback: Local-first with Supabase sync
+
+### **Service Architecture**
+
+**Self-Contained Services:**
+- **Geocoding Service**: Independent with own cache strategy
+- **Storage Service**: Centralized data persistence
+- **Validation Service**: Shared validation logic
+- **Back Button Manager**: Cross-modal navigation handling *(Pending integration)*
+
+**Cache Strategy:**
+- **Memory Cache**: Fast access for active data
+- **Cache API**: Persistent cache for service data
+- **LocalStorage**: User data and preferences
+
+### **Modal Management Architecture**
+
+**Independent Modal Managers:**
+- Each modal has dedicated manager with single responsibility
+- Consistent API: `open()`, `close()`, `init()`, `destroy()`
+- Event-driven communication with parent components
+- Clean separation between view and edit modals
+- **TODO**: Integrate back button handling
+
+**Modal Communication Flow:**
+```
+Individual Modal → Custom Events → Application Managers
+        ↓
+Direct Method Calls → UI Updates
+```
+
+### **Responsive Design Strategy**
+
+**Mobile-First Approach:**
+- Base styles for mobile devices
+- Progressive enhancement for larger screens
+- Breakpoints: 599px (mobile), 600px+ (tablet/desktop)
+
+**Component Adaptation:**
+- Cards transform to list items on mobile
+- Full-width modals on mobile with proper height management
+- Bottom navigation for mobile, side navigation for desktop
+- Touch-optimized interactions
 
 ### **Error Handling & Recovery**
 
@@ -348,6 +394,7 @@ UI Action → DataModule → Specialized Manager → Storage
 - Bottom navigation for primary features
 - Modal-based secondary interactions
 - Deep linking support for direct access
+- **TODO**: Back button integration for modal flows
 
 **Feedback & Status:**
 - Toast notifications for actions
@@ -370,5 +417,21 @@ UI Action → DataModule → Specialized Manager → Storage
 - **Material Icons** via CDN for consistent UI
 - **CSS variables** for theme management
 - **Modular JavaScript** for maintainability
+
+---
+
+## 🚧 **PENDING INTEGRATIONS**
+
+### **Back Button Management**
+- **`backButtonManager.js`** module exists but not yet integrated
+- **Required**: Connect modal managers to back button handler
+- **Required**: Add event listeners for modal open/close events
+- **Benefit**: Native mobile experience with proper back button behavior
+
+### **Future Enhancements**
+- Push notification support
+- Advanced search filters
+- Social sharing capabilities
+- Multi-language support
 
 This architecture provides a production-ready Community Trade Network PWA with clear separation of concerns, robust error handling, and scalable module organization. Each layer has well-defined responsibilities and communication patterns, making the system maintainable and extensible for future development.

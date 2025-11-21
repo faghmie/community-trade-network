@@ -1,4 +1,4 @@
-/* Material Design Dashboard Styles - Enhanced Visual Hierarchy */
+/* ===== DASHBOARD COMPONENT STYLES ===== */
 
 /* Main Dashboard Container */
 .dashboard {
@@ -7,7 +7,7 @@
     padding: var(--space-xl);
 }
 
-/* Dashboard Controls - Elevated Surface */
+/* Dashboard Controls */
 .dashboard-controls {
     background: var(--surface);
     padding: var(--space-xl);
@@ -19,7 +19,7 @@
     z-index: 1;
 }
 
-/* Dashboard Sections with Proper Layering */
+/* Dashboard Sections */
 .dashboard-section {
     margin-bottom: var(--space-xxl);
     background: var(--surface-container-low);
@@ -34,7 +34,7 @@
     margin-bottom: 0;
 }
 
-/* Section Header - Elevated */
+/* Section Header */
 .dashboard-section-header {
     display: flex;
     justify-content: space-between;
@@ -62,19 +62,18 @@
     align-items: center;
 }
 
-/* Section Content Area - FIXED: Proper background for content */
+/* Section Content */
 .dashboard-section-content {
     padding: var(--space-xl);
     background: var(--surface);
 }
 
-/* Contractors Grid Container */
+/* Dashboard Specific Containers */
 .contractors-grid-container {
     background: transparent;
     padding: 0;
 }
 
-/* Cards Container with Subtle Background - FIXED: Enhanced contrast */
 .cards-container {
     background: var(--surface-container-lowest);
     border-radius: var(--shape-medium);
@@ -83,23 +82,243 @@
     border: 1px solid var(--outline-variant);
 }
 
-/* Hide old filter sections that are no longer used */
-.search-section,
-.filter-section,
-.filter-section-enhanced,
-.quick-actions,
-.contractor-list .sort-options {
+/* Hide old filter sections within dashboard context */
+.dashboard .search-section,
+.dashboard .filter-section,
+.dashboard .filter-section-enhanced,
+.dashboard .quick-actions,
+.dashboard .contractor-list .sort-options {
     display: none !important;
 }
 
-/* Ensure favorites count is always visible */
-.favorites-count {
-    display: inline !important;
+/* Dashboard Specific States */
+.dashboard-empty-state {
+    text-align: center;
+    padding: var(--space-xxl);
+    background: var(--surface-container-low);
+    border-radius: var(--shape-large);
+    border: 2px dashed var(--outline-variant);
 }
 
-/* ===== ENHANCED RESPONSIVE DESIGN ===== */
+.dashboard-empty-state .material-icons {
+    font-size: 4rem;
+    color: var(--on-surface-variant);
+    opacity: 0.5;
+    margin-bottom: var(--space-lg);
+}
 
-/* Tablets and smaller desktops */
+.dashboard-empty-state h3 {
+    color: var(--on-surface);
+    margin-bottom: var(--space-sm);
+    font-weight: var(--font-weight-medium);
+}
+
+.dashboard-empty-state p {
+    color: var(--on-surface-variant);
+    margin: 0;
+}
+
+/* Dashboard Loading State */
+.dashboard.loading .dashboard-section-content {
+    position: relative;
+    min-height: 200px;
+}
+
+.dashboard.loading .dashboard-section-content::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(
+        90deg,
+        transparent,
+        rgba(var(--primary-rgb, 33, 150, 243), 0.1),
+        transparent
+    );
+    animation: dashboardLoading 2s infinite;
+}
+
+@keyframes dashboardLoading {
+    0% { transform: translateX(-100%); }
+    100% { transform: translateX(100%); }
+}
+
+/* Dashboard Visual Hierarchy */
+.dashboard-controls {
+    z-index: 10;
+}
+
+.dashboard-section {
+    z-index: 5;
+}
+
+.cards-container {
+    z-index: 1;
+}
+
+.dashboard-section + .dashboard-section {
+    margin-top: var(--space-xxl);
+}
+
+/* Dashboard Card Enhancements */
+.cards-container .contractor-card {
+    background: var(--surface);
+    border: 1px solid var(--outline-variant);
+    box-shadow: var(--elevation-1);
+}
+
+.cards-container .contractor-card:hover {
+    box-shadow: var(--elevation-3);
+    border-color: var(--outline);
+}
+
+/* Dashboard Section Variants */
+.dashboard-section.stats-section {
+    background: var(--surface-container);
+}
+
+.dashboard-section.stats-section .dashboard-section-content {
+    background: transparent;
+}
+
+.dashboard-section.filters-section {
+    background: var(--surface-container-low);
+}
+
+.dashboard-section.filters-section .dashboard-section-content {
+    background: transparent;
+    padding-top: 0;
+}
+
+/* ===== MOBILE LIST VIEW FIXES FOR DASHBOARD ===== */
+@media (max-width: 599px) {
+    /* Remove ALL padding from dashboard container for full-width list */
+    .dashboard {
+        padding: 0 !important;
+    }
+    
+    /* Remove margins, borders, and backgrounds from dashboard sections */
+    .dashboard-section {
+        margin: 0 !important;
+        border-radius: 0 !important;
+        border: none !important;
+        box-shadow: none !important;
+        background: transparent !important;
+    }
+    
+    /* Remove padding from section content */
+    .dashboard-section-content {
+        padding: 0 !important;
+        background: transparent !important;
+    }
+    
+    /* Fix cards-container for mobile list view */
+    .cards-container {
+        background: transparent !important;
+        border-radius: 0 !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        border: none !important;
+        box-shadow: none !important;
+    }
+
+    /* Ensure contractor cards in dashboard use full-width list styling */
+    .cards-container .contractor-card {
+        background: var(--surface) !important;
+        border: none !important;
+        box-shadow: none !important;
+        border-radius: 0 !important;
+        min-height: 72px !important;
+        border-bottom: 1px solid var(--outline-variant) !important;
+        margin: 0 !important;
+    }
+
+    /* Remove border from last item */
+    .cards-container .contractor-card:last-child {
+        border-bottom: none !important;
+    }
+
+    /* Ensure contractors grid uses list layout */
+    .cards-container .contractors-grid {
+        display: flex !important;
+        flex-direction: column !important;
+        gap: 0 !important;
+        margin: 0 !important;
+        padding: 0 !important;
+    }
+
+    /* Remove any background that might interfere with list view */
+    .dashboard-section .dashboard-section-content {
+        background: transparent !important;
+    }
+    
+    /* Hide dashboard controls on mobile list view */
+    .dashboard-controls {
+        display: none !important;
+    }
+}
+
+/* ===== MAIN HEADER FIXES ===== */
+
+/* FIX: Main header layout - ensure hero and search are side-by-side on desktop */
+.main-header .header-content {
+    display: flex !important;
+    flex-direction: row !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    gap: var(--space-xl) !important;
+    width: 100% !important;
+}
+
+/* FIX: Header hero section - CRITICAL: Ensure title and subtitle stack vertically */
+.header-hero {
+    flex: 1 !important;
+    display: block !important; /* CHANGE: Use block instead of flex */
+    min-width: 0 !important;
+}
+
+/* FIX: Hero title - ensure it's a block element */
+.hero-title {
+    display: block !important;
+    margin: 0 0 4px 0 !important; /* Small bottom margin for subtitle */
+    font-size: var(--font-size-xxl) !important;
+    font-weight: var(--font-weight-medium) !important;
+    color: var(--text-primary) !important;
+    line-height: var(--line-height-tight) !important;
+    width: 100% !important;
+}
+
+/* FIX: Hero subtitle - ensure it appears under title as block element */
+.hero-subtitle {
+    display: block !important;
+    margin: 0 !important;
+    font-size: var(--font-size-md) !important;
+    color: var(--text-secondary) !important;
+    font-weight: var(--font-weight-regular) !important;
+    line-height: var(--line-height-normal) !important;
+    width: 100% !important;
+}
+
+/* FIX: Header search section */
+.header-search {
+    flex: 0 0 auto !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: flex-end !important;
+}
+
+/* FIX: Search container */
+.material-search {
+    display: flex !important;
+    flex-direction: row !important;
+    align-items: center !important;
+    width: 100% !important;
+    max-width: 400px !important;
+}
+
+/* ===== DASHBOARD RESPONSIVE DESIGN ===== */
 @media (max-width: 1200px) {
     .dashboard {
         padding: var(--space-lg);
@@ -114,9 +333,13 @@
     .cards-container {
         padding: var(--space-md);
     }
+    
+    /* FIX: Maintain row layout on medium screens */
+    .main-header .header-content {
+        gap: var(--space-lg) !important;
+    }
 }
 
-/* Mobile devices */
 @media (max-width: 768px) {
     .dashboard {
         padding: var(--space-md);
@@ -145,9 +368,29 @@
         padding: var(--space-sm);
         border-radius: var(--shape-small);
     }
+    
+    /* FIX: Switch to column layout only on mobile for main header */
+    .main-header .header-content {
+        flex-direction: column !important;
+        gap: var(--space-lg) !important;
+        align-items: stretch !important;
+        text-align: center !important;
+    }
+    
+    .header-hero {
+        text-align: center !important;
+    }
+    
+    .header-search {
+        width: 100% !important;
+        justify-content: center !important;
+    }
+    
+    .material-search {
+        max-width: 100% !important;
+    }
 }
 
-/* Small mobile devices */
 @media (max-width: 480px) {
     .dashboard {
         padding: var(--space-sm);
@@ -168,9 +411,22 @@
         padding: var(--space-xs);
         border-radius: var(--shape-small);
     }
+    
+    /* FIX: Maintain column layout on small mobile */
+    .main-header .header-content {
+        gap: var(--space-md) !important;
+    }
+    
+    .hero-title {
+        font-size: var(--font-size-xl) !important;
+    }
+    
+    .hero-subtitle {
+        font-size: var(--font-size-sm) !important;
+    }
 }
 
-/* ===== DARK THEME ENHANCEMENTS ===== */
+/* ===== DASHBOARD THEME SUPPORT ===== */
 @media (prefers-color-scheme: dark) {
     .dashboard {
         background: var(--surface-container-lowest);
@@ -206,7 +462,6 @@
     }
 }
 
-/* ===== ACCESSIBILITY ENHANCEMENTS ===== */
 @media (prefers-contrast: high) {
     .dashboard-controls,
     .dashboard-section {
@@ -224,7 +479,6 @@
     }
 }
 
-/* ===== REDUCED MOTION SUPPORT ===== */
 @media (prefers-reduced-motion: reduce) {
     .dashboard-section,
     .dashboard-controls {
@@ -236,7 +490,6 @@
     }
 }
 
-/* ===== PRINT STYLES ===== */
 @media print {
     .dashboard {
         background: white;
@@ -277,107 +530,73 @@
     }
 }
 
-/* ===== LOADING STATES ===== */
-.dashboard.loading .dashboard-section-content {
-    position: relative;
-    min-height: 200px;
+/* ===== CRITICAL FIXES FOR HEADER LAYOUT ===== */
+
+/* FIX: Reset any flexbox inheritance that might be causing title/subtitle to be inline */
+.header-hero,
+.hero-title,
+.hero-subtitle {
+    display: block !important;
 }
 
-.dashboard.loading .dashboard-section-content::after {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: linear-gradient(
-        90deg,
-        transparent,
-        rgba(var(--primary-rgb, 33, 150, 243), 0.1),
-        transparent
-    );
-    animation: dashboardLoading 2s infinite;
+/* FIX: Ensure hero title and subtitle are block elements and stack vertically */
+.hero-title {
+    display: block !important;
+    width: 100% !important;
+    float: none !important;
+    clear: both !important;
 }
 
-@keyframes dashboardLoading {
-    0% { transform: translateX(-100%); }
-    100% { transform: translateX(100%); }
+.hero-subtitle {
+    display: block !important;
+    width: 100% !important;
+    float: none !important;
+    clear: both !important;
+    margin-top: 0 !important;
 }
 
-/* ===== EMPTY STATES ===== */
-.dashboard-empty-state {
-    text-align: center;
-    padding: var(--space-xxl);
-    background: var(--surface-container-low);
-    border-radius: var(--shape-large);
-    border: 2px dashed var(--outline-variant);
+/* FIX: Override any inline or inline-block styles that might be causing side-by-side layout */
+.header-hero * {
+    display: block !important;
+    float: none !important;
 }
 
-.dashboard-empty-state .material-icons {
-    font-size: 4rem;
-    color: var(--on-surface-variant);
-    opacity: 0.5;
-    margin-bottom: var(--space-lg);
+/* FIX: Protect against any flexbox inheritance from parent containers */
+.main-header .header-content > .header-hero {
+    display: block !important;
 }
 
-.dashboard-empty-state h3 {
-    color: var(--on-surface);
-    margin-bottom: var(--space-sm);
-    font-weight: var(--font-weight-medium);
+/* FIX: Ensure no flexbox is applied to the hero content that would cause inline layout */
+.header-hero {
+    display: block !important;
+    flex: none !important;
 }
 
-.dashboard-empty-state p {
-    color: var(--on-surface-variant);
-    margin: 0;
+/* FIX: Nuclear option - reset all potential conflicting styles */
+.hero-title,
+.hero-subtitle {
+    display: block !important;
+    float: none !important;
+    clear: both !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    flex: none !important;
+    align-items: normal !important;
+    justify-content: normal !important;
+    flex-direction: row !important;
+    flex-wrap: nowrap !important;
+    order: 0 !important;
+    flex-grow: 0 !important;
+    flex-shrink: 1 !important;
+    flex-basis: auto !important;
+    align-self: auto !important;
 }
 
-/* ===== VISUAL HIERARCHY FIXES ===== */
-
-/* Enhanced elevation system for proper layering */
-.dashboard-controls {
-    z-index: 10;
-}
-
-.dashboard-section {
-    z-index: 5;
-}
-
-.cards-container {
-    z-index: 1;
-}
-
-/* Better spacing between sections */
-.dashboard-section + .dashboard-section {
-    margin-top: var(--space-xxl);
-}
-
-/* Improved card contrast within containers */
-.cards-container .contractor-card {
-    background: var(--surface);
-    border: 1px solid var(--outline-variant);
-    box-shadow: var(--elevation-1);
-}
-
-.cards-container .contractor-card:hover {
-    box-shadow: var(--elevation-3);
-    border-color: var(--outline);
-}
-
-/* Stats section specific styling */
-.dashboard-section.stats-section {
-    background: var(--surface-container);
-}
-
-.dashboard-section.stats-section .dashboard-section-content {
-    background: transparent;
-}
-
-/* Quick filters section */
-.dashboard-section.filters-section {
-    background: var(--surface-container-low);
-}
-
-.dashboard-section.filters-section .dashboard-section-content {
-    background: transparent;
-    padding-top: 0;
+/* FIX: Mobile responsive adjustments */
+@media (max-width: 768px) {
+    .hero-title,
+    .hero-subtitle {
+        text-align: center !important;
+    }
 }

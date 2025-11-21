@@ -1,7 +1,7 @@
 // sw.js - Service Worker for Community Trade Network
-const CACHE_NAME = 'community-trade-network-v1.0.0';
-const API_CACHE_NAME = 'community-trade-network-api-v01';
-const DYNAMIC_CACHE_NAME = 'community-trade-network-dynamic-v01';
+const CACHE_NAME = 'community-trade-network-v1.1.2';
+const API_CACHE_NAME = 'community-trade-network-api-v1';
+const DYNAMIC_CACHE_NAME = 'community-trade-network-dynamic-v1.1.2';
 
 // Configuration
 const CACHE_CONFIG = {
@@ -130,7 +130,7 @@ self.addEventListener('install', (event) => {
     );
 });
 
-// SIMPLIFIED Fetch event - Only handle our app resources, let CDN requests pass through
+// ENHANCED Fetch event with hard refresh handling
 self.addEventListener('fetch', (event) => {
     const { request } = event;
     const url = new URL(request.url);
@@ -143,12 +143,19 @@ self.addEventListener('fetch', (event) => {
     // ONLY handle our own app resources - let CDN requests pass through to network
     if (isOurAppResource(request)) {
         // Handle our app resources with appropriate strategies
-        if (url.pathname.startsWith('/api/') || url.hostname.includes('supabase')) {
+        
+        // CRITICAL FIX: Detect hard refresh for HTML files and use network-first
+        if (url.pathname.endsWith('.html') || url.pathname === '/') {
+            // Check if this might be a hard refresh by looking at cache headers
+            if (isLikelyHardRefresh(request)) {
+                event.respondWith(handleHtmlWithNetworkFirst(request));
+            } else {
+                event.respondWith(handleHtmlWithStaleWhileRevalidate(request));
+            }
+        }
+        else if (url.pathname.startsWith('/api/') || url.hostname.includes('supabase')) {
             // API requests: Network first with aggressive caching
             event.respondWith(handleApiRequestWithFreshness(request));
-        } else if (url.pathname.endsWith('.html') || url.pathname === '/') {
-            // HTML pages: Stale-while-revalidate for immediate loading with updates
-            event.respondWith(handleHtmlWithStaleWhileRevalidate(request));
         } else if (url.pathname.match(/\.(js|css)$/) && !url.search) {
             // Versioned static assets: Cache first with background updates
             event.respondWith(handleVersionedAssets(request));
@@ -166,6 +173,68 @@ self.addEventListener('fetch', (event) => {
     // ALL CDN requests (Google Fonts, Material Icons, etc.) are let through to network
     // Service Worker does NOT intercept them when online
 });
+
+// NEW: Detect hard refresh attempts
+function isLikelyHardRefresh(request) {
+    // Check for cache-control headers that indicate hard refresh
+    const cacheControl = request.headers.get('cache-control');
+    const pragma = request.headers.get('pragma');
+    
+    // Hard refresh typically sends no-cache headers
+    const isHardRefresh = (cacheControl && cacheControl.includes('no-cache')) ||
+                         (pragma && pragma.includes('no-cache')) ||
+                         // Also detect when the request is for HTML and has specific headers
+                         (request.mode === 'navigate' && cacheControl === null);
+    
+    console.log(`🔄 Hard refresh detection: ${isHardRefresh}`, {
+        url: request.url,
+        cacheControl,
+        pragma,
+        mode: request.mode
+    });
+    
+    return isHardRefresh;
+}
+
+// NEW: Network-first strategy for HTML during hard refresh
+async function handleHtmlWithNetworkFirst(request) {
+    console.log('🔄 Using network-first strategy for HTML (hard refresh detected)');
+    
+    try {
+        // Try network first with a timeout
+        const networkPromise = fetch(request);
+        const timeoutPromise = new Promise((_, reject) => 
+            setTimeout(() => reject(new Error('Network timeout')), 5000)
+        );
+        
+        const networkResponse = await Promise.race([networkPromise, timeoutPromise]);
+        
+        if (networkResponse && networkResponse.ok) {
+            // Cache the fresh response
+            const responseWithTimestamp = addCacheTimestamp(networkResponse.clone());
+            const cache = await caches.open(CACHE_NAME);
+            await cache.put(request, responseWithTimestamp);
+            console.log('✅ Fresh HTML cached from network');
+            return networkResponse;
+        }
+        throw new Error('Network response not ok');
+    } catch (error) {
+        console.log('📡 Network failed during hard refresh, falling back to cache');
+        
+        // Fall back to cache
+        const cachedResponse = await caches.match(request);
+        if (cachedResponse) {
+            console.log('✅ Serving cached HTML as fallback');
+            return cachedResponse;
+        }
+        
+        // Ultimate fallback
+        return new Response('Application loading...', {
+            status: 503,
+            headers: { 'Content-Type': 'text/html' }
+        });
+    }
+}
 
 // Only handle resources that belong to OUR app
 function isOurAppResource(request) {
@@ -254,7 +323,7 @@ async function handleApiRequestWithFreshness(request) {
     }
 }
 
-// HTML Handler: Stale-While-Revalidate for best UX
+// HTML Handler: Stale-While-Revalidate for best UX (for normal navigation)
 async function handleHtmlWithStaleWhileRevalidate(request) {
     const cachedResponse = await caches.match(request);
 

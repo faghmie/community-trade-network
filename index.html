@@ -70,15 +70,31 @@
         </div>
     </div>
 
-    <div class="container">
-        <!-- Hero Section - MOBILE OPTIMIZED -->
-        <section class="hero-section">
-            <div class="hero-content">
-                <h2 class="hero-title">Community Trade Network</h2>
+    <!-- Combined Header with Hero and Search -->
+    <header class="main-header">
+        <div class="header-content">
+            <!-- Hero Content - Left Side -->
+            <div class="header-hero">
+                <h1 class="hero-title">Community Trade Network</h1>
                 <p class="hero-subtitle">Your Community's Directory of Trusted Local Services</p>
             </div>
-        </section>
 
+            <!-- Search Bar - Right Side -->
+            <div class="header-search">
+                <div class="material-search">
+                    <i class="material-icons" data-icon="search">search</i>
+                    <input type="text" id="searchInput" 
+                           placeholder="Search service providers..."
+                           class="material-search-input" 
+                           data-action="search-keypress"
+                           aria-label="Search service providers">
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <div class="container">
+        <!-- REMOVED: Old Hero Section (now in header) -->
 
         <!-- REMOVED: Quick Filter Chips section - functionality moved to bottom navigation -->
 
@@ -87,11 +103,9 @@
             <div id="map-container" class="map-container material-card hidden"></div>
         </section>
 
-        <!-- Service Provider List - Cleaner without redundant heading -->
+        <!-- Service Provider List -->
         <section class="contractor-list" id="contractorList">
             <div class="contractor-list-content">
-                <!-- REMOVED: Redundant "Available Service Providers" heading section -->
-                <!-- Simplified: Direct service providers grid without nested card container -->
                 <div class="contractors-grid" id="contractorsGrid">
                     <!-- Service providers will be loaded here -->
                 </div>
@@ -120,15 +134,7 @@
 
                 <!-- Content -->
                 <div class="bottom-sheet-content">
-                    <!-- Search Input -->
-                    <div class="material-form-group">
-                        <label for="searchInput" class="material-input-label">
-                            <i class="material-icons" data-icon="search">search</i>
-                            Search Service Providers
-                        </label>
-                        <input type="text" id="searchInput" placeholder="Search by name, category, or location..."
-                            class="material-input" data-action="search-keypress">
-                    </div>
+                    <!-- REMOVED: Search Input (moved to main page) -->
 
                     <!-- Filter Grid -->
                     <div class="filter-grid">
@@ -231,13 +237,8 @@
                 <i class="material-icons" data-icon="download">download</i>
                 <span class="bottom-nav-label">Install</span>
             </a>
-            <a href="admin.html" class="bottom-nav-item" data-view="admin">
-                <i class="material-icons" data-icon="admin_panel_settings">admin_panel_settings</i>
-                <span class="bottom-nav-label">Admin</span>
-            </a>
         </div>
     </nav>
-
 
     <!-- External Libraries -->
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"

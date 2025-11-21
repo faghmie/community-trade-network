@@ -1,4 +1,4 @@
-/* Material Design Components */
+/* Material Design Components - CLEANED: FORM STYLES REMOVED */
 /* App Bar */
 .app-bar {
     position: sticky;
@@ -179,76 +179,6 @@
 .material-icon-button:hover {
     background-color: var(--surface-container);
     color: var(--text-primary);
-}
-
-/* Material Form Elements */
-.material-form-group {
-    margin-bottom: var(--space-lg);
-}
-
-.material-input {
-    width: 100%;
-    padding: var(--space-md) var(--space-sm);
-    border: none;
-    border-bottom: 1px solid var(--outline);
-    background: transparent;
-    font-family: var(--font-family);
-    font-size: var(--font-size-base);
-    color: var(--text-primary);
-    transition: var(--material-transition);
-}
-
-.material-input:focus {
-    outline: none;
-    border-bottom-color: var(--primary-color);
-    border-bottom-width: 2px;
-}
-
-.material-input-label {
-    display: block;
-    margin-bottom: var(--space-xs);
-    font-size: var(--font-size-sm);
-    font-weight: var(--font-weight-medium);
-    color: var(--text-secondary);
-    display: flex;
-    align-items: center;
-    gap: var(--space-xs);
-}
-
-.material-textarea {
-    resize: vertical;
-    min-height: 80px;
-    border: 1px solid var(--outline);
-    border-radius: var(--border-radius-sm);
-    padding: var(--space-md);
-    font-family: var(--font-family);
-    transition: var(--material-transition);
-    background: var(--surface);
-}
-
-.material-textarea:focus {
-    outline: none;
-    border-color: var(--primary-color);
-    box-shadow: var(--material-focus-ring);
-}
-
-.material-select {
-    width: 100%;
-    padding: var(--space-md) var(--space-sm);
-    border: 1px solid var(--outline);
-    border-radius: var(--border-radius-sm);
-    background: var(--surface);
-    font-family: var(--font-family);
-    font-size: var(--font-size-base);
-    color: var(--text-primary);
-    transition: var(--material-transition);
-    cursor: pointer;
-}
-
-.material-select:focus {
-    outline: none;
-    border-color: var(--primary-color);
-    box-shadow: var(--material-focus-ring);
 }
 
 /* Material Badges */
@@ -509,17 +439,6 @@
     color: var(--on-surface-variant);
     font-weight: var(--font-weight-regular);
     margin: 0;
-}
-
-/* Material Form */
-.material-form {
-    display: flex;
-    flex-direction: column;
-    gap: var(--space-lg);
-    background: var(--surface);
-    padding: var(--space-lg);
-    border-radius: var(--shape-medium);
-    border: 1px solid var(--outline-variant);
 }
 
 /* Rating Categories */
@@ -796,11 +715,6 @@
     }
     
     .material-search {
-        background: var(--surface);
-        border-color: var(--outline-variant);
-    }
-    
-    .material-form {
         background: var(--surface);
         border-color: var(--outline-variant);
     }

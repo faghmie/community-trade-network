@@ -1,19 +1,19 @@
-/* Material Design Form System - ENHANCED & FIXED */
+/* Material Design Form System - ENHANCED & FIXED - SPACING REDUCED */
 
 .form-group {
-    margin-bottom: var(--space-xl);
+    margin-bottom: var(--space-md); /* REDUCED from var(--space-xl) */
     position: relative;
 }
 
 .material-form-group {
-    margin-bottom: var(--space-xl);
+    margin-bottom: var(--space-md); /* REDUCED from var(--space-xl) */
     position: relative;
 }
 
 /* FIXED: Enhanced Material Design Labels */
 .form-group label {
     display: block !important;
-    margin-bottom: var(--space-sm);
+    margin-bottom: var(--space-xs); /* REDUCED from var(--space-sm) */
     font-weight: var(--font-weight-medium);
     color: var(--text-secondary);
     font-size: var(--font-size-body2);
@@ -29,7 +29,7 @@
     display: flex !important;
     align-items: center;
     gap: var(--space-xs);
-    margin-bottom: var(--space-sm);
+    margin-bottom: var(--space-xs); /* REDUCED from var(--space-sm) */
     font-weight: var(--font-weight-medium);
     color: var(--text-secondary);
     font-size: var(--font-size-body2);
@@ -49,7 +49,7 @@
 .material-textarea,
 .material-select {
     width: 100%;
-    padding: var(--space-md) var(--space-sm);
+    padding: var(--space-sm) var(--space-sm); /* REDUCED from var(--space-md) */
     border: none;
     border-bottom: 1px solid var(--border-color);
     border-radius: var(--border-radius-xs) var(--border-radius-xs) 0 0;
@@ -114,7 +114,7 @@
 /* Professional Input Styles (Material Enhanced) */
 .input {
     width: 100%;
-    padding: var(--space-md) var(--space-sm);
+    padding: var(--space-sm) var(--space-sm); /* REDUCED from var(--space-md) */
     border: none;
     border-bottom: 1px solid var(--border-color);
     border-radius: var(--border-radius-xs) var(--border-radius-xs) 0 0;
@@ -247,12 +247,12 @@ select:focus,
 .form-group textarea,
 .material-textarea {
     resize: vertical;
-    min-height: 120px;
+    min-height: 100px; /* REDUCED from 120px */
     line-height: var(--line-height-normal);
     font-family: inherit;
     border: 1px solid var(--border-color);
     border-radius: var(--border-radius-sm);
-    padding: var(--space-md);
+    padding: var(--space-sm); /* REDUCED from var(--space-md) */
     transition: all var(--transition-standard);
     background-color: var(--surface);
 }
@@ -325,7 +325,7 @@ select:focus,
 .form-group-sm select,
 .material-input.small,
 .material-select.small {
-    padding: var(--space-sm) var(--space-sm);
+    padding: var(--space-xs) var(--space-sm); /* REDUCED from var(--space-sm) */
     font-size: var(--font-size-body2);
 }
 
@@ -333,7 +333,7 @@ select:focus,
 .form-group-lg select,
 .material-input.large,
 .material-select.large {
-    padding: var(--space-lg) var(--space-sm);
+    padding: var(--space-md) var(--space-sm); /* REDUCED from var(--space-lg) */
     font-size: var(--font-size-h6);
 }
 
@@ -342,9 +342,9 @@ select:focus,
 .form-group-xs select,
 .material-input.xs,
 .material-select.xs {
-    padding: 6px 8px;
+    padding: 4px 6px; /* REDUCED from 6px 8px */
     font-size: var(--font-size-xs);
-    height: 32px;
+    height: 28px; /* REDUCED from 32px */
     border-radius: var(--border-radius-sm);
     border: 1px solid var(--border-color);
     background-color: var(--bg-white);
@@ -377,10 +377,10 @@ select:focus,
     display: flex;
     gap: var(--space-md);
     align-items: flex-end;
-    padding: var(--space-md);
+    padding: var(--space-sm); /* REDUCED from var(--space-md) */
     background-color: var(--surface-variant);
     border-radius: var(--border-radius-md);
-    margin-bottom: var(--space-lg);
+    margin-bottom: var(--space-md); /* REDUCED from var(--space-lg) */
 }
 
 .filter-section .form-group,
@@ -392,11 +392,11 @@ select:focus,
 .filter-section select,
 .filter-section .input,
 .filter-section .material-select {
-    min-width: 160px;
+    min-width: 140px; /* REDUCED from 160px */
     background-color: var(--surface);
     border: 1px solid var(--border-color);
     border-radius: var(--border-radius-sm);
-    padding: var(--space-sm) var(--space-md);
+    padding: var(--space-xs) var(--space-sm); /* REDUCED from var(--space-sm) var(--space-md) */
 }
 
 .filter-section select:focus,
@@ -411,21 +411,21 @@ select:focus,
 .material-star-rating {
     display: flex;
     gap: var(--space-xs);
-    margin-bottom: var(--space-md);
-    padding: var(--space-sm);
+    margin-bottom: var(--space-sm); /* REDUCED from var(--space-md) */
+    padding: var(--space-xs); /* REDUCED from var(--space-sm) */
     background-color: var(--surface-variant);
     border-radius: var(--border-radius-md);
 }
 
 .star,
 .material-star {
-    font-size: 2.5rem;
+    font-size: 2rem; /* REDUCED from 2.5rem */
     color: var(--neutral-300);
     cursor: pointer;
     transition: all var(--transition-standard);
     text-shadow: var(--elevation-1);
     user-select: none;
-    padding: var(--space-xs);
+    padding: var(--space-xxs); /* REDUCED from var(--space-xs) */
     border-radius: var(--border-radius-sm);
 }
 
@@ -434,7 +434,7 @@ select:focus,
 .material-star:hover,
 .material-star.active {
     color: var(--warning-600);
-    transform: scale(1.15);
+    transform: scale(1.1); /* REDUCED from 1.15 */
     background-color: rgba(255, 193, 7, 0.08);
 }
 
@@ -452,7 +452,7 @@ select:focus,
 .form-help,
 .material-form-help {
     display: block;
-    margin-top: var(--space-xs);
+    margin-top: var(--space-xxs); /* REDUCED from var(--space-xs) */
     font-size: var(--font-size-caption);
     color: var(--text-hint);
     font-style: normal;
@@ -483,7 +483,7 @@ select:focus,
     color: var(--text-secondary) !important;
     font-size: var(--font-size-body2) !important;
     font-weight: var(--font-weight-medium) !important;
-    margin-bottom: var(--space-xs) !important;
+    margin-bottom: var(--space-xxs) !important; /* REDUCED from var(--space-xs) */
 }
 
 /* FIXED: Review Form Labels */
@@ -502,14 +502,14 @@ select:focus,
 .form-section {
     background-color: var(--surface);
     border-radius: var(--border-radius-md);
-    padding: var(--space-xl);
-    margin-bottom: var(--space-xl);
+    padding: var(--space-lg); /* REDUCED from var(--space-xl) */
+    margin-bottom: var(--space-lg); /* REDUCED from var(--space-xl) */
     box-shadow: var(--elevation-1);
 }
 
 .form-section-header {
-    margin-bottom: var(--space-lg);
-    padding-bottom: var(--space-md);
+    margin-bottom: var(--space-md); /* REDUCED from var(--space-lg) */
+    padding-bottom: var(--space-sm); /* REDUCED from var(--space-md) */
     border-bottom: 1px solid var(--border-color);
 }
 
@@ -542,33 +542,34 @@ select:focus {
 
 .compact-form-group .material-input.xs,
 .compact-form-group .material-select.xs {
-    height: 32px;
-    padding: 6px 8px;
+    height: 28px; /* REDUCED from 32px */
+    padding: 4px 6px; /* REDUCED from 6px 8px */
     font-size: var(--font-size-xs);
     border: 1px solid var(--border-color);
     border-radius: var(--border-radius-sm);
     background-color: var(--bg-white);
-    min-width: 120px;
-    max-width: 140px;
+    min-width: 100px; /* REDUCED from 120px */
+    max-width: 120px; /* REDUCED from 140px */
 }
 
 .compact-form-group .material-input.xs:focus,
 .compact-form-group .material-select.xs:focus {
     border-color: var(--primary-color);
     box-shadow: 0 0 0 2px rgba(33, 150, 243, 0.1);
+    background-color: var(--bg-white);
 }
 
 /* NEW: Compact Search Input */
 .search-input.compact {
-    height: 32px;
-    padding: 6px 8px 6px 32px !important;
+    height: 28px; /* REDUCED from 32px */
+    padding: 4px 6px 4px 28px !important; /* REDUCED from 6px 8px */
     font-size: var(--font-size-xs);
     border: 1px solid var(--border-color);
     border-radius: var(--border-radius-sm);
     background-color: var(--bg-white);
     background-size: 16px;
-    background-position: left 8px center;
-    min-width: 120px;
+    background-position: left 6px center;
+    min-width: 100px; /* REDUCED from 120px */
 }
 
 .search-input.compact:focus {
@@ -577,18 +578,125 @@ select:focus {
     background-color: var(--bg-white);
 }
 
+/* NEW: Geocoding Status Styles */
+.geocoding-status-container {
+    margin-top: var(--space-xs);
+    animation: fadeInUp 0.3s ease-out;
+}
+
+.geocoding-status {
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+    padding: var(--space-sm);
+    border-radius: var(--border-radius-sm);
+    font-size: var(--font-size-body2);
+    font-weight: var(--font-weight-medium);
+    transition: all var(--transition-standard);
+    border-left: 4px solid transparent;
+    background-color: var(--surface-variant);
+    line-height: var(--line-height-tight);
+}
+
+.geocoding-status-icon {
+    font-size: 18px;
+    flex-shrink: 0;
+    transition: all var(--transition-standard);
+}
+
+.geocoding-status-text {
+    flex: 1;
+    line-height: var(--line-height-tight);
+    font-size: var(--font-size-caption);
+}
+
+/* Geocoding Status Variants */
+.geocoding-status--ready {
+    border-left-color: var(--neutral-400);
+    background-color: var(--surface-variant);
+    color: var(--text-secondary);
+}
+
+.geocoding-status--ready .geocoding-status-icon {
+    color: var(--neutral-500);
+}
+
+.geocoding-status--loading {
+    border-left-color: var(--info-500);
+    background-color: rgba(33, 150, 243, 0.08);
+    color: var(--info-700);
+}
+
+.geocoding-status--loading .geocoding-status-icon {
+    color: var(--info-500);
+    animation: pulse 1.5s ease-in-out infinite;
+}
+
+.geocoding-status--success {
+    border-left-color: var(--success-500);
+    background-color: rgba(76, 175, 80, 0.08);
+    color: var(--success-700);
+}
+
+.geocoding-status--success .geocoding-status-icon {
+    color: var(--success-500);
+}
+
+.geocoding-status--warning {
+    border-left-color: var(--warning-500);
+    background-color: rgba(255, 193, 7, 0.08);
+    color: var(--warning-700);
+}
+
+.geocoding-status--warning .geocoding-status-icon {
+    color: var(--warning-500);
+}
+
+.geocoding-status--error {
+    border-left-color: var(--error-500);
+    background-color: rgba(244, 67, 54, 0.08);
+    color: var(--error-700);
+}
+
+.geocoding-status--error .geocoding-status-icon {
+    color: var(--error-500);
+}
+
+/* Geocoding Animation */
+@keyframes pulse {
+    0%, 100% {
+        opacity: 1;
+        transform: scale(1);
+    }
+    50% {
+        opacity: 0.7;
+        transform: scale(1.05);
+    }
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(8px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
 /* Responsive Design */
 @media (max-width: 768px) {
     .form-inline {
         flex-direction: column;
         align-items: stretch;
-        gap: var(--space-md);
+        gap: var(--space-sm); /* REDUCED from var(--space-md) */
     }
     
     .filter-section {
         flex-direction: column;
         align-items: stretch;
-        gap: var(--space-md);
+        gap: var(--space-sm); /* REDUCED from var(--space-md) */
     }
     
     .filter-section select,
@@ -617,7 +725,7 @@ select:focus {
     
     .star,
     .material-star {
-        font-size: 2rem;
+        font-size: 1.75rem; /* REDUCED from 2rem */
         padding: var(--space-xxs);
     }
     
@@ -633,6 +741,16 @@ select:focus {
         min-width: auto;
         width: 100%;
     }
+    
+    /* Geocoding status mobile */
+    .geocoding-status {
+        padding: var(--space-xs) var(--space-sm);
+        font-size: var(--font-size-caption);
+    }
+    
+    .geocoding-status-icon {
+        font-size: 16px;
+    }
 }
 
 @media (max-width: 480px) {
@@ -642,39 +760,53 @@ select:focus {
     .material-input,
     .material-textarea,
     .material-select {
-        padding: var(--space-sm) var(--space-sm);
+        padding: var(--space-xs) var(--space-sm); /* REDUCED from var(--space-sm) */
         font-size: var(--font-size-body2);
     }
     
     .input {
-        padding: var(--space-sm) var(--space-sm);
+        padding: var(--space-xs) var(--space-sm); /* REDUCED from var(--space-sm) */
         font-size: var(--font-size-body2);
     }
     
     .star,
     .material-star {
-        font-size: 1.75rem;
+        font-size: 1.5rem; /* REDUCED from 1.75rem */
     }
     
     .form-section {
-        padding: var(--space-lg);
-        margin-bottom: var(--space-lg);
+        padding: var(--space-md); /* REDUCED from var(--space-lg) */
+        margin-bottom: var(--space-md); /* REDUCED from var(--space-lg) */
     }
     
     /* Extra small forms on very small screens */
     .compact-form-group .material-input.xs,
     .compact-form-group .material-select.xs {
         font-size: 11px;
-        padding: 4px 6px;
-        height: 28px;
+        padding: 3px 4px; /* REDUCED from 4px 6px */
+        height: 24px; /* REDUCED from 28px */
     }
     
     .search-input.compact {
         font-size: 11px;
-        padding: 4px 6px 4px 28px !important;
-        height: 28px;
+        padding: 3px 4px 3px 24px !important; /* REDUCED from 4px 6px */
+        height: 24px; /* REDUCED from 28px */
         background-size: 14px;
-        background-position: left 6px center;
+        background-position: left 4px center; /* REDUCED from 6px */
+    }
+    
+    /* Geocoding status extra small */
+    .geocoding-status {
+        padding: 8px 10px;
+        gap: var(--space-xs);
+    }
+    
+    .geocoding-status-icon {
+        font-size: 14px;
+    }
+    
+    .geocoding-status-text {
+        font-size: 11px;
     }
 }
 
@@ -740,6 +872,32 @@ select:focus {
         background-color: var(--surface-700);
         border-color: var(--primary-400);
     }
+    
+    /* Geocoding status dark theme */
+    .geocoding-status--ready {
+        background-color: var(--surface-800);
+        color: var(--text-secondary);
+    }
+    
+    .geocoding-status--loading {
+        background-color: rgba(33, 150, 243, 0.12);
+        color: var(--info-300);
+    }
+    
+    .geocoding-status--success {
+        background-color: rgba(76, 175, 80, 0.12);
+        color: var(--success-300);
+    }
+    
+    .geocoding-status--warning {
+        background-color: rgba(255, 193, 7, 0.12);
+        color: var(--warning-300);
+    }
+    
+    .geocoding-status--error {
+        background-color: rgba(244, 67, 54, 0.12);
+        color: var(--error-300);
+    }
 }
 
 /* High Contrast Mode Support */
@@ -777,6 +935,32 @@ select:focus {
     .search-input.compact {
         border-width: 2px;
     }
+    
+    /* Geocoding status high contrast */
+    .geocoding-status {
+        border-left-width: 6px;
+        border: 1px solid currentColor;
+    }
+    
+    .geocoding-status--ready {
+        border-color: var(--neutral-600);
+    }
+    
+    .geocoding-status--loading {
+        border-color: var(--info-600);
+    }
+    
+    .geocoding-status--success {
+        border-color: var(--success-600);
+    }
+    
+    .geocoding-status--warning {
+        border-color: var(--warning-600);
+    }
+    
+    .geocoding-status--error {
+        border-color: var(--error-600);
+    }
 }
 
 /* Reduced Motion Support */
@@ -809,4 +993,80 @@ select:focus {
     .material-form-group:focus-within .material-input-label {
         transform: none;
     }
+    
+    /* Geocoding reduced motion */
+    .geocoding-status-container {
+        animation: none;
+    }
+    
+    .geocoding-status--loading .geocoding-status-icon {
+        animation: none;
+        opacity: 1;
+    }
+    
+    @keyframes pulse {
+        0%, 100% {
+            opacity: 1;
+            transform: scale(1);
+        }
+    }
+    
+    @keyframes fadeInUp {
+        from, to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+}
+
+/* Add to css/components/forms.css */
+
+/* Area Autocomplete Styles */
+.area-autocomplete-container {
+    position: relative;
+}
+
+.area-suggestions {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background: var(--surface);
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius-sm);
+    box-shadow: var(--elevation-2);
+    max-height: 200px;
+    overflow-y: auto;
+    z-index: var(--z-dropdown);
+    margin-top: 4px;
+}
+
+.area-suggestion {
+    padding: var(--space-sm) var(--space-md);
+    cursor: pointer;
+    border-bottom: 1px solid var(--border-color);
+    transition: background-color var(--transition-short);
+}
+
+.area-suggestion:last-child {
+    border-bottom: none;
+}
+
+.area-suggestion:hover,
+.area-suggestion:focus {
+    background-color: var(--primary-50);
+    color: var(--primary-700);
+}
+
+.area-suggestion:active {
+    background-color: var(--primary-100);
+}
+
+/* Loading state */
+.area-autocomplete-container.loading .area-suggestions::after {
+    content: 'Loading...';
+    display: block;
+    padding: var(--space-sm) var(--space-md);
+    color: var(--text-hint);
+    font-style: italic;
 }

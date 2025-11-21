@@ -1,31 +1,36 @@
 // js/modules/mapManager.js
 /**
  * Map Manager - Handles interactive map display of contractors with Material Design
+ * UPDATED: Uses geocodingService for consistent location handling
  */
-import { southAfricanCityCoordinates } from '../data/defaultLocations.js';
+import { geocodingService } from './geocodingService.js';
 
 export class MapManager {
     constructor(dataModule) {
         this.map = null;
         this.markers = [];
+        this.markerClusters = null;
         this.currentBounds = null;
         this.isMapView = false;
         this.contractors = [];
         this.initialized = false;
-        this.allContractors = []; // Store all contractors separately
+        this.allContractors = [];
         this.mapLoadAttempts = 0;
         this.maxMapLoadAttempts = 5;
-        this.dataModule = dataModule; // Inject data module dependency
-        this.southAfricanCityCoordinates = southAfricanCityCoordinates;
+        this.dataModule = dataModule;
+        this.geocodingService = geocodingService;
+        
+        this.contractorsLoaded = false;
+        this.pendingContractorLoad = false;
+        this.pendingGeocodingRequests = new Map(); // Track ongoing geocoding requests
         
         this.init();
     }
 
     init() {
-        // Load Leaflet CSS if not already loaded
         this.loadLeafletCSS();
+        this.loadLeafletMarkerClusterCSS();
         
-        // Initialize map when DOM is ready
         if (document.readyState === 'loading') {
             document.addEventListener('DOMContentLoaded', () => this.setupMap());
         } else {
@@ -44,17 +49,30 @@ export class MapManager {
         }
     }
 
+    loadLeafletMarkerClusterCSS() {
+        if (!document.querySelector('link[href*="leaflet.markercluster"]')) {
+            const link = document.createElement('link');
+            link.rel = 'stylesheet';
+            link.href = 'https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css';
+            link.crossOrigin = '';
+            document.head.appendChild(link);
+            
+            const linkDefault = document.createElement('link');
+            linkDefault.rel = 'stylesheet';
+            linkDefault.href = 'https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css';
+            linkDefault.crossOrigin = '';
+            document.head.appendChild(linkDefault);
+        }
+    }
+
     setupMap() {
-        // Create map container if it doesn't exist
         if (!document.getElementById('map-container')) {
             this.createMapContainer();
         }
 
-        // Initialize map immediately but don't show it yet
         this.initializeMap();
-        
-        // Set up event listeners
         this.setupEventListeners();
+        this.startContractorLoading();
     }
 
     createMapContainer() {
@@ -66,7 +84,6 @@ export class MapManager {
         if (mapSection) {
             mapSection.appendChild(mapContainer);
         } else {
-            // Fallback: create map section if it doesn't exist
             const mainElement = document.querySelector('main');
             if (mainElement) {
                 const newMapSection = document.createElement('section');
@@ -79,34 +96,21 @@ export class MapManager {
 
     initializeMap() {
         const mapContainer = document.getElementById('map-container');
-        if (!mapContainer) {
-            console.warn('Map container not found');
-            return false;
-        }
+        if (!mapContainer) return false;
 
-        // Check if map is already initialized
-        if (this.map) {
+        if (this.map || mapContainer._leaflet_id) {
             return true;
         }
 
-        // Check if container already has a map instance
-        if (mapContainer._leaflet_id) {
-            return true;
-        }
-
-        // Default to center of South Africa if no contractors
-        const defaultCenter = [-28.4793, 24.6727]; // Center of South Africa
+        const defaultCenter = [-28.4793, 24.6727];
         const defaultZoom = 5;
 
         try {
-            // Check if Leaflet is available
             if (typeof L === 'undefined') {
-                console.warn('Leaflet not loaded yet, retrying...');
                 this.mapLoadAttempts++;
                 if (this.mapLoadAttempts < this.maxMapLoadAttempts) {
                     setTimeout(() => this.initializeMap(), 500);
                 } else {
-                    // Load Leaflet dynamically if not available
                     this.loadLeafletJS().then(() => {
                         this.initializeMap();
                     });
@@ -121,28 +125,22 @@ export class MapManager {
                 zoomAnimation: true
             }).setView(defaultCenter, defaultZoom);
 
-            // Add zoom control to bottom right with Material Design styling
             L.control.zoom({
                 position: 'bottomright'
             }).addTo(this.map);
 
-            // Add tile layer with slightly muted colors for better Material Design integration
             L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
                 attribution: '© OpenStreetMap contributors',
                 maxZoom: 18
             }).addTo(this.map);
 
-            // Add custom CSS for Material Design styling
-            this.addMaterialDesignStyles();
+            // Initialize marker cluster group
+            this.initializeMarkerClusters();
 
             this.initialized = true;
-            
-            // Load all contractors immediately after map initialization
             this.loadAllContractors();
             return true;
         } catch (error) {
-            console.error('Failed to initialize map:', error);
-            
             this.mapLoadAttempts++;
             if (this.mapLoadAttempts < this.maxMapLoadAttempts) {
                 setTimeout(() => this.initializeMap(), 1000);
@@ -151,7 +149,43 @@ export class MapManager {
         }
     }
 
-    // Load Leaflet JS dynamically if not available
+    initializeMarkerClusters() {
+        if (typeof L.markerClusterGroup === 'undefined') {
+            this.loadLeafletMarkerClusterJS().then(() => {
+                this.initializeMarkerClusters();
+            });
+            return;
+        }
+
+        this.markerClusters = L.markerClusterGroup({
+            chunkedLoading: true,
+            maxClusterRadius: 50,
+            spiderfyOnMaxZoom: true,
+            showCoverageOnHover: true,
+            zoomToBoundsOnClick: true,
+            iconCreateFunction: this.createClusterIcon.bind(this)
+        });
+
+        this.map.addLayer(this.markerClusters);
+    }
+
+    createClusterIcon(cluster) {
+        const count = cluster.getChildCount();
+        const contractors = cluster.getAllChildMarkers().map(marker => marker.contractor);
+        
+        let ratingClass = 'low-rated';
+        const avgRating = contractors.reduce((sum, c) => sum + (c.overallRating || c.rating || 0), 0) / contractors.length;
+        
+        if (avgRating >= 4.0) ratingClass = 'high-rated';
+        else if (avgRating >= 3.0) ratingClass = 'medium-rated';
+
+        return L.divIcon({
+            html: `<div class="marker-cluster ${ratingClass}">${count}</div>`,
+            className: 'marker-cluster-custom',
+            iconSize: L.point(40, 40)
+        });
+    }
+
     loadLeafletJS() {
         return new Promise((resolve, reject) => {
             if (typeof L !== 'undefined') {
@@ -163,217 +197,98 @@ export class MapManager {
             script.src = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js';
             script.integrity = 'sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=';
             script.crossOrigin = '';
-            script.onload = () => {
-                console.log('Leaflet JS loaded dynamically');
-                resolve();
-            };
-            script.onerror = () => {
-                console.error('Failed to load Leaflet JS');
-                reject();
-            };
+            script.onload = () => resolve();
+            script.onerror = () => reject();
             document.head.appendChild(script);
         });
     }
 
-    // Add Material Design styles for map elements
-    addMaterialDesignStyles() {
-        // Check if styles are already added
-        if (document.getElementById('map-material-styles')) {
+    loadLeafletMarkerClusterJS() {
+        return new Promise((resolve, reject) => {
+            if (typeof L.markerClusterGroup !== 'undefined') {
+                resolve();
+                return;
+            }
+
+            const script = document.createElement('script');
+            script.src = 'https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js';
+            script.crossOrigin = '';
+            script.onload = () => resolve();
+            script.onerror = () => reject();
+            document.head.appendChild(script);
+        });
+    }
+
+    startContractorLoading() {
+        if (this.contractorsLoaded || this.pendingContractorLoad) return;
+
+        this.pendingContractorLoad = true;
+        this.attemptContractorLoad();
+    }
+
+    attemptContractorLoad(attempt = 0) {
+        const maxAttempts = 10;
+        
+        if (attempt >= maxAttempts) {
+            this.pendingContractorLoad = false;
             return;
         }
 
-        // Create style element for custom Material Design styling
-        const style = document.createElement('style');
-        style.id = 'map-material-styles';
-        style.textContent = `
-            /* Material Design Map Styles */
-            .leaflet-popup-content-wrapper {
-                background: var(--surface, #ffffff) !important;
-                color: var(--text-primary, #1a1a1a) !important;
-                border-radius: var(--border-radius-md, 8px) !important;
-                box-shadow: var(--elevation-3, 0 4px 8px rgba(0,0,0,0.15)) !important;
-                border: 1px solid var(--border-color, #e0e0e0) !important;
-                font-family: var(--font-family, 'Roboto', sans-serif) !important;
-            }
-
-            .leaflet-popup-tip {
-                background: var(--surface, #ffffff) !important;
-                border: 1px solid var(--border-color, #e0e0e0) !important;
-            }
-
-            .leaflet-popup-content {
-                margin: 0 !important;
-                line-height: inherit !important;
-                font-family: var(--font-family, 'Roboto', sans-serif) !important;
-            }
-
-            /* Material Design Marker Styles */
-            .custom-marker {
-                background: transparent !important;
-                border: none !important;
-            }
-
-            .marker-container {
-                position: relative;
-                width: 40px;
-                height: 40px;
-                background: var(--surface, #ffffff);
-                border: 3px solid;
-                border-radius: 50%;
-                box-shadow: var(--elevation-2, 0 2px 4px rgba(0,0,0,0.15));
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                transition: all 0.2s ease;
-                cursor: pointer;
-            }
-
-            .marker-container:hover {
-                transform: scale(1.1);
-                box-shadow: var(--elevation-4, 0 8px 16px rgba(0,0,0,0.2));
-            }
-
-            .marker-rating {
-                color: white;
-                font-size: var(--font-size-sm, 12px);
-                font-weight: var(--font-weight-bold, 600);
-                padding: 2px 6px;
-                border-radius: 10px;
-                line-height: 1;
-                min-width: 24px;
-                text-align: center;
-                box-shadow: var(--elevation-1, 0 1px 2px rgba(0,0,0,0.1));
-            }
-
-            /* Material Design Popup Styles */
-            .map-popup {
-                padding: var(--space-md, 16px);
-                min-width: 200px;
-                font-family: var(--font-family, 'Roboto', sans-serif);
-            }
-
-            .map-popup h3 {
-                margin: 0 0 var(--space-sm, 8px) 0;
-                font-size: var(--font-size-h6, 18px);
-                font-weight: var(--font-weight-medium, 500);
-                color: var(--text-primary, #1a1a1a);
-                line-height: var(--line-height-tight, 1.2);
-            }
-
-            .popup-rating {
-                display: flex;
-                align-items: center;
-                gap: var(--space-sm, 8px);
-                margin-bottom: var(--space-sm, 8px);
-            }
-
-            .rating-stars {
-                color: var(--warning-500, #f59e0b);
-                font-size: var(--font-size-lg, 18px);
-                letter-spacing: -1px;
-            }
-
-            .rating-value {
-                font-size: var(--font-size-body2, 14px);
-                font-weight: var(--font-weight-medium, 500);
-                color: var(--text-secondary, #666666);
-                background: var(--surface-variant, #f5f5f5);
-                padding: 2px 6px;
-                border-radius: var(--border-radius-sm, 4px);
-            }
-
-            .popup-categories {
-                margin: 0 0 var(--space-sm, 8px) 0;
-                font-size: var(--font-size-sm, 12px);
-                color: var(--text-secondary, #666666);
-                line-height: var(--line-height-tight, 1.2);
-            }
-
-            .popup-reviews {
-                margin: 0 0 var(--space-md, 16px) 0;
-                font-size: var(--font-size-sm, 12px);
-                color: var(--text-secondary, #666666);
-                font-weight: var(--font-weight-medium, 500);
-            }
-
-            .popup-actions {
-                display: flex;
-                gap: var(--space-sm, 8px);
-                margin-top: var(--space-md, 16px);
-            }
-
-            /* Material Design Button in Popup */
-            .view-details-btn {
-                background: var(--primary-color, #2196F3) !important;
-                color: white !important;
-                border: none !important;
-                border-radius: var(--border-radius-sm, 4px) !important;
-                padding: var(--space-sm, 8px) var(--space-md, 16px) !important;
-                font-size: var(--font-size-sm, 12px) !important;
-                font-weight: var(--font-weight-medium, 500) !important;
-                text-transform: none !important;
-                letter-spacing: 0.25px !important;
-                box-shadow: var(--elevation-1, 0 1px 2px rgba(0,0,0,0.1)) !important;
-                transition: all 0.2s ease !important;
-                cursor: pointer !important;
-                width: 100% !important;
-                text-align: center !important;
-            }
-
-            .view-details-btn:hover {
-                background: var(--primary-color-dark, #1976D2) !important;
-                box-shadow: var(--elevation-2, 0 2px 4px rgba(0,0,0,0.15)) !important;
-                transform: translateY(-1px);
-            }
-
-            /* Material Design Controls */
-            .leaflet-control-zoom a {
-                background: var(--surface, #ffffff) !important;
-                color: var(--text-primary, #1a1a1a) !important;
-                border: 1px solid var(--border-color, #e0e0e0) !important;
-                border-radius: var(--border-radius-sm, 4px) !important;
-                box-shadow: var(--elevation-1, 0 1px 2px rgba(0,0,0,0.1)) !important;
-                transition: all 0.2s ease !important;
-            }
-
-            .leaflet-control-zoom a:hover {
-                background: var(--surface-variant, #f5f5f5) !important;
-                box-shadow: var(--elevation-2, 0 2px 4px rgba(0,0,0,0.15)) !important;
-            }
-
-            .leaflet-control-attribution {
-                background: var(--surface, #ffffff) !important;
-                color: var(--text-secondary, #666666) !important;
-                border: 1px solid var(--border-color, #e0e0e0) !important;
-                border-radius: var(--border-radius-sm, 4px) !important;
-                font-size: var(--font-size-xs, 10px) !important;
-            }
-
-            /* Dark theme support for map */
-            @media (prefers-color-scheme: dark) {
-                .leaflet-control-zoom a {
-                    background: var(--surface-800, #424242) !important;
-                    border-color: var(--border-color, #616161) !important;
+        if (this.dataModule && typeof this.dataModule.getContractors === 'function') {
+            try {
+                const contractors = this.dataModule.getContractors();
+                if (contractors && contractors.length > 0) {
+                    this.handleContractorsLoaded(contractors);
+                    return;
                 }
+            } catch (error) {}
+        }
 
-                .leaflet-control-attribution {
-                    background: var(--surface-800, #424242) !important;
-                    border-color: var(--border-color, #616161) !important;
+        if (attempt === 0) {
+            document.addEventListener('contractorsUpdated', (event) => {
+                const contractors = event.detail?.contractors;
+                if (contractors && contractors.length > 0) {
+                    this.handleContractorsLoaded(contractors);
                 }
+            });
 
-                .marker-container {
-                    background: var(--surface-800, #424242);
-                }
+            document.addEventListener('dataModuleInitialized', () => {
+                this.loadAllContractors();
+            });
+        }
+
+        setTimeout(() => {
+            this.attemptContractorLoad(attempt + 1);
+        }, 500);
+    }
+
+    handleContractorsLoaded(contractors) {
+        this.allContractors = contractors;
+        this.contractors = contractors;
+        this.contractorsLoaded = true;
+        this.pendingContractorLoad = false;
+        
+        if (this.isMapView) {
+            this.updateMapMarkers();
+        }
+        
+        document.dispatchEvent(new CustomEvent('mapContractorsLoaded', {
+            detail: { contractors: this.contractors }
+        }));
+    }
+
+    loadAllContractors() {
+        if (this.dataModule && typeof this.dataModule.getContractors === 'function') {
+            const contractors = this.dataModule.getContractors();
+            if (contractors && contractors.length > 0) {
+                this.handleContractorsLoaded(contractors);
             }
-        `;
-        document.head.appendChild(style);
+        }
     }
 
     setupEventListeners() {
-        // Setup view toggle button click handlers
         this.setupViewToggleButtons();
 
-        // Listen for contractor data updates
         document.addEventListener('contractorsUpdated', (event) => {
             this.allContractors = event.detail.contractors || this.allContractors;
             if (this.isMapView) {
@@ -381,28 +296,16 @@ export class MapManager {
             }
         });
 
-        // Listen for filter changes to update visible markers
         document.addEventListener('filtersApplied', (event) => {
             this.contractors = event.detail.contractors || this.allContractors;
             this.updateMapMarkers();
         });
 
-        // Listen for data module initialization
         document.addEventListener('dataModuleInitialized', () => {
             this.loadAllContractors();
         });
 
-        // Handle popup button clicks
-        document.addEventListener('click', (event) => {
-            if (event.target.classList.contains('view-details-btn')) {
-                const contractorId = event.target.getAttribute('data-contractor-id');
-                if (contractorId) {
-                    this.handlePopupButtonClick(contractorId);
-                }
-            }
-        });
-
-        // Listen for window resize events
+        // Remove popup button click handler since we're not using popups anymore
         window.addEventListener('resize', () => {
             if (this.isMapView && this.map) {
                 setTimeout(() => {
@@ -411,14 +314,12 @@ export class MapManager {
             }
         });
 
-        // Listen for theme changes to update map styling
         window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => {
             if (this.isMapView) {
                 this.updateMapMarkers();
             }
         });
 
-        // FIXED: Listen for view toggle events from filterManager
         document.addEventListener('viewToggle', (event) => {
             const view = event.detail.view;
             this.isMapView = view === 'map';
@@ -426,7 +327,6 @@ export class MapManager {
         });
     }
 
-    // FIXED: Setup view toggle button click handlers for compact filters
     setupViewToggleButtons() {
         const viewToggle = document.getElementById('view-toggle');
         
@@ -438,106 +338,72 @@ export class MapManager {
                 }
             });
 
-            // Set initial active state - list view should be active by default
             this.setInitialViewState();
         }
     }
 
-    // FIXED: Set initial view state for compact filters
     setInitialViewState() {
         const viewToggleBtns = document.querySelectorAll('#view-toggle .btn');
         const listViewBtn = document.querySelector('#view-toggle .btn[data-view="list"]');
         
         if (listViewBtn) {
-            // Set list view as active by default
             viewToggleBtns.forEach(btn => btn.classList.remove('active'));
             listViewBtn.classList.add('active');
             this.isMapView = false;
         }
     }
 
-    // FIXED: Handle view toggle changes with compact filter compatibility
     handleViewToggle(button) {
         const view = button.getAttribute('data-view');
-        
         if (!view) return;
 
-        // Get fresh reference to buttons
         const viewToggleBtns = document.querySelectorAll('#view-toggle .btn');
-        
-        if (!viewToggleBtns || viewToggleBtns.length === 0) {
-            return;
-        }
+        if (!viewToggleBtns || viewToggleBtns.length === 0) return;
 
-        // Remove active class from ALL buttons first
-        viewToggleBtns.forEach(btn => {
-            btn.classList.remove('active');
-        });
-
-        // Add active class only to the clicked button
+        viewToggleBtns.forEach(btn => btn.classList.remove('active'));
         button.classList.add('active');
 
-        // Update view state
         this.isMapView = view === 'map';
-
-        // Toggle visibility based on view
         this.toggleViewVisibility();
 
-        // Dispatch event for other components
         document.dispatchEvent(new CustomEvent('viewToggle', {
             detail: { view }
         }));
     }
 
-    // FIXED: Toggle visibility between map and list views with correct selectors
     toggleViewVisibility() {
         const mapContainer = document.getElementById('map-container');
         const contractorList = document.getElementById('contractorList');
         const favoritesSection = document.getElementById('favoritesSection');
         
-        if (!mapContainer || !contractorList) {
-            return;
-        }
+        if (!mapContainer || !contractorList) return;
 
         if (this.isMapView) {
-            // Show map, hide list and favorites
             mapContainer.classList.remove('hidden');
             contractorList.classList.add('hidden');
             if (favoritesSection) {
                 favoritesSection.classList.add('hidden');
             }
-            
-            // Ensure map is properly initialized and updated
             this.handleMapViewActivation();
         } else {
-            // Show list, hide map
             mapContainer.classList.add('hidden');
             contractorList.classList.remove('hidden');
-            // Favorites section visibility is managed by favoritesManager
         }
     }
 
-    // Handle map view activation
     handleMapViewActivation() {
-        // Ensure map is properly initialized
         if (!this.initialized) {
             const initialized = this.initializeMap();
-            if (!initialized) {
-                return;
-            }
+            if (!initialized) return;
         }
         
-        // Use all contractors when switching to map view
         this.contractors = this.allContractors;
         
-        // Invalidate map size and update markers with proper timing
         setTimeout(() => {
             if (this.map) {
                 this.map.invalidateSize();
-                
                 setTimeout(() => {
                     this.updateMapMarkers();
-                    
                     setTimeout(() => {
                         this.map.invalidateSize();
                     }, 50);
@@ -546,225 +412,239 @@ export class MapManager {
         }, 100);
     }
 
-    // Load all contractors from data module
-    loadAllContractors() {
-        if (this.dataModule) {
-            this.allContractors = this.dataModule.getContractors();
-            this.contractors = this.allContractors;
-            if (this.isMapView) {
-                this.updateMapMarkers();
-            }
-        } else if (typeof dataModule !== 'undefined') {
-            // Fallback to global dataModule if available
-            this.allContractors = dataModule.getContractors();
-            this.contractors = this.allContractors;
-            if (this.isMapView) {
-                this.updateMapMarkers();
-            }
-        } else {
-            // Retry after a short delay
-            setTimeout(() => this.loadAllContractors(), 100);
-        }
-    }
-
-    handlePopupButtonClick(contractorId) {
-        document.dispatchEvent(new CustomEvent('mapMarkerClick', {
-            detail: { contractorId }
-        }));
-    }
-
     updateMapMarkers() {
-        // Clear existing markers
         this.clearMarkers();
 
         if (!this.map || !this.contractors || this.contractors.length === 0) {
             return;
         }
 
-        const bounds = L.latLngBounds ? new L.latLngBounds() : null;
-        let hasValidLocations = false;
+        console.log('🗺️ Updating map markers for', this.contractors.length, 'contractors');
 
-        this.contractors.forEach(contractor => {
-            const location = this.extractLocation(contractor);
+        // Process contractors asynchronously with geocoding
+        this.processContractorsForMarkers(this.contractors);
+    }
+
+    async processContractorsForMarkers(contractors) {
+        const batchSize = 3; // Process 3 contractors at a time to be respectful to the geocoding service
+        const batches = [];
+        
+        for (let i = 0; i < contractors.length; i += batchSize) {
+            batches.push(contractors.slice(i, i + batchSize));
+        }
+
+        for (const batch of batches) {
+            await Promise.all(
+                batch.map(contractor => this.processContractorMarker(contractor))
+            );
+            
+            // Small delay between batches
+            await new Promise(resolve => setTimeout(resolve, 200));
+        }
+
+        this.fitMapToMarkers();
+    }
+
+    async processContractorMarker(contractor) {
+        try {
+            const location = await this.extractLocation(contractor);
             if (location) {
+                console.log('📍 Adding marker for contractor:', {
+                    name: contractor.name,
+                    location: contractor.location,
+                    coordinates: contractor.coordinates,
+                    mapLocation: location
+                });
                 this.addContractorMarker(contractor, location);
-                if (bounds) {
-                    bounds.extend([location.lat, location.lng]);
-                }
-                hasValidLocations = true;
+            } else {
+                console.warn('❌ No location found for contractor:', contractor.name);
             }
-        });
-
-        // Fit map to show all markers if we have valid locations
-        if (hasValidLocations && bounds && bounds.isValid()) {
-            setTimeout(() => {
-                if (this.map) {
-                    this.map.fitBounds(bounds, { 
-                        padding: [20, 20],
-                        maxZoom: 15
-                    });
-                }
-            }, 150);
-        } else if (hasValidLocations && !bounds) {
-            const group = new L.featureGroup(this.markers);
-            setTimeout(() => {
-                if (this.map) {
-                    this.map.fitBounds(group.getBounds(), { 
-                        padding: [20, 20],
-                        maxZoom: 15
-                    });
-                }
-            }, 150);
-        } else {
-            setTimeout(() => {
-                if (this.map) {
-                    this.map.invalidateSize();
-                }
-            }, 100);
+        } catch (error) {
+            console.error('❌ Error processing contractor marker:', contractor.name, error);
         }
     }
 
-    extractLocation(contractor) {
-        // First try to use direct coordinates if available
-        if (contractor.coordinates && Array.isArray(contractor.coordinates)) {
+    async extractLocation(contractor) {
+        console.log('🔍 Extracting location for contractor:', {
+            name: contractor.name,
+            storedCoordinates: contractor.coordinates,
+            location: contractor.location
+        });
+
+        // First priority: Use stored coordinates from contractor record
+        if (contractor.coordinates) {
+            const coordinates = this.normalizeCoordinates(contractor.coordinates);
+            if (coordinates) {
+                console.log('📍 Using stored coordinates:', coordinates);
+                return coordinates;
+            }
+        }
+
+        // Second priority: Geocode the location string
+        if (contractor.location) {
+            try {
+                const coordinates = await this.geocodeLocation(contractor.location);
+                if (coordinates) {
+                    console.log('📍 Using geocoded coordinates:', coordinates);
+                    return coordinates;
+                }
+            } catch (error) {
+                console.warn('❌ Geocoding failed for location:', contractor.location, error);
+            }
+        }
+
+        console.warn('❌ No valid coordinates found for contractor:', contractor.name);
+        return null;
+    }
+
+    normalizeCoordinates(coordinates) {
+        if (!coordinates) return null;
+
+        // Handle {lat, lng} format
+        if (coordinates.lat !== undefined && coordinates.lng !== undefined) {
             return { 
-                lat: contractor.coordinates[0], 
-                lng: contractor.coordinates[1] 
+                lat: coordinates.lat, 
+                lng: coordinates.lng 
             };
         }
 
-        // Try to extract location from various possible fields
-        const locationData = contractor.location || contractor.address || contractor.serviceAreas;
-        
-        if (!locationData) {
-            return null;
+        // Handle [lat, lng] array format
+        if (Array.isArray(coordinates) && coordinates.length === 2) {
+            return { 
+                lat: coordinates[0], 
+                lng: coordinates[1] 
+            };
         }
 
-        // Use the enhanced geocoding with South African cities
-        const coordinates = this.simulateGeocoding(locationData);
-        return coordinates ? { lat: coordinates[0], lng: coordinates[1] } : null;
+        return null;
     }
 
-    simulateGeocoding(location) {
-        // Convert location to lowercase for matching
-        const locationLower = location.toLowerCase();
-        
-        // Check against our South African city coordinates first
-        for (const [city, coords] of Object.entries(this.southAfricanCityCoordinates)) {
-            if (locationLower.includes(city)) {
-                return coords;
-            }
+    async geocodeLocation(location) {
+        // Check if we already have a pending request for this location
+        const cacheKey = location.toLowerCase().trim();
+        if (this.pendingGeocodingRequests.has(cacheKey)) {
+            console.log('🔄 Using pending geocoding request for:', location);
+            return this.pendingGeocodingRequests.get(cacheKey);
         }
 
-        // Fallback: generate random coordinates within South Africa bounds
-        const southAfricaBounds = {
-            north: -22.1250,
-            south: -34.8333,
-            east: 32.8917,
-            west: 16.4583
-        };
-        
-        return [
-            southAfricaBounds.south + Math.random() * (southAfricaBounds.north - southAfricaBounds.south),
-            southAfricaBounds.west + Math.random() * (southAfricaBounds.east - southAfricaBounds.west)
-        ];
+        try {
+            console.log('🌍 Geocoding location:', location);
+            const geocodingPromise = this.geocodingService.geocodeLocation(location);
+            
+            // Store the promise to avoid duplicate requests
+            this.pendingGeocodingRequests.set(cacheKey, geocodingPromise);
+            
+            const result = await geocodingPromise;
+            
+            // Clean up the pending request
+            this.pendingGeocodingRequests.delete(cacheKey);
+            
+            if (result && result.coordinates) {
+                return this.normalizeCoordinates(result.coordinates);
+            }
+            
+            return null;
+        } catch (error) {
+            // Clean up on error too
+            this.pendingGeocodingRequests.delete(cacheKey);
+            throw error;
+        }
     }
 
     addContractorMarker(contractor, location) {
         if (!this.map || typeof L === 'undefined') return;
 
         const rating = contractor.overallRating || contractor.rating || 0;
-        const ratingColor = this.getRatingColor(rating);
+        const ratingClass = this.getRatingClass(rating);
         
-        // Create custom marker icon with Material Design styling
         const markerIcon = L.divIcon({
             className: 'custom-marker',
             html: `
-                <div class="marker-container" style="border-color: ${ratingColor}">
-                    <div class="marker-rating" style="background: ${ratingColor}">
+                <div class="marker-container ${ratingClass}">
+                    <div class="marker-rating">
                         ${rating.toFixed(1)}
                     </div>
                 </div>
             `,
-            iconSize: [40, 40],
-            iconAnchor: [20, 40]
+            iconSize: [48, 48],
+            iconAnchor: [24, 48]
         });
 
-        const marker = L.marker([location.lat, location.lng], { icon: markerIcon })
-            .addTo(this.map)
-            .bindPopup(this.createPopupContent(contractor));
+        // Create marker WITHOUT binding popup
+        const marker = L.marker([location.lat, location.lng], { icon: markerIcon });
 
-        // Add click event to marker
+        // Store contractor reference for clustering
+        marker.contractor = contractor;
+
+        // Only handle click event - no popup
         marker.on('click', () => {
+            // Close any existing popups first (in case any remain)
+            this.map.closePopup();
+            
+            // Dispatch event to open contractor modal
             document.dispatchEvent(new CustomEvent('mapMarkerClick', {
                 detail: { contractorId: contractor.id }
             }));
         });
 
         this.markers.push(marker);
-    }
-
-    getRatingColor(rating) {
-        if (rating >= 4.5) return '#22c55e';
-        if (rating >= 4.0) return '#4ade80';
-        if (rating >= 3.5) return '#f59e0b';
-        if (rating >= 3.0) return '#f97316';
-        return '#ef4444';
-    }
-
-    createPopupContent(contractor) {
-        const categories = contractor.categories || [contractor.category];
-        let categoryNames = 'No categories';
         
-        if (categories && categories.length > 0) {
-            categoryNames = Array.isArray(categories) ? categories.join(', ') : categories;
+        // Add to cluster group instead of directly to map
+        if (this.markerClusters) {
+            this.markerClusters.addLayer(marker);
+        } else {
+            marker.addTo(this.map);
         }
-
-        return `
-            <div class="map-popup">
-                <h3>${contractor.name}</h3>
-                <div class="popup-rating">
-                    <span class="rating-stars">${this.generateStarRating(contractor.overallRating || contractor.rating || 0)}</span>
-                    <span class="rating-value">${(contractor.overallRating || contractor.rating || 0).toFixed(1)}</span>
-                </div>
-                <p class="popup-categories">${categoryNames}</p>
-                <p class="popup-reviews">${contractor.reviewCount || (contractor.reviews ? contractor.reviews.length : 0)} reviews</p>
-                <div class="popup-actions">
-                    <button class="view-details-btn" 
-                            data-contractor-id="${contractor.id}">
-                        View Details
-                    </button>
-                </div>
-            </div>
-        `;
     }
 
-    generateStarRating(rating) {
-        const fullStars = Math.floor(rating);
-        const hasHalfStar = rating % 1 >= 0.5;
-        const emptyStars = 5 - fullStars - (hasHalfStar ? 1 : 0);
-        
-        return '★'.repeat(fullStars) + 
-               (hasHalfStar ? '½' : '') + 
-               '☆'.repeat(emptyStars);
+    fitMapToMarkers() {
+        if (this.markers.length === 0 || !this.map) return;
+
+        if (this.markerClusters && this.markerClusters.getLayers().length > 0) {
+            setTimeout(() => {
+                this.map.fitBounds(this.markerClusters.getBounds(), { 
+                    padding: [20, 20],
+                    maxZoom: 15
+                });
+            }, 150);
+        } else if (this.markers.length > 0) {
+            const group = new L.featureGroup(this.markers);
+            setTimeout(() => {
+                this.map.fitBounds(group.getBounds(), { 
+                    padding: [20, 20],
+                    maxZoom: 15
+                });
+            }, 150);
+        }
+    }
+
+    getRatingClass(rating) {
+        if (rating >= 4.0) return 'high-rated';
+        if (rating >= 3.0) return 'medium-rated';
+        return 'low-rated';
     }
 
     clearMarkers() {
-        if (!this.map) return;
+        // Clear any pending geocoding requests
+        this.pendingGeocodingRequests.clear();
+        
+        if (this.markerClusters) {
+            this.markerClusters.clearLayers();
+        }
         
         this.markers.forEach(marker => {
-            this.map.removeLayer(marker);
+            if (this.map) {
+                this.map.removeLayer(marker);
+            }
         });
         this.markers = [];
     }
 
-    // Public method to update contractors from external calls
     updateContractors(contractors) {
         this.contractors = contractors || this.allContractors;
         this.updateMapMarkers();
     }
 
-    // Method to handle map resize
     invalidateSize() {
         if (this.map) {
             setTimeout(() => {
@@ -773,7 +653,6 @@ export class MapManager {
         }
     }
 
-    // Force refresh map - useful for when map doesn't show initially
     forceRefresh() {
         if (this.map) {
             setTimeout(() => {
@@ -785,12 +664,10 @@ export class MapManager {
         }
     }
 
-    // Check if map is ready
     isReady() {
         return this.initialized && this.map !== null;
     }
 
-    // Clean up method
     destroy() {
         this.clearMarkers();
         if (this.map) {

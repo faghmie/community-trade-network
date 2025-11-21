@@ -6,7 +6,7 @@
     border-radius: var(--shape-medium);
     box-shadow: var(--elevation-1);
     overflow: hidden;
-    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    transition: all var(--transition-standard);
     position: relative;
     border: 1px solid var(--outline-variant);
     min-height: 120px;
@@ -32,7 +32,7 @@
     background: var(--surface);
     border-radius: var(--shape-medium);
     box-shadow: var(--elevation-1);
-    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    transition: all var(--transition-standard);
     position: relative;
     overflow: hidden;
     min-height: 140px;
@@ -85,14 +85,14 @@
     align-items: center;
     gap: var(--space-sm);
     color: var(--on-surface-variant);
-    font-size: var(--font-size-base); /* Increased from sm to base */
+    font-size: var(--font-size-base);
     line-height: var(--line-height-normal);
     margin: 0;
 }
 
 .contractor-card .contractor-category .material-icons,
 .contractor-card .contractor-location .material-icons {
-    font-size: 1.25rem; /* Increased from 1.125rem */
+    font-size: 1.25rem;
     width: 1.25rem;
     height: 1.25rem;
     color: var(--on-surface-variant);
@@ -103,8 +103,8 @@
 .contractor-card .rating-display {
     display: flex;
     align-items: center;
-    gap: 4px;
-    margin: 2px 0 1px 0;
+    gap: var(--space-xxs);
+    margin: var(--space-xxs) 0 var(--space-xxs) 0;
     padding: 0;
 }
 
@@ -115,31 +115,31 @@
 }
 
 .contractor-card .rating-icon .material-icons {
-    font-size: 1.25rem; /* Increased from 1.125rem */
+    font-size: 1.25rem;
     width: 1.25rem;
     height: 1.25rem;
-    color: #FFB400;
+    color: var(--warning-color);
 }
 
 .contractor-card .rating-value {
-    font-size: var(--font-size-base); /* Increased from sm to base */
+    font-size: var(--font-size-base);
     font-weight: var(--font-weight-medium);
     color: var(--on-surface);
     line-height: 1;
-    margin-left: 2px;
+    margin-left: var(--space-xxs);
 }
 
 .contractor-card .review-count {
-    font-size: var(--font-size-base); /* Increased from sm to base */
+    font-size: var(--font-size-base);
     color: var(--on-surface-variant);
     line-height: 1;
     font-weight: var(--font-weight-regular);
-    margin-left: 2px;
+    margin-left: var(--space-xxs);
 }
 
 /* ===== SERVICE AREAS DISPLAY ===== */
 .contractor-card .contractor-details {
-    margin: 2px 0 0 0;
+    margin: var(--space-xxs) 0 0 0;
 }
 
 .contractor-card .service-areas {
@@ -147,15 +147,15 @@
     align-items: center;
     gap: var(--space-xs);
     color: var(--on-surface-variant);
-    font-size: var(--font-size-base); /* Increased from sm to base */
+    font-size: var(--font-size-base);
     line-height: var(--line-height-normal);
     margin: 0;
-    padding: 4px 0 0 0;
+    padding: var(--space-xxs) 0 0 0;
     border-top: 1px solid var(--outline-variant);
 }
 
 .contractor-card .service-areas .material-icons {
-    font-size: 1.25rem; /* Increased from 1.125rem */
+    font-size: 1.25rem;
     width: 1.25rem;
     height: 1.25rem;
     color: var(--on-surface-variant);
@@ -177,7 +177,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    transition: all var(--transition-standard);
     box-shadow: var(--elevation-1);
     font-size: 1.25rem;
     z-index: 2;
@@ -223,9 +223,169 @@
     margin: 0;
 }
 
+/* ===== MOBILE LIST VIEW - PROPER VERTICAL STACKING ===== */
+/* Mobile breakpoint - switch to full-width list view */
+@media (max-width: 599px) {
+    .contractors-grid {
+        display: flex;
+        flex-direction: column;
+        gap: 0;
+        padding: 0;
+        margin: 0;
+    }
+
+    /* Full-width list item styling */
+    .contractor-card {
+        min-height: 104px; /* Taller for three rows */
+        border-radius: 0;
+        box-shadow: none;
+        border: none;
+        background: var(--surface);
+        transition: all var(--transition-short);
+        position: relative;
+        overflow: hidden;
+        margin: 0;
+        width: 100%;
+        border-bottom: 1px solid var(--outline-variant);
+    }
+
+    /* Remove last item border */
+    .contractor-card:last-child {
+        border-bottom: none;
+    }
+
+    .contractor-card:hover {
+        box-shadow: none;
+        transform: none;
+        border-color: transparent;
+        background: var(--surface-container-low);
+    }
+
+    /* Reorganize card content for list view - USE EXISTING STRUCTURE */
+    .contractor-card .card-content {
+        padding: var(--space-md) var(--space-lg);
+        gap: var(--space-xs);
+        flex-direction: column; /* Stack vertically */
+        align-items: flex-start; /* Align left */
+        min-height: 104px;
+        position: relative;
+        padding-right: 52px; /* Space for favorite button only */
+    }
+
+    /* Compact typography for mobile list */
+    .contractor-card .contractor-name {
+        font-size: var(--font-size-base);
+        font-weight: var(--font-weight-medium);
+        color: var(--on-surface);
+        margin: 0 0 var(--space-xxs) 0;
+        line-height: var(--line-height-tight);
+        padding-right: 0;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        width: 100%;
+    }
+
+    /* Stack meta information in a row to save vertical space */
+    .contractor-card .contractor-meta {
+        flex-direction: row;
+        gap: var(--space-md);
+        align-items: center;
+        width: 100%;
+        margin: 0 0 var(--space-xxs) 0;
+    }
+
+    .contractor-card .contractor-category,
+    .contractor-card .contractor-location {
+        font-size: var(--font-size-sm);
+        gap: var(--space-xs);
+        white-space: nowrap;
+        margin: 0;
+    }
+
+    .contractor-card .contractor-category .material-icons,
+    .contractor-card .contractor-location .material-icons {
+        font-size: 1.125rem;
+        width: 1.125rem;
+        height: 1.125rem;
+    }
+
+    /* Rating display on third row - back to normal flow */
+    .contractor-card .rating-display {
+        position: static;
+        transform: none;
+        flex-direction: row;
+        align-items: center;
+        margin: 0;
+        gap: var(--space-xxs);
+        width: 100%;
+    }
+
+    .contractor-card .rating-icon .material-icons {
+        font-size: 1.125rem;
+        width: 1.125rem;
+        height: 1.125rem;
+    }
+
+    .contractor-card .rating-value,
+    .contractor-card .review-count {
+        font-size: var(--font-size-sm);
+        line-height: 1.2;
+        margin: 0;
+    }
+
+    .contractor-card .rating-value {
+        font-weight: var(--font-weight-medium);
+        color: var(--on-surface);
+    }
+
+    .contractor-card .review-count {
+        color: var(--on-surface-variant);
+        font-weight: var(--font-weight-regular);
+    }
+
+    /* Add brackets around review count using pseudo-element */
+    .contractor-card .review-count::before {
+        content: "(";
+    }
+
+    .contractor-card .review-count::after {
+        content: ")";
+    }
+
+    /* Hide service areas in mobile list view to save space */
+    .contractor-card .service-areas {
+        display: none;
+    }
+
+    /* Reposition favorite button to top right */
+    .favorite-btn {
+        position: absolute;
+        top: var(--space-md);
+        right: var(--space-lg);
+        width: 32px;
+        height: 32px;
+        font-size: 1.125rem;
+        box-shadow: none;
+        border: 1px solid var(--outline-variant);
+        z-index: 2;
+    }
+
+    /* Active state for better touch feedback */
+    .contractor-card:active {
+        background: var(--surface-container);
+        transform: none;
+    }
+
+    /* Remove ripple effect if it's causing issues */
+    .contractor-card::after {
+        display: none;
+    }
+}
+
 /* ===== RESPONSIVE BREAKPOINTS ===== */
 
-/* Small tablets and large phones (600px+) */
+/* Small tablets and large phones (600px+) - Card layout */
 @media (min-width: 600px) {
     .contractors-grid {
         grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
@@ -251,6 +411,27 @@
     .contractor-card .rating-value,
     .contractor-card .review-count {
         font-size: var(--font-size-base);
+    }
+    
+    /* Reset mobile list styles for tablet/desktop */
+    .contractor-card .contractor-meta {
+        flex-direction: column;
+        gap: var(--space-xs);
+    }
+    
+    .contractor-card .rating-display {
+        position: static;
+        transform: none;
+        flex-direction: row;
+        align-items: center;
+    }
+    
+    .contractor-card .contractor-name {
+        width: auto;
+    }
+    
+    .contractor-card .contractor-meta {
+        width: auto;
     }
 }
 
@@ -285,59 +466,49 @@
     .contractor-card .contractor-location .material-icons,
     .contractor-card .service-areas .material-icons,
     .contractor-card .rating-icon .material-icons {
-        font-size: 1.375rem; /* Larger icons for desktop */
+        font-size: 1.375rem;
         width: 1.375rem;
         height: 1.375rem;
     }
 }
 
 /* ===== COMPACT MOBILE LAYOUT ===== */
-@media (max-width: 599px) {
-    /* Keep original mobile sizes */
-    .contractor-card .contractor-category,
-    .contractor-card .contractor-location,
-    .contractor-card .service-areas {
+@media (max-width: 359px) {
+    .contractor-card {
+        min-height: 96px; /* Slightly shorter for very small screens */
+    }
+    
+    .contractor-card .card-content {
+        padding: var(--space-sm) var(--space-md);
+        gap: var(--space-xxs);
+        min-height: 96px;
+        padding-right: 44px; /* Less space for favorite button */
+    }
+    
+    .contractor-card .contractor-name {
         font-size: var(--font-size-sm);
+    }
+    
+    .contractor-card .contractor-meta {
+        gap: var(--space-sm);
+    }
+    
+    .contractor-card .contractor-category,
+    .contractor-card .contractor-location {
+        font-size: var(--font-size-xs);
+        gap: var(--space-xxs);
+    }
+    
+    .favorite-btn {
+        width: 28px;
+        height: 28px;
+        font-size: 1rem;
+        right: var(--space-md);
     }
     
     .contractor-card .rating-value,
     .contractor-card .review-count {
-        font-size: var(--font-size-sm);
-    }
-    
-    .contractor-card .contractor-category .material-icons,
-    .contractor-card .contractor-location .material-icons,
-    .contractor-card .service-areas .material-icons,
-    .contractor-card .rating-icon .material-icons {
-        font-size: 1.125rem;
-        width: 1.125rem;
-        height: 1.125rem;
-    }
-}
-
-@media (max-width: 359px) {
-    .contractor-card .card-content {
-        padding: var(--space-md);
-        gap: var(--space-xs);
-    }
-    
-    .contractor-card .contractor-name {
-        font-size: var(--font-size-base);
-        padding-right: 44px;
-    }
-    
-    .contractor-card .contractor-category,
-    .contractor-card .contractor-location,
-    .contractor-card .service-areas {
         font-size: var(--font-size-xs);
-        gap: var(--space-xs);
-    }
-    
-    .favorite-btn {
-        width: 36px;
-        height: 36px;
-        top: var(--space-sm);
-        right: var(--space-sm);
     }
 }
 
@@ -368,6 +539,19 @@
     .contractor-card .service-areas {
         border-top-color: var(--outline-variant);
     }
+    
+    /* Mobile list view dark theme enhancements */
+    @media (max-width: 599px) {
+        .contractor-card:active {
+            background: var(--surface-container-high);
+        }
+        
+        .contractor-card:hover {
+            background: var(--surface-container-low);
+        }
+        
+        .contractor-card {
+            border-bottom-color: var(--outline-variant);
+        }
+    }
 }
-
-/* Rest of the CSS remains the same... */

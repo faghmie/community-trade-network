@@ -1,7 +1,7 @@
 /* Import all CSS files */
 @import url('base/reset.css');
 @import url('base/variables.css');
-@import url('components/material.css'); /* New Material Design components */
+@import url('components/material.css');
 @import url('components/buttons.css');
 @import url('components/cards.css');
 @import url('components/modals.css');
@@ -15,14 +15,14 @@
 @import url('components/utilities.css');
 @import url('components/contractor-details.css');
 @import url('components/stats-cards.css');
-@import url('components/auth.css'); /* NEW: Authentication styles */
+@import url('components/auth.css');
 @import url('components/bottom-nav.css');
-@import url('./components/bottom-sheet.css'); /* NEW: Bottom sheet styles */
-@import url('components/review-modal.css'); 
-@import url('components/feedback.css'); /* NEW: Feedback system styles */
+@import url('./components/bottom-sheet.css');
+@import url('components/review-modal.css');
+@import url('components/feedback.css');
 @import url('layout.css');
 
-/* Global Material Design Base Styles */
+/* ===== GLOBAL BASE STYLES ===== */
 * {
     box-sizing: border-box;
 }
@@ -33,39 +33,112 @@ body {
     font-weight: var(--font-weight-regular);
     line-height: var(--line-height-normal);
     color: var(--text-primary);
-    /* FIXED: Use proper Material Design background */
     background-color: var(--background);
     margin: 0;
     padding: 0;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
-    /* FIXED: Ensure consistent surface */
     min-height: 100vh;
 }
 
-/* FIXED: Main content area with proper Material Design surface */
+/* ===== COMBINED HEADER WITH HERO AND SEARCH ===== */
+.main-header {
+    background: var(--surface);
+    border-bottom: 1px solid var(--outline-variant);
+    padding: var(--space-md) var(--space-lg);
+    position: sticky;
+    top: 0;
+    z-index: var(--z-app-bar);
+    box-shadow: var(--elevation-1);
+}
+
+.header-content {
+    max-width: var(--container-max-width);
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-xl);
+    min-height: 60px;
+}
+
+/* Hero Content - Left Side */
+.header-hero {
+    flex: 1;
+    min-width: 0; /* Allow text truncation */
+}
+
+.header-hero .hero-title {
+    font-size: var(--font-size-xl);
+    font-weight: var(--font-weight-medium);
+    color: var(--on-surface);
+    margin: 0 0 var(--space-xs) 0;
+    line-height: var(--line-height-tight);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.header-hero .hero-subtitle {
+    font-size: var(--font-size-sm);
+    color: var(--on-surface-variant);
+    margin: 0;
+    line-height: var(--line-height-normal);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* Search Bar - Right Side */
+.header-search {
+    flex: 0 0 320px; /* Fixed width for search */
+}
+
+.header-search .material-search {
+    height: 44px;
+    border-radius: var(--shape-medium);
+    box-shadow: var(--elevation-1);
+    border: 1px solid var(--outline-variant);
+    margin: 0;
+}
+
+.header-search .material-search:focus-within {
+    box-shadow: var(--elevation-2);
+    border-color: var(--primary-color);
+}
+
+.header-search .material-search i {
+    font-size: 20px;
+    left: var(--space-md);
+}
+
+.header-search .material-search-input {
+    padding: var(--space-md) var(--space-md) var(--space-md) 3rem;
+    font-size: var(--font-size-base);
+    height: 100%;
+}
+
+/* ===== LAYOUT CONTAINERS ===== */
+.app-container {
+    position: relative;
+    background-color: var(--background);
+    min-height: 100vh;
+}
+
 .main-content {
     background-color: var(--background);
     min-height: calc(100vh - var(--app-bar-height, 64px));
     position: relative;
 }
 
-/* FIXED: Container with proper Material Design spacing */
 .container {
     background-color: var(--background);
     position: relative;
+    max-width: var(--container-max-width);
+    margin: 0 auto;
 }
 
-/* FIXED: Card container backgrounds */
-.cards-container,
-.contractors-grid,
-.favorites-section,
-.results-section {
-    background-color: var(--background);
-    position: relative;
-}
-
-/* FIXED: Ensure panels and sections have consistent backgrounds */
+/* ===== UTILITY SECTIONS ===== */
 .section-panel,
 .content-panel,
 .main-panel {
@@ -76,7 +149,17 @@ body {
     border: 1px solid var(--border-light);
 }
 
-/* FIXED: Empty states and loading states */
+.filter-section,
+.search-section,
+.controls-section {
+    background-color: var(--surface);
+    border-radius: var(--border-radius);
+    padding: var(--space-lg);
+    margin-bottom: var(--space-lg);
+    border: 1px solid var(--border-light);
+}
+
+/* ===== STATE CLASSES ===== */
 .empty-state,
 .loading-state,
 .no-results {
@@ -88,45 +171,280 @@ body {
     border: 1px solid var(--border-light);
 }
 
-/* FIXED: Ensure proper contrast for cards on background */
-.contractor-card {
-    background-color: var(--bg-card);
-    transition: all var(--material-transition);
-}
-
-.contractor-card:hover {
-    background-color: var(--bg-card);
-}
-
-/* FIXED: Map container background */
-.map-container {
+.error-state {
     background-color: var(--surface);
+    border: 1px solid var(--error-100);
     border-radius: var(--border-radius);
-    overflow: hidden;
-    border: 1px solid var(--border-light);
+    padding: var(--space-xl);
+    text-align: center;
+    color: var(--error-color);
 }
 
-/* FIXED: Filter section backgrounds */
-.filter-section,
-.search-section,
-.controls-section {
-    background-color: var(--surface);
+.success-state {
+    background-color: var(--success-50);
+    border: 1px solid var(--success-200);
     border-radius: var(--border-radius);
-    padding: var(--space-lg);
-    margin-bottom: var(--space-lg);
-    border: 1px solid var(--border-light);
+    padding: var(--space-xl);
+    text-align: center;
+    color: var(--success-700);
 }
 
-/* FIXED: Dark theme adjustments */
+.warning-state {
+    background-color: var(--warning-50);
+    border: 1px solid var(--warning-200);
+    border-radius: var(--border-radius);
+    padding: var(--space-xl);
+    text-align: center;
+    color: var(--warning-700);
+}
+
+.info-state {
+    background-color: var(--primary-50);
+    border: 1px solid var(--primary-200);
+    border-radius: var(--border-radius);
+    padding: var(--space-xl);
+    text-align: center;
+    color: var(--primary-700);
+}
+
+.loading-overlay {
+    background-color: var(--background);
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: var(--z-modal);
+}
+
+/* ===== MOBILE LIST VIEW FIXES - OVERRIDE ALL CONTAINER PADDING ===== */
+@media (max-width: 599px) {
+    /* Remove padding from ALL layout containers for full-width list view */
+    .app-container,
+    .main-content,
+    .container {
+        padding: 0 !important;
+        margin: 0 !important;
+    }
+    
+    /* Remove padding from all utility panels when containing contractors */
+    .section-panel,
+    .content-panel,
+    .main-panel,
+    .filter-section,
+    .search-section,
+    .controls-section {
+        padding: 0 !important;
+        margin: 0 !important;
+        border: none !important;
+        border-radius: 0 !important;
+        background: transparent !important;
+        box-shadow: none !important;
+    }
+    
+    /* Ensure any dashboard containers also get overridden */
+    .dashboard-container,
+    .content-container,
+    .list-container,
+    [class*="container"] {
+        padding: 0 !important;
+        margin: 0 !important;
+    }
+    
+    /* Target specific containers that might wrap contractor lists */
+    .contractors-container,
+    .cards-wrapper,
+    .list-wrapper,
+    .grid-wrapper {
+        padding: 0 !important;
+        margin: 0 !important;
+        border: none !important;
+        background: transparent !important;
+    }
+}
+
+/* ===== RESPONSIVE DESIGN ===== */
+
+/* Tablets and smaller desktops */
+@media (max-width: 1024px) {
+    .header-content {
+        gap: var(--space-lg);
+    }
+    
+    .header-search {
+        flex: 0 0 280px;
+    }
+    
+    .header-hero .hero-title {
+        font-size: var(--font-size-lg);
+    }
+    
+    .header-hero .hero-subtitle {
+        font-size: var(--font-size-xs);
+    }
+}
+
+/* Mobile - Stack layout */
+@media (max-width: 768px) {
+    .main-header {
+        padding: var(--space-sm) var(--space-md);
+        position: relative;
+        top: auto;
+    }
+    
+    .header-content {
+        flex-direction: column;
+        align-items: stretch;
+        gap: var(--space-md);
+        min-height: auto;
+    }
+    
+    .header-hero {
+        text-align: center;
+        flex: none;
+    }
+    
+    .header-hero .hero-title {
+        font-size: var(--font-size-lg);
+        white-space: normal;
+        overflow: visible;
+        margin-bottom: var(--space-xxs);
+    }
+    
+    .header-hero .hero-subtitle {
+        font-size: var(--font-size-xs);
+        white-space: normal;
+        overflow: visible;
+    }
+    
+    .header-search {
+        flex: none;
+        width: 100%;
+    }
+    
+    .header-search .material-search {
+        height: 40px;
+        border-radius: var(--shape-small);
+    }
+    
+    .header-search .material-search i {
+        font-size: 18px;
+        left: var(--space-sm);
+    }
+    
+    .header-search .material-search-input {
+        padding: var(--space-sm) var(--space-sm) var(--space-sm) 2.5rem;
+        font-size: var(--font-size-sm);
+    }
+    
+    /* General mobile adjustments */
+    .section-panel,
+    .content-panel,
+    .main-panel {
+        padding: var(--space-lg);
+        margin-bottom: var(--space-lg);
+    }
+    
+    .filter-section,
+    .search-section,
+    .controls-section {
+        padding: var(--space-md);
+        margin-bottom: var(--space-md);
+    }
+    
+    .empty-state,
+    .loading-state,
+    .no-results {
+        padding: var(--space-xl);
+    }
+    
+    .error-state,
+    .success-state,
+    .warning-state,
+    .info-state {
+        padding: var(--space-lg);
+    }
+}
+
+/* Small mobile devices */
+@media (max-width: 480px) {
+    .main-header {
+        padding: var(--space-xs) var(--space-sm);
+    }
+    
+    .header-content {
+        gap: var(--space-sm);
+    }
+    
+    .header-hero .hero-title {
+        font-size: var(--font-size-base);
+    }
+    
+    .header-search .material-search {
+        height: 36px;
+    }
+    
+    .header-search .material-search i {
+        font-size: 16px;
+        left: var(--space-xs);
+    }
+    
+    .header-search .material-search-input {
+        padding: var(--space-xs) var(--space-xs) var(--space-xs) 2rem;
+        font-size: var(--font-size-xs);
+    }
+    
+    /* General small mobile adjustments */
+    .section-panel,
+    .content-panel,
+    .main-panel {
+        padding: var(--space-md);
+        margin-bottom: var(--space-md);
+    }
+    
+    .filter-section,
+    .search-section,
+    .controls-section {
+        padding: var(--space-sm);
+        margin-bottom: var(--space-sm);
+    }
+    
+    .empty-state,
+    .loading-state,
+    .no-results {
+        padding: var(--space-lg);
+    }
+    
+    .error-state,
+    .success-state,
+    .warning-state,
+    .info-state {
+        padding: var(--space-md);
+    }
+}
+
+/* Very small screens - further optimize hero text */
+@media (max-width: 360px) {
+    .header-hero .hero-title {
+        font-size: var(--font-size-sm);
+    }
+    
+    .header-hero .hero-subtitle {
+        font-size: var(--font-size-xs);
+        line-height: 1.2;
+    }
+}
+
+/* ===== THEME SUPPORT ===== */
 @media (prefers-color-scheme: dark) {
     body {
         background-color: var(--background);
     }
     
-    .main-content {
-        background-color: var(--background);
-    }
-    
+    .main-content,
     .container {
         background-color: var(--background);
     }
@@ -151,14 +469,20 @@ body {
         background-color: var(--surface);
         border-color: var(--border-color);
     }
-}
-
-/* FIXED: High contrast mode support */
-@media (prefers-contrast: high) {
-    .contractor-card {
-        border: 1px solid var(--border-dark);
+    
+    /* Header dark theme */
+    .main-header {
+        background: var(--surface);
+        border-bottom-color: var(--outline-variant);
     }
     
+    .header-search .material-search {
+        background: var(--surface);
+        border-color: var(--outline-variant);
+    }
+}
+
+@media (prefers-contrast: high) {
     .filter-section,
     .search-section,
     .controls-section {
@@ -170,19 +494,30 @@ body {
     .main-panel {
         border: 1px solid var(--border-dark);
     }
+    
+    /* Header high contrast */
+    .main-header {
+        border-bottom-width: 2px;
+        border-bottom-color: currentColor;
+    }
+    
+    .header-search .material-search {
+        border-width: 2px;
+        border-color: currentColor;
+    }
 }
 
-/* FIXED: Print styles */
+@media (prefers-reduced-motion: reduce) {
+    .main-header {
+        position: relative;
+        top: auto;
+    }
+}
+
 @media print {
     body {
         background-color: var(--bg-white) !important;
         color: var(--text-primary) !important;
-    }
-    
-    .contractor-card {
-        background-color: var(--bg-white) !important;
-        border: 1px solid var(--border-color) !important;
-        box-shadow: var(--elevation-0) !important;
     }
     
     .main-content,
@@ -197,138 +532,19 @@ body {
         border: 1px solid var(--border-color) !important;
     }
     
+    .filter-section,
+    .search-section,
+    .controls-section {
+        background-color: var(--bg-white) !important;
+        border: 1px solid var(--border-color) !important;
+    }
+    
     .no-print {
         display: none !important;
     }
-}
-
-/* FIXED: Ensure proper stacking context */
-.app-container {
-    position: relative;
-    background-color: var(--background);
-    min-height: 100vh;
-}
-
-/* FIXED: Loading states with proper backgrounds */
-.loading-overlay {
-    background-color: var(--background);
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    z-index: var(--z-modal);
-}
-
-/* FIXED: Error states */
-.error-state {
-    background-color: var(--surface);
-    border: 1px solid var(--error-100);
-    border-radius: var(--border-radius);
-    padding: var(--space-xl);
-    text-align: center;
-    color: var(--error-color);
-}
-
-/* FIXED: Success states */
-.success-state {
-    background-color: var(--success-50);
-    border: 1px solid var(--success-200);
-    border-radius: var(--border-radius);
-    padding: var(--space-xl);
-    text-align: center;
-    color: var(--success-700);
-}
-
-/* FIXED: Warning states */
-.warning-state {
-    background-color: var(--warning-50);
-    border: 1px solid var(--warning-200);
-    border-radius: var(--border-radius);
-    padding: var(--space-xl);
-    text-align: center;
-    color: var(--warning-700);
-}
-
-/* FIXED: Info states */
-.info-state {
-    background-color: var(--primary-50);
-    border: 1px solid var(--primary-200);
-    border-radius: var(--border-radius);
-    padding: var(--space-xl);
-    text-align: center;
-    color: var(--primary-700);
-}
-
-/* FIXED: Mobile optimizations */
-@media (max-width: 768px) {
-    .section-panel,
-    .content-panel,
-    .main-panel {
-        padding: var(--space-lg);
-        margin-bottom: var(--space-lg);
-    }
     
-    .empty-state,
-    .loading-state,
-    .no-results {
-        padding: var(--space-xl);
-    }
-    
-    .filter-section,
-    .search-section,
-    .controls-section {
-        padding: var(--space-md);
-        margin-bottom: var(--space-md);
-    }
-    
-    .error-state,
-    .success-state,
-    .warning-state,
-    .info-state {
-        padding: var(--space-lg);
-    }
-}
-
-@media (max-width: 480px) {
-    .section-panel,
-    .content-panel,
-    .main-panel {
-        padding: var(--space-md);
-        margin-bottom: var(--space-md);
-    }
-    
-    .empty-state,
-    .loading-state,
-    .no-results {
-        padding: var(--space-lg);
-    }
-    
-    .filter-section,
-    .search-section,
-    .controls-section {
-        padding: var(--space-sm);
-        margin-bottom: var(--space-sm);
-    }
-    
-    .error-state,
-    .success-state,
-    .warning-state,
-    .info-state {
-        padding: var(--space-md);
-    }
-}
-
-/* FIXED: Reduced motion support */
-@media (prefers-reduced-motion: reduce) {
-    .contractor-card {
-        transition: none;
-    }
-    
-    .contractor-card:hover {
-        transform: none;
+    /* Hide header in print */
+    .main-header {
+        display: none !important;
     }
 }

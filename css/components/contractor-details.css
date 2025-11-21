@@ -2,7 +2,8 @@
 /* Uses existing Material Design components and variables */
 
 /* ===== MATERIAL DIALOG OVERRIDES ===== */
-.modal.contractor-details-modal.material-modal {
+.modal.contractor-details-modal.material-modal,
+.modal.contractor-form-modal.material-modal {
     z-index: var(--z-modal);
     display: none;
     position: fixed;
@@ -16,7 +17,8 @@
     backdrop-filter: blur(4px);
 }
 
-.modal.contractor-details-modal.material-modal.modal-open {
+.modal.contractor-details-modal.material-modal.modal-open,
+.modal.contractor-form-modal.material-modal.modal-open {
     display: flex;
     animation: material-modal-fade-in var(--transition-medium);
 }
@@ -120,8 +122,9 @@
     height: 16px;
 }
 
-/* Dialog Body */
-.contractor-details-modal .material-dialog-body {
+/* Dialog Body - BOTH MODALS */
+.contractor-details-modal .material-dialog-body,
+.contractor-form-modal .material-dialog-body {
     flex: 1;
     overflow-y: auto;
     padding: 0;
@@ -144,7 +147,7 @@
 
 /* HERO SECTION REMOVED - Information moved to dialog header */
 
-/* Section Titles */
+/* Section Titles - USED BY BOTH MODALS */
 .material-section-title {
     display: flex;
     align-items: center;
@@ -157,6 +160,8 @@
     background: var(--surface);
     border-bottom: 1px solid var(--border-light);
 }
+
+/* ===== VIEW-ONLY MODAL STYLES ===== */
 
 /* Contact Section */
 .contact-section {
@@ -336,7 +341,7 @@
     padding: var(--space-lg) var(--space-xl) var(--space-md);
     background: var(--surface);
     width: 100%;
-    border-bottom: 1px solid var(--border-light); /* Added to match other sections */
+    border-bottom: 1px solid var(--border-light);
 }
 
 .reviews-count-badge {
@@ -366,7 +371,7 @@
     border: none;
     position: relative;
     width: 100%;
-    margin: 0; /* Remove any default margins */
+    margin: 0;
 }
 
 /* Empty State - FIXED MARGINS */
@@ -538,36 +543,38 @@
     font-style: normal;
 }
 
-/* Empty State */
-.material-empty-state {
-    text-align: center;
-    padding: var(--space-xxl);
-    color: var(--text-secondary);
+/* ===== CONTRACTOR FORM MODAL STYLES ===== */
+/* Form sections matching the view-only modal structure */
+.contractor-form-section {
     background: var(--surface);
-    border-radius: var(--border-radius-lg);
-    border: 2px dashed var(--border-color);
-    margin: var(--space-lg) 0;
-    width: 100%; /* Full width empty state */
 }
 
-.empty-state-icon {
-    font-size: 3rem;
+/* Form fields container with proper side padding */
+.contractor-form-fields {
+    padding: var(--space-md) var(--space-xl) var(--space-lg);
+}
+
+.contractor-form-fields .material-form-group {
     margin-bottom: var(--space-lg);
-    opacity: 0.5;
-    color: var(--primary-500);
 }
 
-.empty-state-content h4 {
-    margin: 0 0 var(--space-sm) 0;
-    color: var(--text-primary);
-    font-size: var(--font-size-lg);
-    font-weight: var(--font-weight-medium);
+.contractor-form-fields .material-form-group:last-child {
+    margin-bottom: 0;
 }
 
-.empty-state-content p {
-    margin: 0;
-    color: var(--text-secondary);
-    font-size: var(--font-size-base);
+/* Full-width form inputs */
+.contractor-form-fields .material-input,
+.contractor-form-fields .material-select {
+    width: 100%;
+}
+
+/* Ensure form elements have comfortable spacing */
+.contractor-form-fields .material-input-label {
+    margin-bottom: var(--space-sm);
+}
+
+.contractor-form-fields .material-input-helper {
+    margin-top: var(--space-xs);
 }
 
 /* Material Button in Footer */
@@ -630,7 +637,8 @@
     }
     
     .contact-list.material-list,
-    .reviews-list.material-list {
+    .reviews-list.material-list,
+    .contractor-form-fields {
         padding: 0 var(--space-lg) var(--space-lg);
     }
     
@@ -713,6 +721,21 @@
         flex-direction: column;
         align-items: flex-start;
         gap: var(--space-xs);
+    }
+    
+    .material-section-title,
+    .reviews-header {
+        padding: var(--space-md) var(--space-lg) var(--space-sm);
+    }
+    
+    .contact-list.material-list,
+    .reviews-list.material-list,
+    .contractor-form-fields {
+        padding: 0 var(--space-lg) var(--space-md);
+    }
+    
+    .contractor-form-fields .material-form-group {
+        margin-bottom: var(--space-md);
     }
 }
 

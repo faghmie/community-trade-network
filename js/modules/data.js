@@ -1,4 +1,4 @@
-// js/modules/data.js - FIXED INITIALIZATION WITH SUPABASE WAIT
+// js/modules/data.js - FIXED: Remove setReviewManager dependency
 // ES6 Module for data orchestration - PURE DATA ONLY
 
 // Import data directly from ES6 modules
@@ -13,7 +13,7 @@ import { ReviewManager } from './reviewManager.js';
 import { CategoriesModule } from './categories.js';
 import { FavoritesDataManager } from './favoritesDataManager.js';
 import { StatsDataManager } from './statsDataManager.js';
-import { FeedbackDataManager } from './feedbackDataManager.js'; // NEW: Import feedback manager
+import { FeedbackDataManager } from './feedbackDataManager.js';
 
 // Import Supabase client directly
 import { supabase } from './supabase.js';
@@ -32,7 +32,7 @@ export class DataModule {
         this.categoriesModule = null;
         this.favoritesDataManager = null;
         this.statsManager = null;
-        this.feedbackDataManager = null; // NEW: Feedback manager
+        this.feedbackDataManager = null;
         this.supabaseConnected = false;
         this.loadingScreen = new LoadingScreen();
     }
@@ -48,39 +48,46 @@ export class DataModule {
                 // Show loading screen immediately
                 this.loadingScreen.show('Initializing storage...');
 
-                // Create and initialize all dependencies internally
+                // Create and initialize storage FIRST
                 this.storage = new Storage();
+                this.storage.init(supabase);
+
+                // Wait for Supabase connection BEFORE creating managers
+                this.loadingScreen.setMessage('Connecting to server...');
+                const supabaseAvailable = await this.waitForSupabaseConnection();
+
+                // Force refresh data from Supabase BEFORE initializing managers
+                if (supabaseAvailable) {
+                    this.loadingScreen.setMessage('Synchronizing data from server...');
+                    await this.storage.forceRefreshAll();
+                }
+
+                // NOW create and initialize all managers with fresh data
+                this.loadingScreen.setMessage('Initializing data managers...');
+                
+                // Create all managers
                 this.contractorManager = new ContractorManager();
                 this.reviewManager = new ReviewManager();
                 this.categoriesModule = new CategoriesModule(this);
                 this.favoritesDataManager = new FavoritesDataManager();
                 this.statsManager = new StatsDataManager();
-                this.feedbackDataManager = new FeedbackDataManager(); // NEW: Create feedback manager
+                this.feedbackDataManager = new FeedbackDataManager();
 
-                // Initialize storage with Supabase (if available)
-                this.storage.init(supabase);
-
-                // CRITICAL FIX: Wait for Supabase to be available before loading data
-                this.loadingScreen.setMessage('Connecting to server...');
-                await this.waitForSupabaseConnection();
-
-                // SIMPLIFIED: No first-time setup - just load existing data
-                this.loadingScreen.setMessage('Loading data...');
-                
-                // Initialize all managers with proper dependencies
-                this.contractorManager.init(this.storage);
-                this.categoriesModule.init(this.storage, this);
+                // Initialize all managers with storage that now has fresh data
+                await this.contractorManager.init(this.storage);
+                await this.categoriesModule.init(this.storage, this);
                 await this.reviewManager.init(this.contractorManager, this.storage);
                 
-                // Set review manager reference in contractor manager for cleanup operations
-                this.contractorManager.setReviewManager(this.reviewManager);
+                // FIXED: Remove setReviewManager call - no longer needed
+                // this.contractorManager.setReviewManager(this.reviewManager);
                 
-                // Initialize favorites data manager with contractor manager reference
+                // Initialize remaining managers
                 await this.favoritesDataManager.init(this.storage, this.contractorManager);
                 this.statsManager.init(this.contractorManager, this.reviewManager);
-                
-                // NEW: Initialize feedback data manager
                 this.feedbackDataManager.init(this.storage);
+
+                // Verify all managers have data
+                await this.verifyManagerData();
 
                 this.initialized = true;
                 this.initializing = false;
@@ -88,8 +95,8 @@ export class DataModule {
                 // Show success and auto-hide
                 this.loadingScreen.showSuccess('Data loaded successfully!');
                 
-                // Dispatch data ready event for UI modules
-                document.dispatchEvent(new CustomEvent('dataReady'));
+                // Dispatch comprehensive data ready event
+                this.dispatchDataReadyEvent();
                 
                 resolve();
             } catch (error) {
@@ -111,41 +118,103 @@ export class DataModule {
         return this.initPromise;
     }
 
-    // NEW: Wait for Supabase connection with timeout and status updates
-    async waitForSupabaseConnection(maxWaitTime = 5000) {
+    // Data verification for all managers
+    async verifyManagerData() {
+        console.log('🔍 Verifying all managers have data...');
+        
+        const issues = [];
+        
+        // Check contractor manager
+        const contractorCount = this.contractorManager.getContractorCount();
+        if (contractorCount === 0) {
+            issues.push('No contractors loaded');
+            console.warn('⚠️ ContractorManager has no data');
+        } else {
+            console.log(`✅ ContractorManager: ${contractorCount} contractors`);
+        }
+        
+        // Check categories module
+        const categories = this.categoriesModule.getCategories();
+        if (!categories || categories.length === 0) {
+            issues.push('No categories loaded');
+            console.warn('⚠️ CategoriesModule has no data');
+        } else {
+            console.log(`✅ CategoriesModule: ${categories.length} categories`);
+        }
+        
+        // Check review manager
+        const reviews = this.reviewManager.getAllReviews();
+        if (!reviews || reviews.length === 0) {
+            console.log('ℹ️ ReviewManager: No reviews (this might be normal)');
+        } else {
+            console.log(`✅ ReviewManager: ${reviews.length} reviews`);
+        }
+        
+        // If we have issues and Supabase is connected, try one more refresh
+        if (issues.length > 0 && this.supabaseConnected) {
+            console.log('🔄 Issues detected, attempting final data refresh...');
+            await this.finalDataRefresh();
+        }
+        
+        return issues.length === 0;
+    }
+
+    // Final data refresh attempt if managers are empty
+    async finalDataRefresh() {
+        try {
+            // Force refresh from Supabase one more time
+            await this.storage.forceRefreshAll();
+            
+            // Refresh all managers
+            await this.refreshAllManagers();
+            
+            console.log('✅ Final data refresh completed');
+        } catch (error) {
+            console.error('❌ Final data refresh failed:', error);
+        }
+    }
+
+    // Wait for Supabase connection
+    async waitForSupabaseConnection(maxWaitTime = 8000) {
         const startTime = Date.now();
         
         while (Date.now() - startTime < maxWaitTime) {
             if (this.storage.isSupabaseAvailable()) {
                 console.log('✅ Supabase connected, proceeding with data loading');
                 this.supabaseConnected = true;
-                
-                // Update loading message for connected state
                 this.loadingScreen.setMessage('Server connected, synchronizing data...');
                 return true;
             }
             
-            // Update loading message with connection attempt status
             const elapsed = Date.now() - startTime;
             const secondsRemaining = Math.ceil((maxWaitTime - elapsed) / 1000);
             this.loadingScreen.setMessage(`Connecting to server... (${secondsRemaining}s)`);
             
-            // Wait 100ms before checking again
-            await new Promise(resolve => setTimeout(resolve, 100));
+            await new Promise(resolve => setTimeout(resolve, 200));
         }
         
         console.warn('⚠️ Supabase connection timeout, proceeding with local data only');
         this.supabaseConnected = false;
-        
-        // Update loading message for offline mode
         this.loadingScreen.showOffline('Running in offline mode. Using local data...');
         
-        // Set retry callback for offline mode
-        this.loadingScreen.setOnRetry(() => {
-            location.reload();
-        });
-        
         return false;
+    }
+
+    // Enhanced data ready event
+    dispatchDataReadyEvent() {
+        const eventDetail = {
+            contractorsCount: this.contractorManager.getAll().length,
+            categoriesCount: this.categoriesModule.getCategories().length,
+            reviewsCount: this.reviewManager.getAllReviews().length,
+            supabaseConnected: this.supabaseConnected,
+            timestamp: new Date().toISOString()
+        };
+        
+        console.log('🚀 Data ready event dispatched:', eventDetail);
+        
+        document.dispatchEvent(new CustomEvent('dataReady', {
+            detail: eventDetail
+        }));
     }
 
     // Ensure dataModule is initialized before using it
@@ -156,7 +225,7 @@ export class DataModule {
         return Promise.resolve();
     }
 
-    // Service Provider methods - pure data operations
+    // Service Provider methods
     getContractors = () => this.contractorManager.getAll();
 
     getContractor = (id) => this.contractorManager.getById(id);
@@ -165,7 +234,7 @@ export class DataModule {
 
     getAllLocations = () => this.contractorManager.getAllLocations();
 
-    // Review methods - pure data operations
+    // Review methods
     getAllReviews = () => this.reviewManager.getAllReviews();
 
     getReviewsForContractor = (contractorId) => this.reviewManager.getReviewsByContractor(contractorId);
@@ -174,17 +243,17 @@ export class DataModule {
 
     searchReviews = (...args) => this.reviewManager.searchReviews(...args);
 
-    // Category methods - pure data operations
+    // Category methods
     getCategories = () => this.categoriesModule.getCategories();
 
-    // Favorites data methods - pure data operations only
+    // Favorites data methods
     isFavorite = (contractorId) => this.favoritesDataManager.isFavorite(contractorId);
 
     getFavorites = () => this.favoritesDataManager.getFavorites();
 
     getFavoritesCount = () => this.favoritesDataManager.getFavoritesCount();
 
-    // NEW: Feedback data methods
+    // Feedback data methods
     submitFeedback = (feedbackData) => this.feedbackDataManager.submitFeedback(feedbackData);
 
     getAllFeedback = () => this.feedbackDataManager.getAllFeedback();
@@ -199,8 +268,7 @@ export class DataModule {
 
     // Data mutation methods
     addContractor(data) { 
-        const result = this.contractorManager.create(data);
-        return result;
+        return this.contractorManager.create(data);
     }
 
     updateContractor(id, updates) { 
@@ -208,8 +276,7 @@ export class DataModule {
     }
 
     async deleteContractor(id) { 
-        const result = this.contractorManager.delete(id);
-        return result;
+        return this.contractorManager.delete(id);
     }
 
     addReview(contractorId, data) { 
@@ -252,12 +319,12 @@ export class DataModule {
         return updated;
     }
 
-    // Stats methods - pure data
+    // Stats methods
     getStats = () => this.statsManager.getStats();
 
     getReviewStats = () => this.statsManager.getReviewStats();
 
-    // Get favorite contractors (data only - combines favorites with contractor data)
+    // Get favorite contractors
     getFavoriteContractors() {
         const favorites = this.favoritesDataManager.getFavorites();
         const allContractors = this.getContractors();
@@ -266,7 +333,7 @@ export class DataModule {
         );
     }
 
-    // Favorites data operations (pure data - no UI)
+    // Favorites data operations
     async toggleFavorite(contractorId) { 
         return await this.favoritesDataManager.toggleFavorite(contractorId);
     }
@@ -284,25 +351,7 @@ export class DataModule {
         return contractors;
     }
 
-    // Get contractors by favorite status
-    getContractorsByFavoriteStatus(favoritesFirst = true) {
-        const contractors = this.getContractors();
-        
-        if (favoritesFirst) {
-            return contractors.sort((a, b) => {
-                const aFavorite = this.isFavorite(a.id);
-                const bFavorite = this.isFavorite(b.id);
-                
-                if (aFavorite && !bFavorite) return -1;
-                if (!aFavorite && bFavorite) return 1;
-                return 0;
-            });
-        }
-        
-        return contractors;
-    }
-
-    // Utility methods - pure data transformations
+    // Utility methods
     formatDate = (date) => new Date(date).toLocaleDateString('en-US', {
         year: 'numeric',
         month: 'short',
@@ -312,38 +361,44 @@ export class DataModule {
     // Data synchronization methods
     async triggerManualSync() {
         if (this.storage && this.storage.forceRefreshAll) {
-            return await this.storage.forceRefreshAll();
-        }
-        return null;
-    }
-
-    async triggerDataPull() {
-        // Force refresh all data from Supabase
-        if (this.storage && this.storage.forceRefreshAll) {
             const result = await this.storage.forceRefreshAll();
-            
-            // Refresh managers with new data
-            if (this.contractorManager && this.contractorManager.refresh) {
-                await this.contractorManager.refresh();
-            }
-            if (this.reviewManager && this.reviewManager.refresh) {
-                await this.reviewManager.refresh();
-            }
-            if (this.categoriesModule && this.categoriesModule.refresh) {
-                await this.categoriesModule.refresh();
-            }
-            
-            // Refresh favorites (will auto-cleanup)
-            if (this.favoritesDataManager && this.favoritesDataManager.refresh) {
-                await this.favoritesDataManager.refresh();
-            }
-            
+            await this.refreshAllManagers();
             return result;
         }
         return null;
     }
 
-    // Getter methods to access the managers if needed
+    async triggerDataPull() {
+        if (this.storage && this.storage.forceRefreshAll) {
+            const result = await this.storage.forceRefreshAll();
+            await this.refreshAllManagers();
+            return result;
+        }
+        return null;
+    }
+
+    // Refresh all managers simultaneously
+    async refreshAllManagers() {
+        const refreshPromises = [];
+        
+        if (this.contractorManager && this.contractorManager.refresh) {
+            refreshPromises.push(this.contractorManager.refresh());
+        }
+        if (this.reviewManager && this.reviewManager.refresh) {
+            refreshPromises.push(this.reviewManager.refresh());
+        }
+        if (this.categoriesModule && this.categoriesModule.refresh) {
+            refreshPromises.push(this.categoriesModule.refresh());
+        }
+        if (this.favoritesDataManager && this.favoritesDataManager.refresh) {
+            refreshPromises.push(this.favoritesDataManager.refresh());
+        }
+        
+        await Promise.allSettled(refreshPromises);
+        console.log('✅ All managers refreshed');
+    }
+
+    // Getter methods
     getStorage() {
         return this.storage;
     }
@@ -368,7 +423,6 @@ export class DataModule {
         return this.statsManager;
     }
 
-    // NEW: Get feedback data manager
     getFeedbackDataManager() {
         return this.feedbackDataManager;
     }
@@ -383,11 +437,12 @@ export class DataModule {
         return southAfricanProvinces;
     }
 
-    // Debug method to check category loading
-    debugCategoryLoading() {
-        console.log('🔍 DataModule Category Debug:');
-        console.log('- Categories from module:', this.categoriesModule?.getCategories());
-        console.log('- Categories from storage:', localStorage.getItem('categories'));
+    // Debug method
+    debugDataLoading() {
+        console.log('🔍 DataModule Debug:');
+        console.log('- Contractors:', this.contractorManager?.getAll().length);
+        console.log('- Categories:', this.categoriesModule?.getCategories().length);
+        console.log('- Reviews:', this.reviewManager?.getAllReviews().length);
         console.log('- Supabase connected:', this.supabaseConnected);
     }
 }
