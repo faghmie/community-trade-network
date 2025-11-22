@@ -1,173 +1,177 @@
-// js/app/views/contractorListView.js
-// ES6 Module for contractor list view management - Self-contained with HTML
+// js/app/views/ContractorListView.js - SIMPLIFIED: Complete card rendering without CardManager
 
-import { CardManager } from '../../modules/cardManager.js';
+import { BaseView } from './BaseView.js';
+import { sanitizeHtml } from '../../modules/utilities.js';
 
-export class ContractorListView {
+export class ContractorListView extends BaseView {
     constructor(dataModule, reviewManager) {
+        super('contractor-list-view');
         this.dataModule = dataModule;
         this.reviewManager = reviewManager;
-        this.cardManager = new CardManager(dataModule, reviewManager);
-        this.container = null;
-        this.viewId = 'contractor-list-view';
         this.contractorsGrid = null;
-        this.resultsCount = null;
-        this.isRendered = false;
+    }
+
+    /**
+     * Simple render method
+     */
+    render() {
+        const mainContainer = document.getElementById('mainViewContainer');
+        if (!mainContainer) return;
+
+        // Create or reuse container
+        if (!this.container) {
+            this.container = document.createElement('section');
+            this.container.id = this.viewId;
+            this.container.className = 'contractor-list-view';
+            mainContainer.appendChild(this.container);
+        }
+
+        this.container.innerHTML = `
+            <div class="contractors-grid" id="contractors-grid">
+                <!-- Contractors will be populated here -->
+            </div>
+        `;
+
+        this.contractorsGrid = document.getElementById('contractors-grid');
+    }
+
+    /**
+     * Render contractors list directly without CardManager
+     */
+    renderContractors(contractors = null) {
+        if (!this.contractorsGrid) return;
+
+        const contractorsToRender = contractors || this.dataModule.getContractors();
+
+        if (!contractorsToRender || contractorsToRender.length === 0) {
+            this.contractorsGrid.innerHTML = this.createEmptyState();
+            return;
+        }
+
+        // Direct card rendering - no abstraction layer
+        this.contractorsGrid.innerHTML = contractorsToRender
+            .map(contractor => this.createContractorCard(contractor))
+            .join('');
         
-        this.initializeEventListeners();
+        this.bindCardEvents();
     }
 
     /**
-     * Initialize event listeners for the contractor list view
+     * Create individual contractor card
      */
-    initializeEventListeners() {
-        // Listen for contractor list updates
-        document.addEventListener('contractorsListUpdate', (event) => {
-            this.renderContractorList(event.detail.contractors);
-        });
+    createContractorCard(contractor) {
+        const approvedReviews = this.reviewManager.getApprovedReviewsByContractor(contractor.id);
+        const displayRating = approvedReviews.length > 0 ? 
+            this.dataModule.calculateAverageRating(approvedReviews) : 0;
+        
+        const ratingValue = typeof displayRating === 'number' ? displayRating : parseFloat(displayRating) || 0;
+        const displayRatingFormatted = !isNaN(ratingValue) ? ratingValue.toFixed(1) : '0.0';
+        const isFavorite = this.dataModule.isFavorite(contractor.id);
+        const serviceAreasDisplay = this.formatServiceAreas(contractor.serviceAreas);
 
-        // Listen for requests to show contractor list view
-        document.addEventListener('showContractorListView', () => {
-            this.show();
-        });
-
-        // Listen for requests to hide contractor list view
-        document.addEventListener('hideContractorListView', () => {
-            this.hide();
-        });
-
-        // Listen for category type selection to show contractors
-        document.addEventListener('showContractorsForCategoryType', (event) => {
-            this.showContractorsByCategoryType(event.detail.type, event.detail.categories);
-        });
-
-        // Listen for favorites updates to refresh card states
-        document.addEventListener('favoritesUpdated', () => {
-            this.refreshFavoriteButtons();
-        });
-
-        // Listen for app initialization to ensure view is ready
-        document.addEventListener('appInitialized', () => {
-            if (!this.isRendered) {
-                this.render();
-            }
-        });
-
-        // Listen for initialization event
-        document.addEventListener('initializeContractorListView', () => {
-            if (!this.isRendered) {
-                this.render();
-            }
-        });
-    }
-
-    /**
-     * Create the contractor list view HTML structure
-     */
-    createViewHTML() {
         return `
-            <section class="contractor-list-view" id="${this.viewId}">
-                <div class="contractors-grid" id="contractors-grid">
-                    <!-- Contractors will be populated dynamically -->
+            <div class="card contractor-card material-card" 
+                 data-contractor-id="${sanitizeHtml(contractor.id)}"
+                 onclick="document.dispatchEvent(new CustomEvent('showContractorDetails', { detail: { contractorId: '${sanitizeHtml(contractor.id)}' } }))">
+                <div class="card-content">
+                    <button class="favorite-btn ${isFavorite ? 'favorited' : ''}" 
+                            data-contractor-id="${sanitizeHtml(contractor.id)}"
+                            onclick="document.dispatchEvent(new CustomEvent('toggleFavorite', { detail: { contractorId: '${sanitizeHtml(contractor.id)}' } })); event.stopPropagation();"
+                            title="${isFavorite ? 'Remove from favorites' : 'Add to favorites'}">
+                        <i class="material-icons">${isFavorite ? 'favorite' : 'favorite_border'}</i>
+                    </button>
+                    
+                    <h3 class="contractor-name">${sanitizeHtml(contractor.name)}</h3>
+                    
+                    <div class="contractor-meta">
+                        <p class="contractor-category">
+                            <i class="material-icons">category</i>
+                            ${sanitizeHtml(contractor.category)}
+                        </p>
+                        <p class="contractor-location">
+                            <i class="material-icons">location_on</i>
+                            ${sanitizeHtml(contractor.location || 'Location not specified')}
+                        </p>
+                    </div>
+                    
+                    <div class="rating-display">
+                        <div class="rating-icon">
+                            <i class="material-icons">star</i>
+                        </div>
+                        <span class="rating-value">${displayRatingFormatted}</span>
+                        <span class="review-count">${approvedReviews.length} review${approvedReviews.length !== 1 ? 's' : ''}</span>
+                    </div>
+
+                    <div class="contractor-details">
+                        <p class="service-areas">
+                            <i class="material-icons">map</i>
+                            ${serviceAreasDisplay}
+                        </p>
+                    </div>
                 </div>
-            </section>
+            </div>
         `;
     }
 
     /**
-     * Render the contractor list view
+     * Format service areas array for display
      */
-    render() {
-        console.log('🔄 ContractorListView rendering...');
-        
-        const mainContainer = document.getElementById('mainViewContainer');
-        if (!mainContainer) {
-            console.error('Main view container not found');
-            return;
-        }
-
-        // Check if view already exists in DOM (prevent duplicates)
-        const existingView = document.getElementById(this.viewId);
-        if (existingView) {
-            console.log('✅ ContractorListView already exists in DOM, reusing');
-            this.container = existingView;
-            this.contractorsGrid = document.getElementById('contractors-grid');
-            this.resultsCount = document.getElementById('contractor-results-count');
-            this.isRendered = true;
-            return;
-        }
-
-        // Only create the view if it doesn't exist
-        if (!this.container) {
-            // Create and insert the view HTML
-            mainContainer.insertAdjacentHTML('beforeend', this.createViewHTML());
-            this.container = document.getElementById(this.viewId);
-            this.contractorsGrid = document.getElementById('contractors-grid');
-            this.resultsCount = document.getElementById('contractor-results-count');
+    formatServiceAreas(serviceAreas) {
+        if (!serviceAreas || serviceAreas.length === 0) {
+            return 'Service areas not specified';
         }
         
-        this.isRendered = true;
+        if (serviceAreas.length <= 2) {
+            return `Serves: ${serviceAreas.join(', ')}`;
+        }
         
-        // Initially hide the view
-        this.hide();
-        
-        // Dispatch event that view is ready
-        document.dispatchEvent(new CustomEvent('contractorListViewRendered'));
-        
-        console.log('✅ ContractorListView rendered successfully');
+        // For more than 2 areas, show first 2 + count of others
+        const primaryAreas = serviceAreas.slice(0, 2).join(', ');
+        const additionalCount = serviceAreas.length - 2;
+        return `Serves: ${primaryAreas} +${additionalCount} more`;
     }
 
     /**
-     * Render the contractor list (main functionality moved from UIManager)
+     * Create empty state for no results
      */
-    renderContractorList(contractorsToRender = null) {
-        // Ensure view is rendered before trying to render contractors
-        if (!this.isRendered) {
-            this.render();
-        }
-
-        if (!this.contractorsGrid) {
-            console.warn('Contractors grid not found - view may not be initialized');
-            return;
-        }
-
-        const contractors = contractorsToRender || this.dataModule.getContractors();
-
-        if (!contractors || contractors.length === 0) {
-            this.contractorsGrid.innerHTML = this.cardManager.createEmptyState();
-            this.updateResultsCount(0);
-            return;
-        }
-
-        // Use CardManager to render the contractor cards
-        this.cardManager.renderContractorCards(contractors, this.contractorsGrid);
-        this.updateResultsCount(contractors.length);
-        
-        // Dispatch event that rendering is complete
-        document.dispatchEvent(new CustomEvent('contractorListRendered', {
-            detail: {
-                contractorCount: contractors.length,
-                timestamp: new Date().toISOString()
-            }
-        }));
+    createEmptyState(message = 'No contractors found') {
+        return `
+            <div class="no-results">
+                <i class="material-icons">search_off</i>
+                <h3>${sanitizeHtml(message)}</h3>
+                <p>Try adjusting your search criteria or filters</p>
+            </div>
+        `;
     }
 
     /**
-     * Update the results count display
+     * Create favorites empty state
      */
-    updateResultsCount(count) {
-        if (this.resultsCount) {
-            this.resultsCount.textContent = `${count} contractor${count !== 1 ? 's' : ''} found`;
-        }
+    createFavoritesEmptyState() {
+        return `
+            <div class="no-favorites">
+                <i class="material-icons">favorite_border</i>
+                <h3>No favorites yet</h3>
+                <p>Click the heart icon on contractor cards to add them to your favorites!</p>
+            </div>
+        `;
     }
 
     /**
-     * Refresh favorite buttons (moved from UIManager)
+     * Bind card events (if needed for additional functionality)
      */
-    refreshFavoriteButtons() {
-        const favoriteButtons = document.querySelectorAll('.favorite-btn');
+    bindCardEvents() {
+        // Event binding is handled via inline onclick handlers in the card HTML
+        // This method can be used for any additional event binding needed
+    }
+
+    /**
+     * Refresh favorite buttons
+     */
+    refreshFavorites() {
+        const favoriteButtons = this.container?.querySelectorAll('.favorite-btn');
         
-        favoriteButtons.forEach(button => {
+        favoriteButtons?.forEach(button => {
             const contractorId = button.getAttribute('data-contractor-id');
             if (contractorId) {
                 const isFav = this.dataModule.isFavorite(contractorId);
@@ -175,13 +179,9 @@ export class ContractorListView {
                 
                 if (isFav) {
                     button.classList.add('favorited');
-                    button.setAttribute('aria-pressed', 'true');
-                    button.title = 'Remove from favorites';
                     if (icon) icon.textContent = 'favorite';
                 } else {
                     button.classList.remove('favorited');
-                    button.setAttribute('aria-pressed', 'false');
-                    button.title = 'Add to favorites';
                     if (icon) icon.textContent = 'favorite_border';
                 }
             }
@@ -189,97 +189,42 @@ export class ContractorListView {
     }
 
     /**
+     * Show favorites only
+     */
+    showFavorites() {
+        const allContractors = this.dataModule.getContractors();
+        const favoriteContractors = allContractors.filter(contractor => 
+            this.dataModule.isFavorite(contractor.id)
+        );
+
+        if (favoriteContractors.length === 0) {
+            this.contractorsGrid.innerHTML = this.createFavoritesEmptyState();
+        } else {
+            this.renderContractors(favoriteContractors);
+        }
+    }
+
+    /**
      * Show contractors by category
      */
     showContractorsByCategory(category) {
-        // Dispatch event to filter manager to filter by category
-        document.dispatchEvent(new CustomEvent('filterByCategory', {
-            detail: { category }
-        }));
-        this.show();
+        const allContractors = this.dataModule.getContractors();
+        const filteredContractors = allContractors.filter(contractor => 
+            contractor.category === category
+        );
+        this.renderContractors(filteredContractors);
     }
 
     /**
-     * Show contractors by category type
+     * Show contractors by search term
      */
-    showContractorsByCategoryType(type, categories) {
-        console.log(`🎯 Showing contractors for category type: ${type}`);
-        
-        // Dispatch event to filter manager to filter by category type
-        document.dispatchEvent(new CustomEvent('filterByCategoryType', {
-            detail: { 
-                type: type,
-                categories: categories,
-                categoryNames: categories.map(cat => cat.name)
-            }
-        }));
-        
-        this.show();
-    }
-
-    /**
-     * Show the contractor list view
-     */
-    show() {
-        console.log('🔄 ContractorListView showing...');
-        
-        if (!this.isRendered) {
-            console.log('📦 ContractorListView not rendered, rendering first...');
-            this.render();
-        }
-
-        if (this.container) {
-            this.container.style.display = 'block';
-            console.log('✅ ContractorListView display set to block');
-        } else {
-            console.error('❌ ContractorListView container not found');
-        }
-        
-        // Dispatch event that view is now visible
-        document.dispatchEvent(new CustomEvent('contractorListViewShown'));
-        
-        console.log('✅ ContractorListView shown successfully');
-    }
-
-    /**
-     * Hide the contractor list view
-     */
-    hide() {
-        console.log('🔄 ContractorListView hiding...');
-        
-        if (this.container) {
-            this.container.style.display = 'none';
-            console.log('✅ ContractorListView display set to none');
-        }
-        
-        // Dispatch event that view is now hidden
-        document.dispatchEvent(new CustomEvent('contractorListViewHidden'));
-        
-        console.log('✅ ContractorListView hidden successfully');
-    }
-
-    /**
-     * Clean up the view
-     */
-    destroy() {
-        // Remove any duplicate views
-        const allViews = document.querySelectorAll(`#${this.viewId}`);
-        if (allViews.length > 1) {
-            console.warn(`⚠️ Found ${allViews.length} contractor list views, removing duplicates`);
-            // Keep the first one, remove the rest
-            for (let i = 1; i < allViews.length; i++) {
-                allViews[i].remove();
-            }
-        }
-        
-        if (this.container) {
-            this.container.remove();
-            this.container = null;
-        }
-        this.contractorsGrid = null;
-        this.resultsCount = null;
-        this.isRendered = false;
-        
-        console.log('🧹 ContractorListView destroyed');
+    showContractorsBySearch(searchTerm) {
+        const allContractors = this.dataModule.getContractors();
+        const filteredContractors = allContractors.filter(contractor => 
+            contractor.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            contractor.category.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            (contractor.description && contractor.description.toLowerCase().includes(searchTerm.toLowerCase()))
+        );
+        this.renderContractors(filteredContractors);
     }
 }

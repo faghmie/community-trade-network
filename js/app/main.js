@@ -1,60 +1,52 @@
-// js/app/main.js - FIXED: Ensure initial view is shown properly
+// js/app/main.js - SIMPLIFIED: Complete with favorites fixes
 
 import { showNotification } from '../modules/notifications.js';
-import { CardManager } from '../modules/cardManager.js';
-import { UIManager } from './uiManager.js';
 import { FilterManager } from './filterManager.js';
 import { MapView } from './views/mapView.js';
 import { FeedbackModalManager } from './modals/feedbackModalManager.js';
 import { ContractorEditModalManager } from './modals/contractorEditModalManager.js';
 import { ContractorModalManager } from './modals/contractorModalManager.js';
 import { ReviewModalManager } from './modals/reviewModalManager.js';
-import { CategoriesListView } from './views/categoriesListView.js';
+import { CategoriesView } from './views/CategoriesView.js';
 import { ContractorListView } from './views/contractorListView.js';
 
 export class ContractorReviewApp {
     constructor(dataModule) {
         this.dataModule = dataModule;
-        this.uiManager = null;
+        this.views = {};
+        this.currentView = 'categories';
         this.filterManager = null;
-        this.mapView = null;
-        this.cardManager = null;
+        this.filteredContractors = [];
+        
+        // Keep modal managers for now (they're working fine)
         this.feedbackModalManager = null;
         this.contractorEditModalManager = null;
         this.contractorModalManager = null;
         this.reviewModalManager = null;
-
-        // View managers
-        this.categoriesListView = null;
-        this.contractorListView = null;
-
-        this.currentContractor = null;
-        this.filteredContractors = [];
-        this.currentView = 'categories'; // Show categories by default
-        this.isFavoritesFilterActive = false;
-        this.isViewChanging = false; // Prevent recursive view changes
-        this.isInitialized = false; // NEW: Track if app is fully initialized
+        // No FavoritesManager needed!
     }
 
     async init() {
         try {
-            // Initialize data module first
+            // Initialize data first
             await this.dataModule.init();
 
-            // Create all managers with proper dependency injection
-            await this.createManagers();
+            // Create essential managers
+            await this.createEssentialManagers();
 
-            // Set up cross-manager communication
-            this.setupManagers();
+            // Setup views
+            this.setupViews();
 
-            // Set up global event handlers for HTML compatibility
-            this.setupGlobalHandlers();
+            // Setup event listeners
+            this.setupEventListeners();
 
-            // Initialize views using event-driven pattern
-            this.initializeViews();
+            // Show initial view
+            this.showView('categories');
 
-            // Render initial state - Show categories by default
-            this.renderDashboard();
+            // Update initial favorites badge
+            this.updateFavoritesBadge();
+
+            console.log('✅ App initialized successfully');
 
         } catch (error) {
             console.error('App initialization failed:', error);
@@ -62,27 +54,14 @@ export class ContractorReviewApp {
         }
     }
 
-    async createManagers() {
-        // Create card manager
-        this.cardManager = new CardManager(
-            this.dataModule,
-            this.dataModule.getReviewManager()
-        );
-
+    async createEssentialManagers() {
         // Create filter manager
-        this.filterManager = new FilterManager();
-        await this.filterManager.init(this.dataModule);
+        this.filterManager = new FilterManager(this.dataModule);
+        await this.filterManager.init();
 
-        // Create UI manager
-        this.uiManager = new UIManager(
-            this.cardManager,
-            this.dataModule,
-            this.dataModule.getCategoriesModule(),
-            this.dataModule.getReviewManager()
-        );
-        await this.uiManager.init(this.filterManager);
+        // No FavoritesManager creation needed!
 
-        // Create contractor edit modal manager
+        // Create modal managers
         this.contractorEditModalManager = new ContractorEditModalManager(
             this.dataModule.getContractorManager(),
             this.dataModule.getCategoriesModule(),
@@ -90,22 +69,19 @@ export class ContractorReviewApp {
         );
         this.contractorEditModalManager.init();
 
-        // Create review modal manager
         this.reviewModalManager = new ReviewModalManager(
             this.dataModule,
             this.dataModule.getReviewManager(),
             this.handleReviewSubmit.bind(this)
         );
 
-        // Create contractor modal manager
         this.contractorModalManager = new ContractorModalManager(
             this.dataModule,
             this.dataModule.getReviewManager(),
-            this.cardManager,
             this.reviewModalManager
         );
 
-        // Create map manager
+        // Create map view
         this.mapView = new MapView(this.dataModule);
 
         // Create feedback modal manager
@@ -113,307 +89,216 @@ export class ContractorReviewApp {
         this.feedbackModalManager.init();
     }
 
-    // Initialize view managers using EVENT-DRIVEN pattern
-    initializeViews() {
-        // Create categories list view - it will self-initialize via events
-        this.categoriesListView = new CategoriesListView(this.dataModule);
+    /**
+     * Setup all views with simplified approach
+     */
+    setupViews() {
+        this.views = {
+            categories: new CategoriesView(this.dataModule),
+            contractors: new ContractorListView(this.dataModule, this.dataModule.getReviewManager()),
+            map: this.mapView
+        };
 
-        // Create contractor list view - it will self-initialize via events
-        this.contractorListView = new ContractorListView(
-            this.dataModule,
-            this.dataModule.getReviewManager()
-        );
-
-        // ✅ EVENT-DRIVEN: Dispatch events for views to self-initialize
-        document.dispatchEvent(new CustomEvent('initializeCategoriesView'));
-        document.dispatchEvent(new CustomEvent('initializeContractorListView'));
-
-        console.log('🎯 View initialization events dispatched');
+        // Render all views (they start hidden)
+        Object.values(this.views).forEach(view => view.render());
     }
 
-    setupManagers() {
-        // When filters change, update UI
-        this.filterManager.onFiltersChange((filters, filteredContractors) => {
-            this.filteredContractors = filteredContractors || this.filterManager.applyFilters(filters);
-
-            // Only update contractor list if we're in list view
-            if (this.currentView === 'list') {
-                document.dispatchEvent(new CustomEvent('contractorsListUpdate', {
-                    detail: { contractors: this.filteredContractors }
-                }));
-            }
-
-            // Track if favorites filter is active
-            this.isFavoritesFilterActive = filters.favorites === 'favorites';
-
-            // Update map markers if in map view
-            if (this.currentView === 'map') {
-                this.mapView.updateContractors(this.filteredContractors);
-            }
-
-            // Update stats
-            if (this.uiManager.statsManager) {
-                this.uiManager.statsManager.updateStats(this.filteredContractors);
-            }
+    /**
+     * Simplified event listeners - Direct favorites handling
+     */
+    setupEventListeners() {
+        // Category selection
+        document.addEventListener('categorySelected', (event) => {
+            this.handleCategorySelected(event.detail);
         });
 
-        // Handle favorites updates
-        document.addEventListener('favoritesUpdated', () => {
-            // Only reapply filters if favorites filter is currently active
-            if (this.isFavoritesFilterActive) {
-                this.filterManager.applyCurrentFilters();
-            }
+        // Filter changes
+        document.addEventListener('filtersChanged', (event) => {
+            this.filteredContractors = event.detail.results;
+            this.refreshCurrentView();
         });
 
-        // Handle map marker clicks
-        document.addEventListener('mapMarkerClick', (event) => {
-            this.handleMapMarkerClick(event.detail.contractorId);
+        // FIXED: Direct toggleFavorite handling
+        document.addEventListener('toggleFavorite', async (event) => {
+            await this.handleToggleFavorite(event.detail.contractorId);
         });
 
-        // Listen for view changes from filterManager
-        this.filterManager.onViewChange((view) => {
-            this.currentView = view;
-            this.handleViewChange();
-        });
-
-        // NEW: Listen for navigation events from bottom navigation
+        // Navigation from bottom nav
         document.addEventListener('navigationViewChange', (event) => {
             this.handleNavigationViewChange(event.detail.view);
         });
 
-        // Listen for data updates
-        document.addEventListener('contractorsUpdated', () => {
-            this.renderDashboard();
+        // Map marker clicks
+        document.addEventListener('mapMarkerClick', (event) => {
+            this.handleMapMarkerClick(event.detail.contractorId);
         });
 
-        document.addEventListener('reviewsUpdated', () => {
-            // Stats are handled by StatsManager via UIManager
-        });
-
-        // Listen for map initialization events
-        document.addEventListener('mapInitialized', () => {
-            if (this.currentView === 'map') {
-                this.handleViewChange();
-            }
-        });
-
-        // Listen for feedback submission events
-        this.feedbackModalManager.on('onSubmit', (feedbackData) => {
-            // Analytics tracking can be added here
-        });
-
-        this.feedbackModalManager.on('onClose', () => {
-            // Handle feedback modal close if needed
-        });
-
-        // Listen for contractor creation events for post-creation handling
+        // Contractor creation
         document.addEventListener('contractorCreated', (event) => {
             this.handleContractorCreated(event.detail);
         });
-
-        // Handle category selection to show contractors
-        document.addEventListener('categorySelected', (event) => {
-            this.handleCategorySelected(event.detail.category);
-        });
-
-        // Handle category type selection to show contractors
-        document.addEventListener('showContractorsForCategoryType', (event) => {
-            this.handleCategoryTypeSelected(event.detail.type, event.detail.categories);
-        });
-
-        // FIXED: Use different event names to prevent recursion
-        // These are "command" events that trigger view changes
-        document.addEventListener('requestShowCategoriesView', () => {
-            if (this.currentView !== 'categories' && !this.isViewChanging) {
-                this.currentView = 'categories';
-                this.handleViewChange();
-            }
-        });
-
-        document.addEventListener('requestShowContractorListView', () => {
-            if (this.currentView !== 'list' && !this.isViewChanging) {
-                this.currentView = 'list';
-                this.handleViewChange();
-            }
-        });
-
-        // NEW: Listen for view initialization completion to show initial view
-        document.addEventListener('categoriesViewRendered', () => {
-            console.log('✅ Categories view rendered successfully');
-            // Show categories view after it's fully rendered
-            if (!this.isInitialized) {
-                this.showInitialView();
-            }
-        });
-
-        document.addEventListener('contractorListViewRendered', () => {
-            console.log('✅ Contractor list view rendered successfully');
-        });
-
-        // Listen for view visibility notifications (these don't trigger changes)
-        document.addEventListener('categoriesListViewShown', () => {
-            console.log('📢 Categories list view is now visible');
-        });
-
-        document.addEventListener('categoriesListViewHidden', () => {
-            console.log('📢 Categories list view is now hidden');
-        });
-
-        document.addEventListener('contractorListViewShown', () => {
-            console.log('📢 Contractor list view is now visible');
-        });
-
-        document.addEventListener('contractorListViewHidden', () => {
-            console.log('📢 Contractor list view is now hidden');
-        });
     }
 
-    // NEW: Show initial view after everything is initialized
-    showInitialView() {
-        console.log('🚀 Showing initial categories view');
-        this.isInitialized = true;
-
-        // FIXED: For initial view, directly set the current view and call handleViewChange
-        // This ensures the categories view is shown immediately
-        this.currentView = 'categories';
-        this.handleViewChange();
+    /**
+     * Handle toggle favorite - SIMPLIFIED: Direct handling
+     */
+    async handleToggleFavorite(contractorId) {
+        try {
+            // Direct data operation - no intermediate manager
+            const success = await this.dataModule.toggleFavorite(contractorId);
+            
+            if (success) {
+                // Get contractor info for notification
+                const contractor = this.dataModule.getContractor(contractorId);
+                const isFavorite = this.dataModule.isFavorite(contractorId);
+                
+                // Show notification
+                const action = isFavorite ? 'added to' : 'removed from';
+                showNotification(`${contractor?.name || 'Contractor'} ${action} favorites!`, 'success');
+                
+                // Update UI directly - no event dispatch needed
+                this.updateFavoritesBadge();
+                
+                // Refresh favorites in current view if needed
+                if (this.currentView === 'contractors') {
+                    this.views.contractors.refreshFavorites();
+                }
+                
+                return true;
+            }
+        } catch (error) {
+            console.error('Error toggling favorite:', error);
+            showNotification('Error updating favorites', 'error');
+        }
+        return false;
     }
 
-    // NEW: Handle navigation view changes from bottom navigation
+    /**
+     * Update favorites badge on bottom navigation
+     */
+    updateFavoritesBadge() {
+        const favoritesCount = this.dataModule.getFavoritesCount();
+        const favoritesNavItem = document.querySelector('[data-view="favorites"]');
+        let badge = favoritesNavItem?.querySelector('.bottom-nav-badge');
+
+        if (favoritesCount > 0) {
+            if (!badge) {
+                badge = document.createElement('span');
+                badge.className = 'bottom-nav-badge favorites-badge';
+                favoritesNavItem.appendChild(badge);
+            }
+            badge.textContent = favoritesCount;
+            badge.classList.remove('hidden');
+        } else if (badge) {
+            badge.classList.add('hidden');
+        }
+    }
+
+    /**
+     * Simple view management - show one view, hide others
+     */
+    showView(viewName) {
+        // Hide all views
+        Object.values(this.views).forEach(view => view.hide());
+        
+        // Show the requested view
+        if (this.views[viewName]) {
+            this.views[viewName].show();
+            this.currentView = viewName;
+            this.refreshCurrentView();
+        }
+    }
+
+    /**
+     * Refresh current view with latest data
+     */
+    refreshCurrentView() {
+        switch (this.currentView) {
+            case 'categories':
+                this.views.categories.renderCategories();
+                break;
+            case 'contractors':
+                this.views.contractors.renderContractors(this.filteredContractors);
+                break;
+            case 'map':
+                this.views.map.updateContractors(this.filteredContractors);
+                break;
+        }
+    }
+
+    /**
+     * Handle category selection
+     */
+    handleCategorySelected(detail) {
+        // Switch to contractors view
+        this.showView('contractors');
+        
+        // Apply category filter
+        document.dispatchEvent(new CustomEvent('filterByCategoryType', {
+            detail: detail
+        }));
+
+        showNotification(`Showing contractors in ${detail.type}`, 'info');
+    }
+
+    /**
+     * Handle navigation from bottom nav
+     */
     handleNavigationViewChange(view) {
-        console.log(`🎯 Handling navigation view change: ${view}`);
-
+        console.log(`🎯 Handling navigation: ${view}`);
+        
         switch (view) {
             case 'home':
-                // Home shows categories view
-                this.currentView = 'categories';
+                this.showView('categories');
                 this.filterManager.clearFilters();
                 break;
             case 'favorites':
-                // Favorites shows contractor list with favorites filter
-                this.currentView = 'list';
+                this.showView('contractors');
                 this.filterManager.applyFavoritesFilter();
                 break;
             case 'map':
-                // Map shows map view
-                this.currentView = 'map';
+                this.showView('map');
                 break;
             case 'search':
-                // Search shows filter panel but doesn't change main view
-                // The main view remains whatever it was before
-                // FilterManager handles the panel visibility
+                // Filter panel handled by FilterManager
                 break;
             default:
                 console.warn('Unknown navigation view:', view);
-                return;
         }
-
-        this.handleViewChange();
     }
 
-    setupGlobalHandlers() {
-        // Make app instance and managers available globally for HTML onclick handlers
-        window.contractorApp = this;
-        window.app = this;
-        window.cardManager = this.cardManager;
-        window.dataModule = this.dataModule;
-        window.mapManager = this.mapView;
-        window.feedbackModalManager = this.feedbackModalManager;
-        window.contractorEditModalManager = this.contractorEditModalManager;
-        window.contractorModalManager = this.contractorModalManager;
-        window.reviewModalManager = this.reviewModalManager;
-
-        // Make app methods available globally for HTML onclick handlers
-        window.toggleFavorite = (contractorId) => this.toggleFavorite(contractorId);
-        window.showContractorDetails = (contractorId) => this.showContractorDetails(contractorId);
-        window.showReviewForm = (contractorId) => this.showReviewForm(contractorId);
-        window.showFeedbackForm = () => this.showFeedbackForm();
-        window.searchContractors = () => this.searchContractors();
-        window.filterContractors = () => this.filterContractors();
-        window.sortContractors = () => this.sortContractors();
-        window.clearFilters = () => this.clearFilters();
-        window.showFavoritesOnly = () => this.showFavoritesOnly();
-        window.showHighRated = () => this.showHighRated();
-        window.resetToDefault = () => this.resetToDefault();
-        window.handleSearchKeyPress = (event) => this.handleSearchKeyPress(event);
-        window.exportData = () => this.exportData();
-        window.closeModal = (modalId) => this.closeModal(modalId);
-        window.showMapView = () => this.showMapView();
-        window.showListView = () => this.showListView();
-        window.refreshMap = () => this.refreshMap();
-        window.addNewSupplier = () => this.addNewSupplier();
-
-        // Navigation methods for views - use the new event names
-        window.showCategories = () => {
-            document.dispatchEvent(new CustomEvent('requestShowCategoriesView'));
-        };
-        window.showContractorList = () => {
-            document.dispatchEvent(new CustomEvent('requestShowContractorListView'));
-        };
-    }
-
-    // Show categories view - use the new event name
-    showCategoriesView() {
-        document.dispatchEvent(new CustomEvent('requestShowCategoriesView'));
-    }
-
-    // Show contractor list view - use the new event name
-    showContractorListView() {
-        document.dispatchEvent(new CustomEvent('requestShowContractorListView'));
-    }
-
-    // Update the handleCategoryTypeSelected method to properly switch views
     /**
-     * Handle category type selection - show contractors for the selected type
-     * @param {string} type - The category type name
-     * @param {Category[]} categories - Array of categories within this type
+     * Handle map marker clicks
      */
-    handleCategoryTypeSelected(type, categories) {
-        console.log(`🎯 Handling category type selection: ${type} with ${categories.length} categories`);
-
-        // Switch to list view first (this will hide categories view)
-        this.currentView = 'list';
-        this.handleViewChange();
-
-        // Get all category names for this type to use in filtering
-        const categoryNames = categories.map(cat => cat.name);
-
-        console.log(`🔍 Filtering contractors for categories:`, categoryNames);
-
-        // Dispatch event to filter by category type
-        document.dispatchEvent(new CustomEvent('filterByCategoryType', {
-            detail: {
-                type: type,
-                categories: categories,
-                categoryNames: categoryNames
-            }
+    handleMapMarkerClick(contractorId) {
+        document.dispatchEvent(new CustomEvent('showContractorDetails', {
+            detail: { contractorId }
         }));
-
-        // Show notification about the filter
-        showNotification(`Showing contractors in ${type}`, 'info');
     }
 
-    // Handle contractor creation success
+    /**
+     * Handle contractor creation
+     */
     handleContractorCreated(contractorData) {
         const { contractor, wasCreated } = contractorData;
 
         if (wasCreated && contractor) {
             showNotification(`Successfully added ${contractor.name} to the directory!`, 'success');
 
-            // Clear filters to show all contractors including the new one
+            // Clear filters and show all contractors including the new one
             this.filterManager.clearFilters();
+            this.showView('contractors');
 
-            // Switch to contractor list view to show the new contractor
-            this.showContractorListView();
-
-            // Auto-scroll to the new contractor in the list
+            // Auto-scroll to the new contractor
             setTimeout(() => {
                 this.highlightNewContractor(contractor.id);
             }, 500);
         }
     }
 
-    // Highlight newly added contractor in the list
+    /**
+     * Highlight newly added contractor
+     */
     highlightNewContractor(contractorId) {
         const contractorCard = document.querySelector(`[data-contractor-id="${contractorId}"]`);
         if (contractorCard) {
@@ -429,95 +314,29 @@ export class ContractorReviewApp {
         }
     }
 
-    // Public method for adding new suppliers
-    addNewSupplier(prefillData = {}) {
-        document.dispatchEvent(new CustomEvent('addSupplierRequested', {
-            detail: {
-                prefillData: prefillData,
-                source: 'globalMethod',
-                timestamp: new Date().toISOString()
-            }
-        }));
+    /**
+     * Public API methods for HTML compatibility
+     */
+    showCategoriesView() {
+        this.showView('categories');
     }
 
-    // FIXED: Proper event-driven view change without recursion
-    handleViewChange() {
-        // Prevent recursive view changes
-        if (this.isViewChanging) {
-            console.log('⏸️ View change already in progress, skipping...');
-            return;
-        }
-
-        this.isViewChanging = true;
-
-        const mapContainer = document.getElementById('map-container');
-
-        console.log(`🔄 Switching to view: ${this.currentView}`);
-
-        // FIXED: Use command events instead of direct DOM manipulation
-        // First, hide all views to ensure clean state
-        document.dispatchEvent(new CustomEvent('hideCategoriesView'));
-        document.dispatchEvent(new CustomEvent('hideContractorListView'));
-        document.dispatchEvent(new CustomEvent('hideMapView'));
-
-        // Then, show only the current view
-        if (this.currentView === 'map') {
-            // Show map view only
-            document.dispatchEvent(new CustomEvent('showMapView'));
-
-            // Update map with current filtered contractors
-            const contractorsToShow = this.filteredContractors.length > 0 ?
-                this.filteredContractors :
-                this.dataModule.getContractors();
-            this.mapView.updateContractors(contractorsToShow);
-
-        } else if (this.currentView === 'list') {
-            // Show contractor list view only
-            document.dispatchEvent(new CustomEvent('showContractorListView'));
-
-            // Update contractor list with current filtered contractors
-            document.dispatchEvent(new CustomEvent('contractorsListUpdate', {
-                detail: { contractors: this.filteredContractors }
-            }));
-
-        } else if (this.currentView === 'categories') {
-            // Show categories view only
-            document.dispatchEvent(new CustomEvent('showCategoriesView'));
-        }
-
-        console.log(`✅ View switched to: ${this.currentView}`);
-
-        // Reset the flag after the view change is complete
-        setTimeout(() => {
-            this.isViewChanging = false;
-        }, 50);
+    showContractorListView() {
+        this.showView('contractors');
     }
 
-    handleMapMarkerClick(contractorId) {
-        document.dispatchEvent(new CustomEvent('showContractorDetails', {
-            detail: { contractorId }
-        }));
+    showMapView() {
+        this.showView('map');
     }
 
-    renderDashboard() {
-        this.filterManager.refreshAllFilters();
-
-        // Initialize map data but don't show it unless in map view
-        const contractors = this.dataModule.getContractors();
-        this.mapView.updateContractors(contractors);
-
-        // Dispatch app initialized event for views
-        document.dispatchEvent(new CustomEvent('appInitialized'));
-
-        // NOTE: We don't call showCategoriesView() here anymore
-        // It will be called automatically when categories view is rendered
-        console.log('📊 Dashboard rendered - waiting for view initialization...');
+    showListView() {
+        this.showView('contractors');
     }
 
-    // Handle review submission via events
+    // Review submission
     handleReviewSubmit(reviewData) {
-        const contractorId = reviewData.contractorId || this.currentContractor;
-
+        const contractorId = reviewData.contractorId;
+        
         if (!contractorId) {
             console.error('No contractor ID available for review submission');
             showNotification('Error: Could not submit review. Please try again.', 'error');
@@ -527,52 +346,39 @@ export class ContractorReviewApp {
         const review = this.dataModule.addReview(contractorId, reviewData);
         if (review) {
             document.dispatchEvent(new CustomEvent('closeReviewModal'));
-            this.renderDashboard();
             showNotification('Review submitted successfully!', 'success');
         } else {
             showNotification('Error submitting review. Please try again.', 'error');
         }
     }
 
-    // Show feedback form
-    showFeedbackForm(context = {}) {
-        if (!this.feedbackModalManager) {
-            console.error('FeedbackModalManager not initialized');
-            showNotification('Feedback system not available. Please refresh the page.', 'error');
-            return;
-        }
+    // Favorites management - now simplified direct methods
+    async toggleFavorite(contractorId) {
+        return this.handleToggleFavorite(contractorId);
+    }
 
+    // Filter methods
+    searchContractors = () => this.filterManager.applyCurrentFilters();
+    filterContractors = () => this.filterManager.applyCurrentFilters();
+    clearFilters = () => this.filterManager.clearFilters();
+    showFavoritesOnly = () => this.filterManager.applyFavoritesFilter();
+    showHighRated = () => this.filterManager.applyHighRatedFilter();
+    resetToDefault = () => this.filterManager.resetToDefault();
+
+    sortContractors() {
+        const sortedContractors = this.filterManager.applySorting();
+        if (this.currentView === 'contractors') {
+            this.views.contractors.renderContractors(sortedContractors);
+        } else if (this.currentView === 'map') {
+            this.views.map.updateContractors(sortedContractors);
+        }
+    }
+
+    // Modal management
+    showFeedbackForm(context = {}) {
         this.feedbackModalManager.open(context);
     }
 
-    // Favorites management
-    async toggleFavorite(contractorId) {
-        if (!this.dataModule || !this.uiManager?.favoritesManager) {
-            console.error('DataModule or FavoritesManager not initialized');
-            return false;
-        }
-
-        return await this.uiManager.favoritesManager.toggleFavorite(contractorId);
-    }
-
-    // Map view management
-    showMapView() {
-        this.currentView = 'map';
-        this.handleViewChange();
-    }
-
-    showListView() {
-        this.currentView = 'list';
-        this.handleViewChange();
-    }
-
-    refreshMap() {
-        if (this.mapView) {
-            this.mapView.refreshMap();
-        }
-    }
-
-    // Public API for HTML onclick handlers
     showContractorDetails = (contractorId) => {
         document.dispatchEvent(new CustomEvent('showContractorDetails', {
             detail: { contractorId }
@@ -585,40 +391,6 @@ export class ContractorReviewApp {
         }));
     };
 
-    searchContractors = () => this.filterManager.applyCurrentFilters();
-    filterContractors = () => this.filterManager.applyCurrentFilters();
-
-    sortContractors() {
-        const sortedContractors = this.filterManager.applySorting();
-        document.dispatchEvent(new CustomEvent('contractorsListUpdate', {
-            detail: { contractors: sortedContractors }
-        }));
-
-        if (this.currentView === 'map') {
-            this.mapView.updateContractors(sortedContractors);
-        }
-    }
-
-    // Filter methods
-    clearFilters = () => this.filterManager.clearFilters();
-    showFavoritesOnly = () => {
-        this.isFavoritesFilterActive = true;
-        if (this.uiManager.favoritesManager) {
-            this.uiManager.favoritesManager.showFavoritesOnly();
-        }
-    };
-    showHighRated = () => {
-        this.isFavoritesFilterActive = false;
-        if (this.uiManager.favoritesManager) {
-            this.uiManager.favoritesManager.showHighRated();
-        }
-    };
-    resetToDefault = () => {
-        this.isFavoritesFilterActive = false;
-        this.filterManager.resetToDefault();
-    };
-
-    // HTML compatibility methods
     closeModal(modalId) {
         switch (modalId) {
             case 'reviewModal':
@@ -636,9 +408,25 @@ export class ContractorReviewApp {
         }
     }
 
+    // Utility methods
+    refreshMap() {
+        if (this.mapView) {
+            this.mapView.refreshMap();
+        }
+    }
+
+    addNewSupplier(prefillData = {}) {
+        document.dispatchEvent(new CustomEvent('addSupplierRequested', {
+            detail: {
+                prefillData: prefillData,
+                source: 'globalMethod',
+                timestamp: new Date().toISOString()
+            }
+        }));
+    }
+
     handleSearchKeyPress = (event) => event.key === 'Enter' && this.searchContractors();
 
-    // Export data functionality
     exportData() {
         const contractors = this.dataModule.getContractors();
         const reviews = this.dataModule.getAllReviews();
@@ -664,7 +452,43 @@ export class ContractorReviewApp {
 
         showNotification('Data exported successfully!', 'success');
     }
+
+    /**
+     * Setup global handlers for HTML compatibility
+     */
+    setupGlobalHandlers() {
+        window.contractorApp = this;
+        window.app = this;
+        window.dataModule = this.dataModule;
+        window.mapManager = this.mapView;
+        window.feedbackModalManager = this.feedbackModalManager;
+        window.contractorEditModalManager = this.contractorEditModalManager;
+        window.contractorModalManager = this.contractorModalManager;
+        window.reviewModalManager = this.reviewModalManager;
+
+        // Global methods
+        window.toggleFavorite = (contractorId) => this.toggleFavorite(contractorId);
+        window.showContractorDetails = (contractorId) => this.showContractorDetails(contractorId);
+        window.showReviewForm = (contractorId) => this.showReviewForm(contractorId);
+        window.showFeedbackForm = () => this.showFeedbackForm();
+        window.searchContractors = () => this.searchContractors();
+        window.filterContractors = () => this.filterContractors();
+        window.sortContractors = () => this.sortContractors();
+        window.clearFilters = () => this.clearFilters();
+        window.showFavoritesOnly = () => this.showFavoritesOnly();
+        window.showHighRated = () => this.showHighRated();
+        window.resetToDefault = () => this.resetToDefault();
+        window.handleSearchKeyPress = (event) => this.handleSearchKeyPress(event);
+        window.exportData = () => this.exportData();
+        window.closeModal = (modalId) => this.closeModal(modalId);
+        window.showMapView = () => this.showMapView();
+        window.showListView = () => this.showListView();
+        window.refreshMap = () => this.refreshMap();
+        window.addNewSupplier = () => this.addNewSupplier();
+        window.showCategories = () => this.showCategoriesView();
+        window.showContractorList = () => this.showContractorListView();
+    }
 }
 
-// Make app available globally for HTML onclick handlers
+// Make available globally
 window.ContractorReviewApp = ContractorReviewApp;

@@ -1,48 +1,25 @@
-// js/app/filterManager.js - FIXED: Removed view visibility handling, pure filtering only
+// js/app/filterManager.js - SIMPLIFIED: Reduced complexity while maintaining functionality
 
 export class FilterManager {
-    constructor() {
-        this.elements = {};
-        this.eventHandlers = {
-            onFiltersChange: null,
-            onViewChange: null
-        };
-        this.currentFilters = {};
-        this.isAdvancedFiltersVisible = true;
-        this.isFilterPanelVisible = false;
-        this.dataModule = null;
-        this.categoriesModule = null;
-        this.lastSearchResults = [];
-    }
-
-    async init(dataModule) {
+    constructor(dataModule) {
         this.dataModule = dataModule;
-        this.categoriesModule = this.dataModule.getCategoriesModule();
-        this.cacheElements();
-        this.bindEvents();
-        this.updateFilterCount();
-        this.updateClearButton();
-        this.updateFilterIndicator();
-
-        // Initialize filter panel as hidden
-        this.hideFilterPanel();
-
-        // Initialize all filter options
-        this.refreshAllFilters();
-
-        // Set initial filters to empty
         this.currentFilters = {
-            searchTerm: '',
+            search: '',
             category: '',
-            categoryType: '', // NEW: Track category type filtering
             location: '',
-            rating: '',
-            favorites: '', // Programmatic filter - no form element
+            minRating: 0,
+            favoritesOnly: false,
+            categoryType: '',
             sortBy: 'name'
         };
+        this.lastResults = [];
+    }
 
-        // Apply initial filters to show all contractors
+    async init() {
+        this.cacheElements();
+        this.bindEvents();
         this.applyCurrentFilters();
+        return this;
     }
 
     cacheElements() {
@@ -52,241 +29,111 @@ export class FilterManager {
             locationFilter: document.getElementById('locationFilter'),
             ratingFilter: document.getElementById('ratingFilter'),
             sortBy: document.getElementById('sortBy'),
-            toggleFiltersBtn: document.getElementById('toggleFiltersBtn'),
-            advancedFilters: document.getElementById('advancedFilters'),
-            activeFilterCount: document.getElementById('activeFilterCount'),
             clearFiltersBtn: document.querySelector('[data-action="clear-filters"]'),
-            viewToggle: document.getElementById('view-toggle'),
-            viewToggleBtns: document.querySelectorAll('#view-toggle .btn'),
-            expansionIcon: document.querySelector('.expansion-icon'),
-            expansionHeader: document.querySelector('.expansion-header'),
-            // FIXED: Use correct element ID 'filtersSheet' instead of 'filtersPanel'
+            applyFiltersBtn: document.querySelector('[data-action="apply-filters"]'),
             filtersPanel: document.getElementById('filtersSheet'),
             closeFiltersPanel: document.getElementById('closeFiltersPanel'),
-            // Bottom navigation elements
-            bottomNavItems: document.querySelectorAll('.bottom-nav-item'),
-            // NEW: Empty state container for "Add Supplier" button
-            emptyStateContainer: document.getElementById('emptyStateContainer')
+            emptyStateContainer: this.getOrCreateEmptyState(),
+            bottomNavItems: document.querySelectorAll('.bottom-nav-item')
         };
-
-        // Hide toggle button and expansion header
-        if (this.elements.toggleFiltersBtn) {
-            this.elements.toggleFiltersBtn.style.display = 'none';
-        }
-        if (this.elements.expansionHeader) {
-            this.elements.expansionHeader.style.display = 'none';
-        }
-
-        if (this.elements.advancedFilters) {
-            this.elements.advancedFilters.classList.remove('hidden');
-        }
-
-        // NEW: Create empty state container if it doesn't exist
-        if (!this.elements.emptyStateContainer) {
-            this.createEmptyStateContainer();
-        }
     }
 
-    // NEW: Create empty state container for "Add Supplier" functionality
-    createEmptyStateContainer() {
-        const emptyStateContainer = document.createElement('div');
-        emptyStateContainer.id = 'emptyStateContainer';
-        emptyStateContainer.className = 'empty-state hidden';
-        
-        const emptyStateContent = document.createElement('div');
-        emptyStateContent.className = 'empty-state-content';
-        
-        emptyStateContent.innerHTML = `
-            <div class="empty-state-icon">🔍</div>
-            <h3 class="empty-state-title">No suppliers found</h3>
-            <p class="empty-state-description">We couldn't find any suppliers matching your search criteria.</p>
-            <button class="btn btn-primary add-supplier-btn" id="addSupplierBtn">
-                <span class="btn-icon">➕</span>
-                Add Supplier to Directory
-            </button>
-            <p class="empty-state-hint">Help grow the community by adding a trusted supplier</p>
-        `;
-        
-        emptyStateContainer.appendChild(emptyStateContent);
-        
-        // Insert after contractor list or at the end of main content
-        const mainContent = document.querySelector('main') || document.body;
-        const contractorList = document.getElementById('contractorList');
-        if (contractorList) {
-            contractorList.parentNode.insertBefore(emptyStateContainer, contractorList.nextSibling);
-        } else {
-            mainContent.appendChild(emptyStateContainer);
+    getOrCreateEmptyState() {
+        let container = document.getElementById('emptyStateContainer');
+        if (!container) {
+            container = document.createElement('div');
+            container.id = 'emptyStateContainer';
+            container.className = 'empty-state hidden';
+            container.innerHTML = `
+                <div class="empty-state-content">
+                    <div class="empty-state-icon">🔍</div>
+                    <h3 class="empty-state-title">No suppliers found</h3>
+                    <p class="empty-state-description">We couldn't find any suppliers matching your search criteria.</p>
+                    <button class="btn btn-primary add-supplier-btn" id="addSupplierBtn">
+                        <span class="btn-icon">➕</span>
+                        Add Supplier to Directory
+                    </button>
+                    <p class="empty-state-hint">Help grow the community by adding a trusted supplier</p>
+                </div>
+            `;
+            
+            const mainContent = document.querySelector('main') || document.body;
+            const contractorList = document.getElementById('contractorList');
+            if (contractorList) {
+                contractorList.parentNode.insertBefore(container, contractorList.nextSibling);
+            } else {
+                mainContent.appendChild(container);
+            }
         }
-        
-        this.elements.emptyStateContainer = emptyStateContainer;
-        this.elements.addSupplierBtn = document.getElementById('addSupplierBtn');
+        return container;
     }
 
     bindEvents() {
-        const { searchInput, viewToggle, closeFiltersPanel, bottomNavItems, addSupplierBtn } = this.elements;
-
-        // Search input with debounce
-        if (searchInput) {
-            const debouncedSearch = this.debounce(() => this.applyCurrentFilters(), 300);
-            searchInput.addEventListener('input', debouncedSearch);
+        // Search with debounce
+        if (this.elements.searchInput) {
+            this.elements.searchInput.addEventListener('input', 
+                this.debounce(() => this.applyCurrentFilters(), 300)
+            );
         }
 
-        // Close filters panel button
-        if (closeFiltersPanel) {
-            closeFiltersPanel.addEventListener('click', (e) => {
-                e.preventDefault();
-                this.hideFilterPanel();
-            });
-        }
-
-        // NEW: Add Supplier button event - DISPATCHES EVENT ONLY
-        if (addSupplierBtn) {
-            addSupplierBtn.addEventListener('click', (e) => {
-                e.preventDefault();
-                this.handleAddSupplierRequest();
-            });
-        }
-
-        // Bottom navigation items - ONLY handle items with data-view attribute
-        if (bottomNavItems) {
-            bottomNavItems.forEach(item => {
-                // Only handle navigation items that have a data-view attribute
-                if (item.hasAttribute('data-view')) {
-                    item.addEventListener('click', (e) => {
-                        e.preventDefault();
-                        const view = item.getAttribute('data-view');
-                        this.handleBottomNavigation(view, item);
-                    });
-                }
-                // Items without data-view (like feedback button) will be handled by other systems
-            });
-        }
-
-        // View toggle event delegation
-        if (viewToggle) {
-            viewToggle.addEventListener('click', (e) => {
-                const button = e.target.closest('.btn');
-                if (button && button.hasAttribute('data-view')) {
-                    e.preventDefault();
-                    this.handleViewToggle(button);
-                }
-            });
-        }
-
-        // Add event listeners for all filter changes
-        this.setupFilterEventListeners();
-
-        // NEW: Setup category filtering event listeners
-        this.setupCategoryEventListeners();
-    }
-
-    // NEW: Setup category filtering event listeners
-    setupCategoryEventListeners() {
-        // Listen for category selection from categories view
-        document.addEventListener('filterByCategory', (event) => {
-            this.handleCategoryFilter(event.detail.category);
+        // Filter changes
+        ['categoryFilter', 'locationFilter', 'ratingFilter', 'sortBy'].forEach(filterName => {
+            if (this.elements[filterName]) {
+                this.elements[filterName].addEventListener('change', () => this.applyCurrentFilters());
+            }
         });
 
-        // Listen for category type selection from categories view
-        document.addEventListener('filterByCategoryType', (event) => {
+        // Action buttons
+        document.addEventListener('click', (e) => {
+            const button = e.target.closest('[data-action]');
+            if (button) {
+                e.preventDefault();
+                this.handleAction(button.getAttribute('data-action'));
+            }
+        });
+
+        // Bottom navigation
+        if (this.elements.bottomNavItems) {
+            this.elements.bottomNavItems.forEach(item => {
+                item.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    const view = item.getAttribute('data-view');
+                    this.handleNavigation(view);
+                });
+            });
+        }
+
+        // Category selection events
+        document.addEventListener('categorySelected', (event) => {
             this.handleCategoryTypeFilter(event.detail.type, event.detail.categoryNames);
         });
     }
 
-    // NEW: Handle category filter from categories view
-    handleCategoryFilter(category) {
-        const { categoryFilter } = this.elements;
-        
-        if (categoryFilter) {
-            categoryFilter.value = category;
-            this.applyCurrentFilters();
-            this.updateFilterCount();
-            this.updateClearButton();
-            this.updateFilterIndicator();
+    handleAction(action) {
+        switch (action) {
+            case 'clear-filters':
+                this.clearFilters();
+                break;
+            case 'apply-filters':
+                this.applyCurrentFilters();
+                this.hideFilterPanel();
+                break;
+            case 'show-favorites':
+                this.applyFavoritesFilter();
+                break;
+            default:
+                // Other actions handled elsewhere
+                break;
         }
     }
 
-    // NEW: Handle category type filter from categories view
-    handleCategoryTypeFilter(type, categoryNames) {
-        console.log(`🎯 FilterManager: Filtering by category type "${type}" with categories:`, categoryNames);
-        
-        // Set category type filter
-        this.currentFilters.categoryType = type;
-        this.currentFilters.categoryTypeNames = categoryNames;
-        
-        // Apply the filters
-        this.applyCurrentFilters();
-        this.updateFilterCount();
-        this.updateClearButton();
-        this.updateFilterIndicator();
-    }
-
-    // NEW: Handle add supplier request - PURE EVENT-DRIVEN VERSION
-    handleAddSupplierRequest() {
-        const { searchInput, categoryFilter, locationFilter } = this.elements;
-        
-        // Collect pre-fill data from current search
-        const prefillData = {
-            name: searchInput?.value || '',
-            category: categoryFilter?.value || '',
-            location: locationFilter?.value || ''
-        };
-
-        console.log('FilterManager: Dispatching addSupplierRequested event with data:', prefillData);
-        
-        // DISPATCH EVENT ONLY - no direct callbacks or dependencies
-        document.dispatchEvent(new CustomEvent('addSupplierRequested', {
-            detail: {
-                prefillData: prefillData,
-                source: 'filterManager',
-                timestamp: new Date().toISOString()
-            }
-        }));
-    }
-
-    debounce(func, wait, immediate) {
-        let timeout;
-        return function executedFunction(...args) {
-            const later = () => {
-                timeout = null;
-                if (!immediate) func(...args);
-            };
-            const callNow = immediate && !timeout;
-            clearTimeout(timeout);
-            timeout = setTimeout(later, wait);
-            if (callNow) func(...args);
-        };
-    }
-
-    setupFilterEventListeners() {
-        const { categoryFilter, locationFilter, ratingFilter, sortBy } = this.elements;
-
-        // REMOVED: favoritesFilter from event listeners - it doesn't exist
-        const filters = [categoryFilter, locationFilter, ratingFilter, sortBy];
-
-        filters.forEach(filter => {
-            if (filter) {
-                filter.addEventListener('change', () => {
-                    this.applyCurrentFilters();
-                    this.updateFilterCount();
-                    this.updateClearButton();
-                    this.updateFilterIndicator();
-                });
-            }
-        });
-    }
-
-    // Handle bottom navigation - UPDATED: Only dispatch events, no direct view manipulation
-    handleBottomNavigation(view, item) {
-        // Update active state
+    handleNavigation(view) {
         this.updateBottomNavigationActiveState(view);
-
-        // Dispatch event for main.js to handle view switching
+        
         document.dispatchEvent(new CustomEvent('navigationViewChange', {
             detail: { view }
         }));
 
-        // Handle filter panel visibility for search view
         if (view === 'search') {
             this.showFilterPanel();
         } else {
@@ -294,471 +141,218 @@ export class FilterManager {
         }
     }
 
-    // Update bottom navigation active state
     updateBottomNavigationActiveState(activeView) {
-        const { bottomNavItems } = this.elements;
-
-        if (!bottomNavItems) return;
-
-        // Remove active class from all items
-        bottomNavItems.forEach(item => {
-            item.classList.remove('active');
+        this.elements.bottomNavItems?.forEach(item => {
+            item.classList.toggle('active', item.getAttribute('data-view') === activeView);
         });
-
-        // Add active class to current item
-        const activeItem = document.querySelector(`[data-view="${activeView}"]`);
-        if (activeItem) {
-            activeItem.classList.add('active');
-        }
     }
 
-    // Handle view toggle - UPDATED: Only dispatch events
-    handleViewToggle(button) {
-        const { viewToggleBtns } = this.elements;
-        const view = button.getAttribute('data-view');
-
-        if (!view) return;
-
-        viewToggleBtns.forEach(btn => {
-            btn.classList.remove('active');
-        });
-
-        button.classList.add('active');
-
-        // Dispatch event for main.js to handle view switching
-        this.notifyViewChange(view);
-    }
-
-    // REMOVED: All view-specific methods (showHomeView, showFavoritesView, etc.)
-    // View visibility is now handled exclusively by main.js
-
-    // Notify view change
-    notifyViewChange(view) {
-        if (this.eventHandlers.onViewChange) {
-            this.eventHandlers.onViewChange(view);
-        }
-    }
-
-    onFiltersChange(callback) {
-        this.eventHandlers.onFiltersChange = callback;
-    }
-
-    onViewChange(callback) {
-        this.eventHandlers.onViewChange = callback;
+    handleCategoryTypeFilter(type, categoryNames) {
+        this.currentFilters.categoryType = type;
+        this.currentFilters.categoryTypeNames = categoryNames;
+        this.applyCurrentFilters();
     }
 
     applyCurrentFilters() {
-        const { searchInput, categoryFilter, locationFilter, ratingFilter, sortBy } = this.elements;
+        this.updateFiltersFromUI();
+        const results = this.applyFiltersAndSorting();
+        this.updateUIState(results);
+        
+        // Notify listeners
+        document.dispatchEvent(new CustomEvent('filtersChanged', {
+            detail: { filters: this.currentFilters, results }
+        }));
+    }
 
-        // FIXED: Create new filters object but preserve programmatic favorites and category type
-        const newFilters = {
-            searchTerm: searchInput?.value || '',
-            category: categoryFilter?.value || '',
-            categoryType: this.currentFilters.categoryType || '', // Preserve category type
-            categoryTypeNames: this.currentFilters.categoryTypeNames || [], // Preserve category names
-            location: locationFilter?.value || '',
-            rating: ratingFilter?.value || '',
-            sortBy: sortBy?.value || 'name',
-            favorites: this.currentFilters.favorites || '' // Preserve programmatic value
+    updateFiltersFromUI() {
+        this.currentFilters = {
+            search: this.elements.searchInput?.value || '',
+            category: this.elements.categoryFilter?.value || '',
+            location: this.elements.locationFilter?.value || '',
+            minRating: parseFloat(this.elements.ratingFilter?.value) || 0,
+            favoritesOnly: this.currentFilters.favoritesOnly, // Preserve this state
+            categoryType: this.currentFilters.categoryType,
+            categoryTypeNames: this.currentFilters.categoryTypeNames,
+            sortBy: this.elements.sortBy?.value || 'name'
         };
-
-        this.currentFilters = newFilters;
-
-        // Apply sorting and get filtered contractors
-        const filteredContractors = this.applySorting();
-
-        // NEW: Update empty state based on search results
-        this.updateEmptyState(filteredContractors);
-
-        // Notify about filter change with the actual filtered contractors
-        if (this.eventHandlers.onFiltersChange) {
-            this.eventHandlers.onFiltersChange(this.currentFilters, filteredContractors);
-        }
-
-        this.updateFilterCount();
-        this.updateClearButton();
-        this.updateFilterIndicator();
     }
 
-    // NEW: Update empty state visibility based on search results
-    updateEmptyState(filteredContractors) {
-        const { emptyStateContainer } = this.elements;
+    applyFiltersAndSorting() {
+        let contractors = this.dataModule.getContractors();
+
+        // Apply filters
+        if (this.currentFilters.search) {
+            const searchTerm = this.currentFilters.search.toLowerCase();
+            contractors = contractors.filter(c => 
+                c.name.toLowerCase().includes(searchTerm) ||
+                (c.description && c.description.toLowerCase().includes(searchTerm)) ||
+                (c.services && c.services.toLowerCase().includes(searchTerm))
+            );
+        }
+
+        if (this.currentFilters.category) {
+            contractors = contractors.filter(c => c.category === this.currentFilters.category);
+        }
+
+        if (this.currentFilters.categoryTypeNames?.length > 0) {
+            contractors = contractors.filter(c => 
+                this.currentFilters.categoryTypeNames.includes(c.category)
+            );
+        }
+
+        if (this.currentFilters.location) {
+            contractors = contractors.filter(c => 
+                c.location && c.location.includes(this.currentFilters.location)
+            );
+        }
+
+        if (this.currentFilters.minRating > 0) {
+            contractors = contractors.filter(c => 
+                parseFloat(c.rating) >= this.currentFilters.minRating
+            );
+        }
+
+        if (this.currentFilters.favoritesOnly) {
+            contractors = contractors.filter(c => this.dataModule.isFavorite(c.id));
+        }
+
+        // Apply sorting
+        contractors = this.sortContractors(contractors);
+
+        this.lastResults = contractors;
+        return contractors;
+    }
+
+    sortContractors(contractors) {
+        const sortBy = this.currentFilters.sortBy || 'name';
         
-        if (!emptyStateContainer) return;
-
-        // Store last search results for reference
-        this.lastSearchResults = filteredContractors || [];
-
-        const hasResults = filteredContractors && filteredContractors.length > 0;
-        const hasActiveSearch = this.hasActiveSearchFilters();
-
-        // Show empty state when no results AND user has actively searched/filtered
-        if (!hasResults && hasActiveSearch) {
-            emptyStateContainer.classList.remove('hidden');
-        } else {
-            emptyStateContainer.classList.add('hidden');
-        }
-    }
-
-    // NEW: Check if user has active search filters (not just initial state)
-    hasActiveSearchFilters() {
-        const { searchInput, categoryFilter, locationFilter, ratingFilter } = this.elements;
-        
-        return (
-            (searchInput?.value && searchInput.value.trim() !== '') ||
-            (categoryFilter?.value && categoryFilter.value !== '') ||
-            (locationFilter?.value && locationFilter.value !== '') ||
-            (ratingFilter?.value && ratingFilter.value !== '') ||
-            this.currentFilters.favorites === 'favorites' ||
-            this.currentFilters.categoryType !== '' // Include category type filtering
-        );
-    }
-
-    updateFilterCount() {
-        const { activeFilterCount } = this.elements;
-
-        if (!activeFilterCount) return;
-
-        const activeFilters = this.getActiveFilterCount();
-
-        if (activeFilters > 0) {
-            activeFilterCount.textContent = activeFilters;
-            activeFilterCount.style.display = 'flex';
-        } else {
-            activeFilterCount.style.display = 'none';
-        }
-    }
-
-    updateClearButton() {
-        const { clearFiltersBtn } = this.elements;
-
-        if (!clearFiltersBtn) return;
-
-        const hasActiveFilters = this.getActiveFilterCount() > 0;
-
-        if (hasActiveFilters) {
-            clearFiltersBtn.style.display = 'inline-flex';
-            clearFiltersBtn.classList.remove('hidden');
-        } else {
-            clearFiltersBtn.style.display = 'none';
-            clearFiltersBtn.classList.add('hidden');
-        }
-    }
-
-    // Update filter indicator badge on search navigation button
-    updateFilterIndicator() {
-        const activeFilterCount = this.getActiveFilterCount();
-        const searchNavItem = document.querySelector('[data-view="search"]');
-        let filterBadge = searchNavItem?.querySelector('.bottom-nav-badge');
-
-        if (activeFilterCount > 0) {
-            if (!filterBadge) {
-                filterBadge = document.createElement('span');
-                filterBadge.className = 'bottom-nav-badge filter-badge';
-                searchNavItem.appendChild(filterBadge);
+        return [...contractors].sort((a, b) => {
+            switch (sortBy) {
+                case 'rating':
+                    return parseFloat(b.rating) - parseFloat(a.rating);
+                case 'reviews':
+                    return (b.reviews?.length || 0) - (a.reviews?.length || 0);
+                case 'location':
+                    return (a.location || '').localeCompare(b.location || '');
+                case 'name':
+                default:
+                    return a.name.localeCompare(b.name);
             }
-            filterBadge.textContent = activeFilterCount;
-            filterBadge.classList.remove('hidden');
-        } else if (filterBadge) {
-            filterBadge.classList.add('hidden');
+        });
+    }
+
+    updateUIState(results) {
+        this.updateEmptyState(results);
+        this.updateFilterIndicators();
+    }
+
+    updateEmptyState(results) {
+        const hasResults = results && results.length > 0;
+        const hasActiveFilters = this.hasActiveFilters();
+        
+        if (this.elements.emptyStateContainer) {
+            this.elements.emptyStateContainer.classList.toggle('hidden', 
+                hasResults || !hasActiveFilters
+            );
         }
+    }
+
+    updateFilterIndicators() {
+        const activeCount = this.getActiveFilterCount();
+        
+        // Update filter badge
+        const searchNavItem = document.querySelector('[data-view="search"]');
+        let badge = searchNavItem?.querySelector('.bottom-nav-badge');
+        
+        if (activeCount > 0) {
+            if (!badge) {
+                badge = document.createElement('span');
+                badge.className = 'bottom-nav-badge filter-badge';
+                searchNavItem.appendChild(badge);
+            }
+            badge.textContent = activeCount;
+            badge.classList.remove('hidden');
+        } else if (badge) {
+            badge.classList.add('hidden');
+        }
+
+        // Update clear button
+        if (this.elements.clearFiltersBtn) {
+            this.elements.clearFiltersBtn.style.display = activeCount > 0 ? 'inline-flex' : 'none';
+        }
+    }
+
+    hasActiveFilters() {
+        return (
+            this.currentFilters.search !== '' ||
+            this.currentFilters.category !== '' ||
+            this.currentFilters.location !== '' ||
+            this.currentFilters.minRating > 0 ||
+            this.currentFilters.favoritesOnly ||
+            this.currentFilters.categoryType !== '' ||
+            (this.currentFilters.sortBy && this.currentFilters.sortBy !== 'name')
+        );
     }
 
     getActiveFilterCount() {
-        const { locationFilter, ratingFilter, categoryFilter, searchInput, sortBy } = this.elements;
-
         let count = 0;
-
-        if (locationFilter?.value) count++;
-        if (ratingFilter?.value) count++;
-        if (categoryFilter?.value) count++;
-        if (searchInput?.value.trim()) count++;
-        if (sortBy?.value && sortBy.value !== 'name') count++;
-
-        // FIXED: Include programmatic favorites filter in count
-        if (this.currentFilters.favorites === 'favorites') count++;
-
-        // NEW: Include category type filtering in count
-        if (this.currentFilters.categoryType !== '') count++;
-
+        if (this.currentFilters.search) count++;
+        if (this.currentFilters.category) count++;
+        if (this.currentFilters.location) count++;
+        if (this.currentFilters.minRating > 0) count++;
+        if (this.currentFilters.favoritesOnly) count++;
+        if (this.currentFilters.categoryType) count++;
+        if (this.currentFilters.sortBy && this.currentFilters.sortBy !== 'name') count++;
         return count;
     }
 
-    applyFilters(filters) {
-        if (!this.dataModule) {
-            console.error('DataModule not available for filtering');
-            return [];
-        }
-
-        // Apply search and basic filters first
-        let contractors = this.dataModule.searchContractors(
-            filters.searchTerm,
-            filters.category,
-            filters.rating,
-            filters.location
-        );
-
-        // Apply category type filter if specified
-        if (filters.categoryType && filters.categoryTypeNames && filters.categoryTypeNames.length > 0) {
-            const beforeCount = contractors.length;
-            
-            contractors = contractors.filter(contractor => {
-                return filters.categoryTypeNames.includes(contractor.category);
-            });
-            
-            console.log(`🔍 Category type filter "${filters.categoryType}": ${beforeCount} -> ${contractors.length} contractors`);
-        }
-
-        // Apply favorites filter if specified
-        if (filters.favorites === 'favorites') {
-            const beforeCount = contractors.length;
-
-            contractors = contractors.filter(contractor => {
-                const isFavorite = this.dataModule.isFavorite(contractor.id);
-                return isFavorite;
-            });
-        }
-
-        return contractors;
-    }
-
-    applySorting() {
-        const { sortBy } = this.elements;
-        const sortValue = sortBy?.value || 'name';
-
-        // Apply filters first, then sort
-        let contractors = this.applyFilters(this.currentFilters);
-
-        contractors.sort((a, b) => {
-            let result = 0;
-
-            switch (sortValue) {
-                case 'rating':
-                    result = parseFloat(b.rating) - parseFloat(a.rating);
-                    break;
-                case 'reviews':
-                    result = b.reviews.length - a.reviews.length;
-                    break;
-                case 'location':
-                    result = (a.location || '').localeCompare(b.location || '');
-                    break;
-                case 'favorites':
-                    const aFavorite = this.dataModule.isFavorite(a.id);
-                    const bFavorite = this.dataModule.isFavorite(b.id);
-                    if (aFavorite && !bFavorite) result = -1;
-                    else if (!aFavorite && bFavorite) result = 1;
-                    else result = a.name.localeCompare(b.name);
-                    break;
-                case 'name':
-                default:
-                    result = a.name.localeCompare(b.name);
-                    break;
-            }
-
-            // If primary sort is equal, use name as secondary sort for stability
-            if (result === 0) {
-                result = a.name.localeCompare(b.name);
-            }
-
-            return result;
-        });
-
-        return contractors;
-    }
-
     clearFilters() {
-        const { searchInput, categoryFilter, locationFilter, ratingFilter, sortBy } = this.elements;
-
-        if (searchInput) searchInput.value = '';
-        if (categoryFilter) categoryFilter.value = '';
-        if (locationFilter) locationFilter.value = '';
-        if (ratingFilter) ratingFilter.value = '';
-        if (sortBy) sortBy.value = 'name';
-
-        // FIXED: Clear programmatic filters
-        this.currentFilters.favorites = '';
-        this.currentFilters.categoryType = '';
-        this.currentFilters.categoryTypeNames = [];
-
-        this.applyCurrentFilters();
-    }
-
-    resetToDefault() {
-        this.clearFilters();
-    }
-
-    // Show filter panel
-    showFilterPanel() {
-        const { filtersPanel } = this.elements;
-        if (filtersPanel) {
-            filtersPanel.classList.remove('hidden');
-            this.isFilterPanelVisible = true;
-
-            setTimeout(() => {
-                if (this.elements.searchInput) {
-                    this.elements.searchInput.focus();
-                }
-            }, 100);
-        } else {
-            console.error('filtersPanel element not found!');
-        }
-    }
-
-    // Hide filter panel
-    hideFilterPanel() {
-        const { filtersPanel } = this.elements;
-        if (filtersPanel) {
-            filtersPanel.classList.add('hidden');
-            this.isFilterPanelVisible = false;
-        }
-    }
-
-    // Toggle filter panel visibility
-    toggleFilterPanel() {
-        if (this.isFilterPanelVisible) {
-            this.hideFilterPanel();
-        } else {
-            this.showFilterPanel();
-        }
-    }
-
-    // Refresh all filter options
-    refreshAllFilters() {
-        this.refreshCategoryFilter();
-        this.refreshLocationFilter();
-        // Apply current filters after refresh
-        this.applyCurrentFilters();
-    }
-
-    // Refresh category filter
-    refreshCategoryFilter() {
-        const { categoryFilter } = this.elements;
-        const currentValue = categoryFilter?.value;
-
-        if (!this.categoriesModule) {
-            console.warn('CategoriesModule not available for filter refresh');
-            return;
-        }
-
-        const categories = this.categoriesModule.getCategories();
-
-        if (categoryFilter) {
-            categoryFilter.innerHTML = '<option value="">All Categories</option>';
-            categories.forEach(category => {
-                const option = document.createElement('option');
-                option.value = category.name;
-                option.textContent = category.name;
-                categoryFilter.appendChild(option);
-            });
-
-            if (categories.some(cat => cat.name === currentValue)) {
-                categoryFilter.value = currentValue;
-            }
-        }
-    }
-
-    // Refresh location filter
-    refreshLocationFilter() {
-        const { locationFilter } = this.elements;
-        const currentValue = locationFilter?.value;
-        const contractors = this.dataModule.getContractors();
-        const locations = this.getUniqueLocations(contractors);
-
-        if (locationFilter) {
-            locationFilter.innerHTML = '<option value="">All Locations</option>';
-            locations.forEach(location => {
-                const option = document.createElement('option');
-                option.value = location;
-                option.textContent = location;
-                locationFilter.appendChild(option);
-            });
-
-            if (locations.includes(currentValue)) {
-                locationFilter.value = currentValue;
-            }
-        }
-    }
-
-    // Handle external actions
-    handleAction(action) {
-        switch (action) {
-            case 'show-filters':
-            case 'search':
-                this.toggleFilterPanel();
-                break;
-            case 'hide-filters':
-                this.hideFilterPanel();
-                break;
-            case 'clear-filters':
-                this.clearFilters();
-                break;
-            case 'filter':
-            case 'sort':
-                this.applyCurrentFilters();
-                break;
-            case 'apply-filters': // NEW: Handle the Show Results button
-                this.applyCurrentFilters();
-                this.hideFilterPanel(); // Close the filter panel after applying
-                break;
-            case 'show-all':
-                this.clearFilters();
-                break;
-            case 'show-favorites':
-                this.applyFavoritesFilter();
-                break;
-            case 'show-high-rated':
-                this.applyHighRatedFilter();
-                break;
-            default:
-                console.log('Unhandled action:', action);
-        }
-    }
-
-    // Apply favorites filter - FIXED: Programmatic approach
-    applyFavoritesFilter() {
-        // Clear other filters first to ensure favorites filter works properly
-        this.clearOtherFiltersForFavorites();
-
-        // FIXED: Set favorites filter programmatically (no form element)
-        this.currentFilters.favorites = 'favorites';
-
-        // Apply the filters
-        this.applyCurrentFilters();
-    }
-
-    // Apply high rated filter
-    applyHighRatedFilter() {
-        // Clear favorites filter when switching to high rated
-        this.currentFilters.favorites = '';
-
-        if (this.elements.ratingFilter) {
-            this.elements.ratingFilter.value = '4.0';
-        }
-
-        this.applyCurrentFilters();
-    }
-
-    // Clear other filters when applying favorites to avoid conflicts
-    clearOtherFiltersForFavorites() {
+        // Reset UI elements
         if (this.elements.searchInput) this.elements.searchInput.value = '';
         if (this.elements.categoryFilter) this.elements.categoryFilter.value = '';
         if (this.elements.locationFilter) this.elements.locationFilter.value = '';
         if (this.elements.ratingFilter) this.elements.ratingFilter.value = '';
         if (this.elements.sortBy) this.elements.sortBy.value = 'name';
-        
-        // Clear category type filter
-        this.currentFilters.categoryType = '';
-        this.currentFilters.categoryTypeNames = [];
+
+        // Reset internal state
+        this.currentFilters = {
+            search: '',
+            category: '',
+            location: '',
+            minRating: 0,
+            favoritesOnly: false,
+            categoryType: '',
+            categoryTypeNames: [],
+            sortBy: 'name'
+        };
+
+        this.applyCurrentFilters();
     }
 
-    // Update categories when they change
-    handleCategoriesUpdated() {
-        this.refreshCategoryFilter();
+    applyFavoritesFilter() {
+        this.clearFilters();
+        this.currentFilters.favoritesOnly = true;
+        this.applyCurrentFilters();
     }
 
-    // Get unique locations
-    getUniqueLocations = (contractors) => [...new Set(contractors
-        .map(contractor => contractor.location)
-        .filter(location => location && location.trim() !== '')
-    )].sort();
+    showFilterPanel() {
+        if (this.elements.filtersPanel) {
+            this.elements.filtersPanel.classList.remove('hidden');
+        }
+    }
+
+    hideFilterPanel() {
+        if (this.elements.filtersPanel) {
+            this.elements.filtersPanel.classList.add('hidden');
+        }
+    }
+
+    // Utility function
+    debounce(func, wait) {
+        let timeout;
+        return (...args) => {
+            clearTimeout(timeout);
+            timeout = setTimeout(() => func.apply(this, args), wait);
+        };
+    }
 }

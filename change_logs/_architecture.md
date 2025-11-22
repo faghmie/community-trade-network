@@ -4,24 +4,21 @@
 
 ### **Core Architectural Patterns**
 
-**1. Layered Architecture with Clean Separation**
+**1. Simplified Layered Architecture**
 ```
-Presentation Layer (Views & UI Components)
+Presentation Layer (View Components)
     ↓
-Application Layer (Managers & Controllers)
+Application Layer (Main App Coordination)
     ↓
-Business Logic Layer (Data Orchestration)
+Business Logic Layer (Data & Filter Management)
     ↓
 Infrastructure Layer (Storage & Services)
-    ↓
-Persistence Layer (LocalStorage + Supabase + Cache API)
 ```
 
-**2. Event-Driven Communication Pattern**
-- **Custom Events** for cross-component notifications
-- **Loose coupling** between modules
-- **Unidirectional data flow** from data layer to presentation
-- **View-based architecture** for modular UI management
+**2. Component-Based View System**
+- **BaseView** - Simple foundation for all views
+- **Self-contained views** manage their own rendering and events
+- **Direct view coordination** through main app (no complex event chains)
 
 **3. Mobile-First PWA Strategy**
 - Service Worker for offline capability
@@ -36,10 +33,10 @@ Persistence Layer (LocalStorage + Supabase + Cache API)
 ### **🌐 ROOT LEVEL FILES**
 
 **Entry Points:**
-- **`index.html`** - Main consumer PWA interface with view container architecture
-- **`admin.html`** - Administrative portal for content management and moderation
-- **`manifest.json`** - PWA configuration for app installation and metadata
-- **`sw.js`** - Service Worker for offline caching and update management
+- **`index.html`** - Main consumer PWA interface with view container
+- **`admin.html`** - Administrative portal for content management
+- **`manifest.json`** - PWA configuration for app installation
+- **`sw.js`** - Service Worker for offline caching
 
 **Development & Setup:**
 - **`generate_password.html`** - Admin authentication setup utility
@@ -47,16 +44,16 @@ Persistence Layer (LocalStorage + Supabase + Cache API)
 - **`start_server.sh`** - Local development server script
 
 ### **📚 DOCUMENTATION (`docs/`)**
-- **`PRODUCT_REQUIREMENT_DOCUMENT.md`** - Comprehensive product specifications
-- **`rate-my-contractor-product-requirements.md`** - Detailed feature requirements
+- **`PRODUCT_REQUIREMENT_DOCUMENT.md`** - Product specifications
+- **`rate-my-contractor-product-requirements.md`** - Feature requirements
 - **`ADMIN_GUIDE.md`** - Administrator operation manual
 - **`COMMUNITY_GUIDELINES.md`** - User community standards
-- **`deployment_decisions.md`** - Infrastructure and deployment choices
-- **`TRACKING_STRATEGY_DECISION.md`** - Analytics and monitoring approach
+- **`deployment_decisions.md`** - Infrastructure choices
+- **`TRACKING_STRATEGY_DECISION.md`** - Analytics approach
 
 ### **📝 CHANGE MANAGEMENT (`change_logs/`)**
-- **Current logs** (root level) - Latest development sessions
-- **`archive/week_2025_11_13/`** - Historical development sessions with detailed implementation notes
+- Current logs (root level) - Latest development sessions
+- **`archive/week_2025_11_13/`** - Historical development sessions
 
 ---
 
@@ -77,9 +74,9 @@ Persistence Layer (LocalStorage + Supabase + Cache API)
 - **Utilities**: `utilities.css` for helper classes
 
 **Application Layer**
-- **`main.css`** - Primary stylesheet orchestrating all imports and global styles
-- **`admin.css`** - Admin-specific overrides and layouts
-- **`layout.css`** - Responsive grid systems and page layouts
+- **`main.css`** - Primary stylesheet orchestrating all imports
+- **`admin.css`** - Admin-specific layouts
+- **`layout.css`** - Responsive grid systems
 
 ---
 
@@ -87,57 +84,52 @@ Persistence Layer (LocalStorage + Supabase + Cache API)
 
 ### **📱 APPLICATION LAYER (`js/app/`)**
 
-**Core Application Management:**
-- **`main.js`** - Application composition root, orchestrates all managers and dependency injection
-- **`uiManager.js`** - Central UI coordination and state management
-- **`filterManager.js`** - Search and filter state management with "Add Supplier" flow
-- **`favoritesManager.js`** - User favorites interface management
-- **`statsManager.js`** - Analytics and statistics display
-- **`lazyLoader.js`** - Performance optimization for lazy loading
+**Core Application:**
+- **`main.js`** - **Application composition root** - orchestrates all components, manages view state, handles navigation
+- **`filterManager.js`** - **Search and filtering logic** - manages filter state, applies filters to data, coordinates with views
 
 **View System (`js/app/views/`)**
-- **`contractorListView.js`** - Self-contained contractor list display module
-- **`categoriesListView.js`** - Self-contained categories display module
-- **`mapView.js`** - Geographic interface and location services integration
+- **`BaseView.js`** - **Foundation class for all views** - provides show/hide/render lifecycle
+- **`CategoriesView.js`** - **Categories display** - renders category types, handles category selection
+- **`ContractorListView.js`** - **Contractor list display** - renders contractor cards, manages list state
+- **`mapView.js`** - **Geographic interface** - integrates Leaflet maps, handles location display
 
 **Modal System (`js/app/modals/`)**
-- **`baseModalManager.js`** - Abstract base class for modal patterns and common functionality
-- **`contractorModalManager.js`** - Contractor details display modal with review integration
-- **`contractorEditModalManager.js`** - Contractor creation and editing modal with location autocomplete
+- **`contractorModalManager.js`** - Contractor details display with review integration
+- **`contractorEditModalManager.js`** - Contractor creation/editing with location autocomplete
 - **`reviewModalManager.js`** - Review submission interface with category ratings
-- **`feedbackModalManager.js`** - User feedback submission modal (main app)
-- **`adminFeedbackModalManager.js`** - Admin feedback viewing and management modal
+- **`feedbackModalManager.js`** - User feedback submission
+- **`adminFeedbackModalManager.js`** - Admin feedback management
 
 ### **🔧 CORE MODULES (`js/modules/`)**
 
 #### **Data Management Layer**
 
 **Data Orchestration:**
-- **`data.js`** - Data orchestrator, single entry point for all data operations
-- **`storage.js`** - Dual persistence strategy (Local-first with Supabase sync)
+- **`data.js`** - **Data orchestrator** - single entry point for all data operations, coordinates storage layers
+- **`storage.js`** - **Dual persistence strategy** - Local-first with Supabase sync
 
-**Specialized Data Managers:**
+**Specialized Managers:**
 - **`contractorManager.js`** - Contractor CRUD operations, search, and filtering
 - **`reviewManager.js`** - Review management and statistics calculation
 - **`categories.js`** - Category administration and hierarchical management
-- **`favoritesDataManager.js`** - User favorites persistence and synchronization
+- **`favoritesDataManager.js`** - User favorites persistence
 - **`statsDataManager.js`** - Analytics and metrics calculation
-- **`feedbackDataManager.js`** - User feedback data operations and status management
+- **`feedbackDataManager.js`** - User feedback data operations
 
 **Infrastructure Services:**
-- **`supabase.js`** - Cloud integration and real-time sync with PostgreSQL backend
-- **`geocodingService.js`** - Location to coordinates conversion with caching and rate limiting
+- **`supabase.js`** - **Cloud integration** - real-time sync with PostgreSQL backend
+- **`geocodingService.js`** - **Location services** - coordinates conversion with caching
 - **`validation.js`** - Form validation and data sanitization
 - **`utilities.js`** - Common functions and helpers
-- **`uuid.js`** - ID generation for distributed systems using UUID v4
-- **`loadingScreen.js`** - Application loading states and progress indicators
-- **`areaAutocomplete.js`** - Smart location input with suggestions and geocoding
+- **`uuid.js`** - ID generation using UUID v4
+- **`loadingScreen.js`** - Application loading states
+- **`areaAutocomplete.js`** - Smart location input with suggestions
 - **`backButtonManager.js`** - Browser back button handling for modal navigation
 
 **UI Components:**
-- **`cardManager.js`** - Contractor card rendering and management
+- **`cardManager.js`** - **Contractor card rendering** - creates and manages contractor display cards
 - **`notifications.js`** - User feedback and status updates (toasts, alerts)
-- **`tabs.js`** - Tab navigation system with state management
 
 **PWA & Authentication:**
 - **`service-worker-manager.js`** - Service Worker registration and update management
@@ -145,43 +137,43 @@ Persistence Layer (LocalStorage + Supabase + Cache API)
 - **`auth.js`** - User authentication and session management
 
 #### **Admin Modules**
-- **`admin-auth.js`** - Session management and SHA-256 access control for admin portal
-- **`admin-contractors.js`** - Contractor administration interface with bulk operations
-- **`admin-categories.js`** - Category management interface with hierarchical editing
-- **`admin-reviews.js`** - Review moderation workflows and approval processes
-- **`admin-feedback.js`** - User feedback management interface with status tracking
+- **`admin-auth.js`** - Session management and access control for admin portal
+- **`admin-contractors.js`** - Contractor administration interface
+- **`admin-categories.js`** - Category management with hierarchical editing
+- **`admin-reviews.js`** - Review moderation workflows
+- **`admin-feedback.js`** - User feedback management
 
 ### **💾 DATA LAYER (`js/data/`)**
 
 **Default Data Structure:**
 - **`defaultData.js`** - Data aggregation and initialization orchestrator
 - **`defaultCategories.js`** - Service category definitions and hierarchy
-- **`defaultContractors.js`** - Sample contractor profiles with realistic data
-- **`defaultReviews.js`** - Review data with ratings and category breakdowns
-- **`defaultLocations.js`** - Geographic data for South Africa (provinces, cities, coordinates)
+- **`defaultContractors.js`** - Sample contractor profiles
+- **`defaultReviews.js`** - Review data with ratings
+- **`defaultLocations.js`** - Geographic data for South Africa
 
 **Type System (`js/data/types/`)**
-- **`categoryTypes.js`** - JSDoc types for category data structures
-- **`contractorTypes.js`** - JSDoc types for contractor entities and operations
-- **`reviewTypes.js`** - JSDoc types for review system with category ratings
-- **`feedbackTypes.js`** - JSDoc types for user feedback and admin management
-- **`locationTypes.js`** - JSDoc types for geographic data and coordinates
-- **`uuidTypes.js`** - UUID type definitions for consistent ID handling
-- **`index.js`** - Central type exports and cross-references
+- **`categoryTypes.js`** - JSDoc types for category data
+- **`contractorTypes.js`** - JSDoc types for contractor entities
+- **`reviewTypes.js`** - JSDoc types for review system
+- **`feedbackTypes.js`** - JSDoc types for user feedback
+- **`locationTypes.js`** - JSDoc types for geographic data
+- **`uuidTypes.js`** - UUID type definitions
+- **`index.js`** - Central type exports
 
 ### **⚙️ CONFIGURATION (`js/config/`)**
-- **`supabase-credentials.js`** - Environment-specific Supabase configuration and API endpoints
+- **`supabase-credentials.js`** - Environment-specific Supabase configuration
 
 ### **📜 ENTRY POINTS**
-- **`script.js`** - Main application entry point, bootstraps consumer PWA
+- **`script.js`** - **Main application entry point** - bootstraps consumer PWA, initializes app
 - **`admin.js`** - Admin portal entry point, initializes admin-specific modules
 
 ---
 
 ## 🗄️ **DATABASE & SCRIPTS (`scripts/`)**
-- **`postgresql_supabase_setup.sql`** - Complete database schema definition for PostgreSQL
-- **`default_categories.sql`** - Initial category data population scripts
-- **`start_server.sh`** - Local development server setup script
+- **`postgresql_supabase_setup.sql`** - Complete database schema definition
+- **`default_categories.sql`** - Initial category data population
+- **`start_server.sh`** - Local development server setup
 
 ---
 
@@ -194,34 +186,19 @@ Persistence Layer (LocalStorage + Supabase + Cache API)
 
 ## 🔄 **ARCHITECTURE DECISIONS & PATTERNS**
 
-### **1. Event-Driven Communication Pattern**
+### **1. Simplified View Management Pattern**
 
-**Custom Events:**
-- Used for cross-component notifications and state changes
-- Modal open/close operations via events
-- Data synchronization events between layers
-- View switching and navigation events
+**Direct View Coordination:**
+- Main app directly manages view visibility through `showView()` method
+- Views implement simple `show()/hide()/render()` interface
+- No complex event chains for basic view transitions
 
-**Benefits:**
-- Loose coupling between modules
-- Easy debugging and monitoring
-- Scalable architecture for feature additions
-- Clear separation of concerns
+**View Responsibilities:**
+- Each view manages its own DOM structure and event handlers
+- Views receive data and render accordingly
+- Clear separation between view logic and application state
 
-### **2. View-Based Architecture**
-
-**Self-Contained Views:**
-- Each view manages its own HTML structure
-- Views can be shown/hidden independently
-- Clear view lifecycle management
-- Easy to add new views without breaking existing functionality
-
-**View Coordination:**
-- Main app orchestrates view visibility
-- Events control view transitions
-- Consistent user experience across views
-
-### **3. Data Persistence Strategy**
+### **2. Data Persistence Strategy**
 
 **Local-First Architecture:**
 - Primary data storage in browser's localStorage
@@ -233,45 +210,32 @@ Persistence Layer (LocalStorage + Supabase + Cache API)
 - Background synchronization when online
 - Conflict resolution with last-write-wins strategy
 
-**Caching Layer:**
-- Service Worker for static asset caching
-- In-memory caching for frequently accessed data
-- Geocoding results caching for performance
-
-### **4. Modular Design Principles**
+### **3. Component-Based Design**
 
 **Single Responsibility:**
-- Each manager handles specific domain logic
-- Modal managers focus on UI interaction patterns
-- Data managers handle persistence and business logic
-- View managers handle display and user interaction
+- `CardManager` handles contractor card rendering
+- `FilterManager` handles search and filtering logic
+- Views handle display and user interaction
+- Modal managers handle specific UI interactions
 
-**Dependency Injection:**
-- Main.js acts as composition root
-- Explicit dependency passing through constructors
-- Clear dependency graph for maintainability
+**Clear Dependencies:**
+- Main app composes all components
+- Explicit dependency injection through constructors
+- Minimal cross-component communication
 
-**Separation of Concerns:**
-- Presentation logic in view managers
-- Business logic in data managers
-- Infrastructure concerns in service modules
-- Coordination logic in application managers
+### **4. Event-Driven Communication**
 
-### **5. Type Safety Approach**
+**Strategic Event Usage:**
+- Events for cross-component notifications (`categorySelected`, `favoritesUpdated`)
+- Events for modal management (`showContractorDetails`, `closeReviewModal`)
+- Direct method calls for simple view coordination
 
-**JSDoc Type System:**
-- Comprehensive type definitions without build step
-- Full IDE IntelliSense and autocomplete
-- Runtime type validation where needed
-- Database schema alignment through types
+**Event Categories:**
+- **Data Events**: `contractorsUpdated`, `reviewsUpdated`
+- **UI Events**: `categorySelected`, `navigationViewChange`
+- **Modal Events**: `showContractorDetails`, `closeReviewModal`
 
-**Consistent Data Structures:**
-- UUID v4 for all entity identifiers
-- Standardized coordinate structures
-- Unified rating and review formats
-- Consistent status enumerations
-
-### **6. PWA Optimization Strategy**
+### **5. PWA Optimization Strategy**
 
 **Offline-First:**
 - Service Worker for core app shell caching
@@ -279,13 +243,13 @@ Persistence Layer (LocalStorage + Supabase + Cache API)
 - Graceful degradation when offline
 
 **Performance:**
-- Lazy loading for non-critical components
+- Efficient data loading and caching
 - Optimized images and icons
 - Minimal initial JavaScript payload
 
 **Mobile Experience:**
 - Bottom navigation for thumb-friendly interaction
-- Touch-optimized controls and gestures
+- Touch-optimized controls
 - Responsive design with mobile breakpoints
 
 ---
@@ -293,28 +257,53 @@ Persistence Layer (LocalStorage + Supabase + Cache API)
 ## 🎯 **MODULE INTEGRATION PATTERNS**
 
 ### **Application Bootstrap Flow:**
-1. **Entry Point** (`script.js`/`admin.js`) initializes core dependencies
-2. **Main Manager** (`main.js`) composes all sub-managers and views
-3. **Data Module** (`data.js`) initializes storage and sync layers
-4. **View Managers** set up event listeners and render initial state
-5. **Service Workers** register for offline capability
+1. **Entry Point** (`script.js`) loads dependencies and creates app instance
+2. **Main App** (`main.js`) initializes data module and creates managers
+3. **Views Setup** - All views are created and rendered (initially hidden)
+4. **Event Listeners** - Application sets up cross-component communication
+5. **Initial View** - Categories view is shown by default
 
 ### **Data Flow Patterns:**
-- **User Action** → **View Manager** → **Event** → **Application Manager** → **Data Manager** → **Storage** → **Sync** → **UI Update**
-- **Background Sync** → **Storage** → **Data Manager** → **Event Notification** → **View Update**
-- **View Interaction** → **Event** → **Filter Manager** → **Data Operation** → **View Refresh**
+- **User Action** → **View Event** → **Main App** → **Filter Manager** → **Data Update** → **View Refresh**
+- **Background Sync** → **Storage Update** → **Data Module** → **View Notification** → **UI Update**
 
 ### **View Management Flow:**
-1. **View Initialization** - Views render their HTML structure
-2. **Event Registration** - Views listen for relevant events
-3. **View Coordination** - Main app manages view visibility
-4. **Data Binding** - Views receive data via events
-5. **User Interaction** - Views dispatch events for actions
+1. **View Creation** - Views render their HTML structure on creation
+2. **View Coordination** - Main app manages view visibility through direct method calls
+3. **Data Binding** - Views receive data via method parameters or events
+4. **User Interaction** - Views dispatch events for cross-component actions
+
+### **Filter Integration:**
+- **FilterManager** maintains filter state and applies filters to data
+- **Main App** receives filtered data and passes to appropriate views
+- **Views** render the filtered data they receive
 
 ### **Error Handling Strategy:**
 - **UI Level**: User-friendly notifications and fallback states
 - **Data Level**: Retry mechanisms and conflict resolution
 - **Network Level**: Offline queuing and synchronization
-- **Application Level**: Graceful degradation and error boundaries
+- **Application Level**: Graceful degradation
 
-This architecture provides a robust foundation for the Community Trade Network app with clear separation of concerns, comprehensive type safety, and optimized mobile PWA experience. The event-driven communication pattern ensures loose coupling between modules, while the view-based architecture enables flexible UI management and easy feature additions.
+---
+
+## 🔧 **KEY INTEGRATION POINTS**
+
+### **Main App Integration:**
+- **Composition Root**: Creates and coordinates all major components
+- **View Manager**: Direct control over view visibility and state
+- **Event Hub**: Central point for cross-component communication
+- **Data Flow Controller**: Manages data between storage, filters, and views
+
+### **View System Integration:**
+- **BaseView Foundation**: Consistent interface for all views
+- **DOM Management**: Each view manages its own container and content
+- **Event Handling**: Views handle their own user interactions
+- **Data Rendering**: Views receive data and render accordingly
+
+### **Data Layer Integration:**
+- **Single Entry Point**: `data.js` as gateway to all data operations
+- **Storage Abstraction**: `storage.js` handles persistence strategy
+- **Manager Specialization**: Specific managers for contractors, reviews, categories
+- **Cloud Sync**: `supabase.js` handles remote data synchronization
+
+This architecture provides a clean, maintainable foundation for the Community Trade Network app with clear separation of concerns, straightforward view management, and efficient data handling. The simplified approach reduces complexity while maintaining scalability for future features.
