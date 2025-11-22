@@ -1,21 +1,23 @@
-// js/app/main.js - CLEANED UP WITH PROPER SEPARATION OF CONCERNS
+// js/app/main.js - FIXED: Properly initialize ContractorEditModalManager
+// UPDATED: Added ContractorEditModalManager instantiation
+
 import { showNotification } from '../modules/notifications.js';
 import { CardManager } from '../modules/cardManager.js';
 import { UIManager } from './uiManager.js';
-import { ModalManager } from './modalManager.js';
 import { FilterManager } from './filterManager.js';
 import { MapManager } from '../modules/mapManager.js';
-import { FeedbackModalManager } from './modals/feedbackModalManager.js'; // NEW: Import feedback modal manager
+import { FeedbackModalManager } from './modals/feedbackModalManager.js';
+import { ContractorEditModalManager } from './modals/contractorEditModalManager.js'; // NEW: Import the actual modal manager
 
 export class ContractorReviewApp {
     constructor(dataModule) {
         this.dataModule = dataModule;
         this.uiManager = null;
-        this.modalManager = null;
         this.filterManager = null;
         this.mapManager = null;
         this.cardManager = null;
-        this.feedbackModalManager = null; // NEW: Feedback modal manager
+        this.feedbackModalManager = null;
+        this.contractorEditModalManager = null; // NEW: Contractor edit modal manager
         
         this.currentContractor = null;
         this.filteredContractors = [];
@@ -66,25 +68,18 @@ export class ContractorReviewApp {
         );
         await this.uiManager.init(this.filterManager);
 
-        // Create modal manager with direct callback for review submission
-        this.modalManager = new ModalManager(
-            this.dataModule, 
-            this.dataModule.getReviewManager(), 
-            this.cardManager,
-            (reviewData, contractorId) => {
-                // Direct callback from ReviewModalManager
-                this.handleReviewSubmit({
-                    ...reviewData,
-                    contractorId: contractorId || reviewData.contractorId
-                });
-            }
+        // NEW: Create contractor edit modal manager
+        this.contractorEditModalManager = new ContractorEditModalManager(
+            this.dataModule.getContractorManager(),
+            this.dataModule.getCategoriesModule(),
+            this.dataModule.getLocationsData() // Make sure this method exists in dataModule
         );
-        await this.modalManager.init();
+        this.contractorEditModalManager.init();
 
         // Create map manager
         this.mapManager = new MapManager(this.dataModule);
 
-        // NEW: Create feedback modal manager
+        // Create feedback modal manager
         this.feedbackModalManager = new FeedbackModalManager(this.dataModule);
         this.feedbackModalManager.init();
     }
@@ -147,7 +142,7 @@ export class ContractorReviewApp {
             }
         });
 
-        // NEW: Listen for feedback submission events
+        // Listen for feedback submission events
         this.feedbackModalManager.on('onSubmit', (feedbackData) => {
             // You could add analytics tracking here
         });
@@ -155,6 +150,22 @@ export class ContractorReviewApp {
         this.feedbackModalManager.on('onClose', () => {
             // Handle feedback modal close if needed
         });
+
+        // Listen for contractor creation events for post-creation handling
+        document.addEventListener('contractorCreated', (event) => {
+            this.handleContractorCreated(event.detail);
+        });
+
+        // NEW: Verify contractor edit modal manager is listening
+        console.log('🔧 ContractorEditModalManager initialized:', !!this.contractorEditModalManager);
+        
+        // Test event dispatch to ensure it's working
+        setTimeout(() => {
+            console.log('🔧 Testing event system...');
+            document.dispatchEvent(new CustomEvent('testEvent', {
+                detail: { message: 'Test event working' }
+            }));
+        }, 1000);
     }
 
     setupGlobalHandlers() {
@@ -163,15 +174,15 @@ export class ContractorReviewApp {
         window.app = this;
         window.cardManager = this.cardManager;
         window.dataModule = this.dataModule;
-        window.modalManager = this.modalManager;
         window.mapManager = this.mapManager;
-        window.feedbackModalManager = this.feedbackModalManager; // NEW: Make feedback manager available
+        window.feedbackModalManager = this.feedbackModalManager;
+        window.contractorEditModalManager = this.contractorEditModalManager; // NEW: Make available globally
 
         // Make app methods available globally for HTML onclick handlers
         window.toggleFavorite = (contractorId) => this.toggleFavorite(contractorId);
         window.showContractorDetails = (contractorId) => this.showContractorDetails(contractorId);
         window.showReviewForm = (contractorId) => this.showReviewForm(contractorId);
-        window.showFeedbackForm = () => this.showFeedbackForm(); // NEW: Feedback method
+        window.showFeedbackForm = () => this.showFeedbackForm();
         window.searchContractors = () => this.searchContractors();
         window.filterContractors = () => this.filterContractors();
         window.sortContractors = () => this.sortContractors();
@@ -186,6 +197,98 @@ export class ContractorReviewApp {
         window.showMapView = () => this.showMapView();
         window.showListView = () => this.showListView();
         window.refreshMap = () => this.refreshMap();
+        window.addNewSupplier = () => this.addNewSupplier();
+
+        // NEW: Direct test method for debugging
+        window.testAddSupplier = (prefillData = { name: 'Test Supplier', category: 'Plumbing', location: 'Johannesburg' }) => {
+            console.log('🧪 Testing add supplier with:', prefillData);
+            document.dispatchEvent(new CustomEvent('addSupplierRequested', {
+                detail: {
+                    prefillData: prefillData,
+                    source: 'test',
+                    timestamp: new Date().toISOString()
+                }
+            }));
+        };
+    }
+
+    // Handle contractor creation success (post-creation handling only)
+    handleContractorCreated(contractorData) {
+        const { contractor, wasCreated } = contractorData;
+        
+        if (wasCreated && contractor) {
+            // Show success notification
+            showNotification(`Successfully added ${contractor.name} to the directory!`, 'success');
+            
+            // Clear filters to show all contractors including the new one
+            this.filterManager.clearFilters();
+            
+            // Optional: Auto-scroll to the new contractor in the list
+            setTimeout(() => {
+                this.highlightNewContractor(contractor.id);
+            }, 500);
+            
+            // Track successful addition
+            this.trackContractorAddition(contractor);
+        }
+    }
+
+    // Highlight newly added contractor in the list
+    highlightNewContractor(contractorId) {
+        const contractorCard = document.querySelector(`[data-contractor-id="${contractorId}"]`);
+        if (contractorCard) {
+            // Add highlight animation
+            contractorCard.classList.add('new-contractor-highlight');
+            
+            // Scroll into view
+            contractorCard.scrollIntoView({ 
+                behavior: 'smooth', 
+                block: 'center' 
+            });
+            
+            // Remove highlight after animation
+            setTimeout(() => {
+                contractorCard.classList.remove('new-contractor-highlight');
+            }, 3000);
+        }
+    }
+
+    // Track successful contractor addition
+    trackContractorAddition(contractor) {
+        console.log('Tracking contractor addition:', {
+            contractorId: contractor.id,
+            contractorName: contractor.name,
+            category: contractor.category,
+            location: contractor.location,
+            timestamp: new Date().toISOString()
+        });
+        
+        // Example: Dispatch event for analytics integration
+        document.dispatchEvent(new CustomEvent('contractorAddedSuccessfully', {
+            detail: contractor
+        }));
+    }
+
+    // Public method for adding new suppliers (can be called from anywhere)
+    addNewSupplier(prefillData = {}) {
+        console.log('🎯 addNewSupplier called with:', prefillData);
+        
+        // Dispatch event instead of direct method call
+        document.dispatchEvent(new CustomEvent('addSupplierRequested', {
+            detail: {
+                prefillData: prefillData,
+                source: 'globalMethod',
+                timestamp: new Date().toISOString()
+            }
+        }));
+
+        // NEW: Fallback - if event doesn't work, try direct method
+        setTimeout(() => {
+            if (this.contractorEditModalManager && typeof this.contractorEditModalManager.openWithPrefill === 'function') {
+                console.log('🔄 Using fallback direct method');
+                this.contractorEditModalManager.openWithPrefill(prefillData);
+            }
+        }, 100);
     }
 
     handleViewChange() {
@@ -228,7 +331,10 @@ export class ContractorReviewApp {
     }
 
     handleMapMarkerClick(contractorId) {
-        this.modalManager.openContractorModal(contractorId);
+        // Dispatch event for contractor modal to handle
+        document.dispatchEvent(new CustomEvent('showContractorDetails', {
+            detail: { contractorId }
+        }));
     }
 
     renderDashboard() {
@@ -244,8 +350,8 @@ export class ContractorReviewApp {
         this.handleViewChange();
     }
 
+    // Handle review submission via events
     handleReviewSubmit(reviewData) {
-        // Use the contractor ID from the review data or fall back to currentContractor
         const contractorId = reviewData.contractorId || this.currentContractor;
         
         if (!contractorId) {
@@ -256,7 +362,9 @@ export class ContractorReviewApp {
 
         const review = this.dataModule.addReview(contractorId, reviewData);
         if (review) {
-            this.modalManager.closeReviewModal();
+            // Dispatch event for review modal to close itself
+            document.dispatchEvent(new CustomEvent('closeReviewModal'));
+            
             this.renderDashboard();
             showNotification('Review submitted successfully!', 'success');
         } else {
@@ -264,7 +372,7 @@ export class ContractorReviewApp {
         }
     }
 
-    // NEW: Show feedback form
+    // Show feedback form
     showFeedbackForm(context = {}) {
         if (!this.feedbackModalManager) {
             console.error('FeedbackModalManager not initialized');
@@ -304,9 +412,19 @@ export class ContractorReviewApp {
         }
     }
 
-    // Public API for HTML onclick handlers
-    showContractorDetails = (contractorId) => this.modalManager.openContractorModal(contractorId);
-    showReviewForm = (contractorId) => this.modalManager.openReviewModal(contractorId);
+    // Public API for HTML onclick handlers - UPDATED to use events
+    showContractorDetails = (contractorId) => {
+        document.dispatchEvent(new CustomEvent('showContractorDetails', {
+            detail: { contractorId }
+        }));
+    };
+    
+    showReviewForm = (contractorId) => {
+        document.dispatchEvent(new CustomEvent('showReviewForm', {
+            detail: { contractorId }
+        }));
+    };
+    
     searchContractors = () => this.filterManager.applyCurrentFilters();
     filterContractors = () => this.filterManager.applyCurrentFilters();
 
@@ -343,14 +461,22 @@ export class ContractorReviewApp {
         this.filterManager.resetToDefault();
     };
 
-    // HTML COMPATIBILITY METHODS
+    // HTML COMPATIBILITY METHODS - UPDATED to use events
     closeModal(modalId) {
-        if (modalId === 'reviewModal') {
-            this.modalManager.closeReviewModal();
-        } else if (modalId === 'contractorModal') {
-            this.modalManager.closeContractorModal();
-        } else if (modalId === 'feedbackModal') {
-            this.feedbackModalManager.close();
+        // Dispatch events for individual modal managers to handle
+        switch (modalId) {
+            case 'reviewModal':
+                document.dispatchEvent(new CustomEvent('closeReviewModal'));
+                break;
+            case 'contractorModal':
+                document.dispatchEvent(new CustomEvent('closeContractorModal'));
+                break;
+            case 'feedbackModal':
+                this.feedbackModalManager.close();
+                break;
+            case 'contractorEditModal':
+                document.dispatchEvent(new CustomEvent('closeContractorEditModal'));
+                break;
         }
     }
 
@@ -396,11 +522,14 @@ export class ContractorReviewApp {
             dataModuleInitialized: this.dataModule.initialized,
             uiManagerInitialized: !!this.uiManager,
             filterManagerInitialized: !!this.filterManager,
-            feedbackModalManagerInitialized: !!this.feedbackModalManager, // NEW: Feedback status
+            feedbackModalManagerInitialized: !!this.feedbackModalManager,
+            contractorEditModalManagerInitialized: !!this.contractorEditModalManager, // NEW: Track this
             favoritesManagerAvailable: !!this.uiManager?.favoritesManager,
             lazyLoaderAvailable: !!this.uiManager?.lazyLoader,
             statsManagerAvailable: !!this.uiManager?.statsManager,
-            isFavoritesFilterActive: this.isFavoritesFilterActive
+            isFavoritesFilterActive: this.isFavoritesFilterActive,
+            addSupplierEnabled: true,
+            eventDrivenArchitecture: true
         };
     }
 }

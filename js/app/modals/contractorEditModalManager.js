@@ -1,5 +1,5 @@
 // js/app/modals/contractorEditModalManager.js
-// Handles contractor creation and editing modal with area autocomplete
+// UPDATED: Fixed province dropdown population with correct data structure
 
 import { geocodingService } from '../../modules/geocodingService.js';
 import { showNotification } from '../../modules/notifications.js';
@@ -26,12 +26,210 @@ export class ContractorEditModalManager {
         this.updateGeocodingStatus = this.updateGeocodingStatus.bind(this);
         this.removeEventListeners = this.removeEventListeners.bind(this);
         this.handleProvinceChange = this.handleProvinceChange.bind(this);
+        this.handleAddSupplierRequest = this.handleAddSupplierRequest.bind(this);
     }
 
     init() {
         this.createModal();
         this.bindEvents();
+        this.setupEventListeners();
         console.log('✅ ContractorEditModalManager initialized');
+    }
+
+    // Setup event listeners for external events
+    setupEventListeners() {
+        // Listen for "Add Supplier" requests from FilterManager
+        const addSupplierHandler = (event) => {
+            console.log('📩 ContractorEditModalManager: Received addSupplierRequested event', event.detail);
+            this.handleAddSupplierRequest(event.detail);
+        };
+
+        document.addEventListener('addSupplierRequested', addSupplierHandler);
+        this.eventListeners.push({
+            element: document,
+            event: 'addSupplierRequested',
+            handler: addSupplierHandler
+        });
+
+        // Listen for contractor creation events (for analytics/tracking)
+        const contractorCreatedHandler = (event) => {
+            console.log('📈 Contractor created event received:', event.detail);
+        };
+
+        document.addEventListener('contractorCreated', contractorCreatedHandler);
+        this.eventListeners.push({
+            element: document,
+            event: 'contractorCreated',
+            handler: contractorCreatedHandler
+        });
+    }
+
+    // Handle "Add Supplier" requests with prefill data
+    handleAddSupplierRequest(eventData) {
+        const { prefillData, source, timestamp } = eventData;
+
+        console.log('🎯 ContractorEditModalManager: Handling add supplier request with prefill:', prefillData);
+
+        // Open modal with prefill data
+        this.openWithPrefill(prefillData);
+
+        // Track this action if needed
+        this.trackAddSupplierAction(prefillData, source);
+    }
+
+    // Open modal with pre-filled data from search
+    openWithPrefill(prefillData) {
+        if (!this.modal) this.init();
+
+        // Reset form and open for new contractor
+        this.open(null); // Open with null to create new contractor
+
+        // Pre-fill form fields after a short delay to ensure DOM is ready
+        setTimeout(() => {
+            this.prefillFormFields(prefillData);
+        }, 50);
+    }
+
+    // Pre-fill form fields with search data
+    prefillFormFields(prefillData) {
+        const { name, category, location } = prefillData;
+
+        console.log('📝 Pre-filling form with:', prefillData);
+
+        // Pre-fill name if available
+        if (name && name.trim()) {
+            const nameInput = document.getElementById('contractorEditName');
+            if (nameInput) {
+                nameInput.value = name.trim();
+                nameInput.dispatchEvent(new Event('input', { bubbles: true }));
+            }
+        }
+
+        // Pre-fill category if available and valid
+        if (category && category.trim()) {
+            const categorySelect = document.getElementById('contractorEditCategory');
+            if (categorySelect) {
+                // Check if category exists in options
+                const categoryExists = Array.from(categorySelect.options).some(
+                    option => option.value === category
+                );
+                if (categoryExists) {
+                    categorySelect.value = category;
+                    categorySelect.dispatchEvent(new Event('change', { bubbles: true }));
+                } else {
+                    console.log('⚠️ Category not found in options:', category);
+                }
+            }
+        }
+
+        // Pre-fill location if available
+        if (location && location.trim()) {
+            this.prefillLocation(location);
+        }
+
+        // Focus on the next empty required field for better UX
+        this.focusNextEmptyField();
+    }
+
+    // Pre-fill location data
+    prefillLocation(location) {
+        if (!location || !this.locationData?.southAfricanProvinces) return;
+
+        console.log('📍 Attempting to prefill location:', location);
+
+        // Try to parse location (could be just area, or "area, province")
+        const locationParts = location.split(',').map(part => part.trim());
+
+        if (locationParts.length === 2) {
+            // Format: "Area, Province"
+            const [area, province] = locationParts;
+            this.setProvinceAndArea(province, area);
+        } else if (locationParts.length === 1) {
+            // Format: Just area name - try to find province
+            const area = locationParts[0];
+            this.findAndSetProvinceForArea(area);
+        }
+    }
+
+    // Set province and area
+    setProvinceAndArea(province, area) {
+        const provinceSelect = document.getElementById('contractorEditProvince');
+        if (provinceSelect && province) {
+            // Check if province exists
+            const provinceExists = Array.from(provinceSelect.options).some(
+                option => option.value === province
+            );
+
+            if (provinceExists) {
+                provinceSelect.value = province;
+                provinceSelect.dispatchEvent(new Event('change', { bubbles: true }));
+
+                // Set area after province is selected and area input is enabled
+                setTimeout(() => {
+                    const areaInput = document.getElementById('contractorEditArea');
+                    if (areaInput && area) {
+                        areaInput.value = area;
+                        areaInput.dispatchEvent(new Event('input', { bubbles: true }));
+
+                        // Trigger geocoding for the pre-filled location
+                        setTimeout(() => {
+                            this.setupRealTimeGeocoding();
+                        }, 100);
+                    }
+                }, 100);
+            }
+        }
+    }
+
+    // Find province for area and set both
+    findAndSetProvinceForArea(area) {
+        if (!this.locationData?.southAfricanProvinces) return;
+
+        for (const [province, provinceData] of Object.entries(this.locationData.southAfricanProvinces)) {
+            if (provinceData.cities.includes(area)) {
+                this.setProvinceAndArea(province, area);
+                return;
+            }
+        }
+
+        console.log('⚠️ Could not find province for area:', area);
+    }
+
+    // Focus on next empty required field for better UX
+    focusNextEmptyField() {
+        const requiredFields = [
+            document.getElementById('contractorEditName'),
+            document.getElementById('contractorEditCategory'),
+            document.getElementById('contractorEditPhone'),
+            document.getElementById('contractorEditProvince'),
+            document.getElementById('contractorEditArea')
+        ];
+
+        for (const field of requiredFields) {
+            if (field && !field.value.trim()) {
+                field.focus();
+                break;
+            }
+        }
+    }
+
+    // Track add supplier actions
+    trackAddSupplierAction(prefillData, source) {
+        console.log('📊 Tracked add supplier action:', {
+            source: source || 'unknown',
+            hasName: !!(prefillData.name && prefillData.name.trim()),
+            hasCategory: !!(prefillData.category && prefillData.category.trim()),
+            hasLocation: !!(prefillData.location && prefillData.location.trim()),
+            timestamp: new Date().toISOString()
+        });
+
+        document.dispatchEvent(new CustomEvent('addSupplierFlowStarted', {
+            detail: {
+                prefillData,
+                source,
+                timestamp: new Date().toISOString()
+            }
+        }));
     }
 
     createModal() {
@@ -321,6 +519,52 @@ export class ContractorEditModalManager {
         this.updateGeocodingStatus('ready', 'Location detection ready');
     }
 
+    // FIXED: Properly populate provinces from location data
+    populateProvinces() {
+        const select = document.getElementById('contractorEditProvince');
+        if (!select) return;
+
+        select.innerHTML = '<option value="">Select Province</option>';
+
+        console.log('📍 Location data structure:', this.locationData);
+
+        // FIXED: Handle both data structures - direct object or wrapped in southAfricanProvinces
+        let provinces = [];
+
+        if (this.locationData) {
+            if (this.locationData.southAfricanProvinces) {
+                // Structure: { southAfricanProvinces: { "Gauteng": { cities: [...], coordinates: [...] } } }
+                provinces = Object.keys(this.locationData.southAfricanProvinces).sort();
+                console.log('✅ Found provinces in southAfricanProvinces property:', provinces);
+            } else if (typeof this.locationData === 'object' && this.locationData.Gauteng) {
+                // Structure: Direct { "Gauteng": { cities: [...], coordinates: [...] }, "Western Cape": {...} }
+                provinces = Object.keys(this.locationData).sort();
+                console.log('✅ Found provinces in direct object:', provinces);
+            } else {
+                console.error('❌ Unexpected location data structure:', this.locationData);
+            }
+        }
+
+        // If no provinces found, use default South African provinces
+        if (provinces.length === 0) {
+            console.warn('⚠️ No provinces found in locationData, using defaults');
+            provinces = [
+                'Eastern Cape', 'Free State', 'Gauteng', 'KwaZulu-Natal',
+                'Limpopo', 'Mpumalanga', 'North West', 'Northern Cape', 'Western Cape'
+            ];
+        }
+
+        // Populate the dropdown
+        provinces.forEach(province => {
+            const option = document.createElement('option');
+            option.value = province;
+            option.textContent = province;
+            select.appendChild(option);
+        });
+
+        console.log(`✅ Populated ${provinces.length} provinces in dropdown`);
+    }
+
     initAreaAutocomplete() {
         if (this.areaAutocomplete) {
             this.areaAutocomplete.destroy();
@@ -371,19 +615,6 @@ export class ContractorEditModalManager {
         });
     }
 
-    populateProvinces() {
-        const select = document.getElementById('contractorEditProvince');
-        if (!select) return;
-
-        select.innerHTML = '<option value="">Select Province</option>';
-        if (this.locationData?.southAfricanProvinces) {
-            const sortedProvinces = Object.keys(this.locationData.southAfricanProvinces).sort();
-            sortedProvinces.forEach(province => {
-                select.innerHTML += `<option value="${province}">${province}</option>`;
-            });
-        }
-    }
-
     populateContractorData(contractor) {
         document.getElementById('contractorEditName').value = contractor.name || '';
         document.getElementById('contractorEditCategory').value = contractor.category || '';
@@ -407,25 +638,27 @@ export class ContractorEditModalManager {
     findProvinceForArea(area) {
         const provinceSelect = document.getElementById('contractorEditProvince');
 
-        if (!provinceSelect) return;
+        if (!provinceSelect || !this.locationData?.southAfricanProvinces) return;
 
-        if (this.locationData?.southAfricanProvinces) {
-            for (const [province, provinceData] of Object.entries(this.locationData.southAfricanProvinces)) {
-                if (provinceData.cities.includes(area)) {
-                    provinceSelect.value = province;
-                    this.updateAreaInput(province, area);
-                    setTimeout(() => this.setupRealTimeGeocoding(), 500);
-                    return;
-                }
+        console.log('🔍 Searching for province for area:', area);
+
+        for (const [province, provinceData] of Object.entries(this.locationData.southAfricanProvinces)) {
+            if (provinceData.cities.includes(area)) {
+                console.log(`✅ Found province ${province} for area ${area}`);
+                provinceSelect.value = province;
+                this.updateAreaInput(province, area);
+                setTimeout(() => this.setupRealTimeGeocoding(), 500);
+                return;
             }
         }
 
+        console.log('⚠️ Could not find province for area:', area);
         // If area not found in any province, enable area input
         this.enableAreaInput();
     }
 
     handleProvinceChange(province) {
-        console.log('🔧 ContractorEditModalManager: Province changed to:', province);
+        console.log('🔧 Province changed to:', province);
         this.updateAreaInput(province);
 
         // Update autocomplete with new province
@@ -452,6 +685,12 @@ export class ContractorEditModalManager {
         }
 
         this.updateGeocodingStatus('ready', 'Type area name for suggestions');
+
+        // Debug: Check available cities for this province
+        if (this.locationData?.southAfricanProvinces?.[province]?.cities) {
+            const cities = this.locationData.southAfricanProvinces[province].cities;
+            console.log(`📍 Available cities for ${province}:`, cities.length, 'cities');
+        }
     }
 
     enableAreaInput() {
@@ -597,15 +836,19 @@ export class ContractorEditModalManager {
                 coordinates: coordinates
             });
 
+            let savedContractor;
+            let wasCreated = false;
+
             if (contractorId) {
                 // Update existing contractor
-                const updatedContractor = this.contractorManager.update(contractorId, contractorData);
-                console.log('✅ Contractor updated:', updatedContractor);
+                savedContractor = this.contractorManager.update(contractorId, contractorData);
+                console.log('✅ Contractor updated:', savedContractor);
                 showNotification('Service Provider updated successfully', 'success');
             } else {
                 // Add new contractor
-                const newContractor = this.contractorManager.create(contractorData);
-                console.log('✅ Contractor created:', newContractor);
+                savedContractor = this.contractorManager.create(contractorData);
+                wasCreated = true;
+                console.log('✅ Contractor created:', savedContractor);
                 showNotification('Service Provider added successfully', 'success');
             }
 
@@ -615,10 +858,23 @@ export class ContractorEditModalManager {
             document.dispatchEvent(new CustomEvent('contractorsUpdated', {
                 detail: {
                     action: contractorId ? 'updated' : 'created',
-                    contractorId,
-                    hasCoordinates: !!coordinates
+                    contractorId: savedContractor?.id,
+                    hasCoordinates: !!coordinates,
+                    contractor: savedContractor
                 }
             }));
+
+            // Dispatch contractor created event for analytics/tracking
+            if (wasCreated && savedContractor) {
+                document.dispatchEvent(new CustomEvent('contractorCreated', {
+                    detail: {
+                        contractor: savedContractor,
+                        wasCreated: true,
+                        source: 'contractorEditModal',
+                        timestamp: new Date().toISOString()
+                    }
+                }));
+            }
 
         } catch (error) {
             console.error('❌ Error saving contractor:', error);

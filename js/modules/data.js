@@ -2,9 +2,6 @@
 // ES6 Module for data orchestration - PURE DATA ONLY
 
 // Import data directly from ES6 modules
-import { defaultCategories } from '../data/defaultCategories.js';
-import { defaultContractors } from '../data/defaultContractors.js';
-import { defaultReviews } from '../data/defaultReviews.js';
 import { southAfricanProvinces } from '../data/defaultLocations.js';
 
 import { Storage } from './storage.js';

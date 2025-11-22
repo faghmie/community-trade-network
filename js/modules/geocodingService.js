@@ -1,5 +1,5 @@
 // js/modules/geocodingService.js
-// ES6 Module for geocoding with self-contained Cache API persistence
+// UPDATED: Use default location data structure for fallback coordinates
 
 /**
  * @typedef {Object} Coordinates
@@ -28,6 +28,16 @@
  * @property {number} [expiry] - Optional expiry timestamp
  */
 
+/**
+ * @typedef {Object} ProvinceData
+ * @property {string[]} cities - Array of city names in the province
+ * @property {[number, number]} coordinates - Default coordinates for the province [latitude, longitude]
+ */
+
+/**
+ * @typedef {Object.<string, ProvinceData>} SouthAfricanProvinces
+ */
+
 export class GeocodingService {
     constructor() {
         /** @type {Map<string, GeocodingResult>} */
@@ -46,6 +56,30 @@ export class GeocodingService {
         this.cacheStorage = null;
         this.persistentCacheEnabled = false;
         this.cacheExpiryHours = 24 * 7; // 1 week default
+        
+        // Rate limiting and API status tracking
+        this.apiStatus = {
+            available: true,
+            lastSuccess: Date.now(),
+            consecutiveFailures: 0,
+            maxConsecutiveFailures: 3,
+            cooldownPeriod: 60000, // 1 minute cooldown after failures
+            lastRequestTime: 0,
+            minRequestInterval: 2000 // 2 seconds between requests to respect rate limits
+        };
+        
+        // Default province coordinates from defaultLocations.js structure
+        this.defaultProvinceCoordinates = {
+            'Gauteng': { lat: -26.2708, lng: 28.1123 },
+            'Western Cape': { lat: -33.9249, lng: 18.4241 },
+            'KwaZulu-Natal': { lat: -29.8587, lng: 31.0218 },
+            'Eastern Cape': { lat: -33.9608, lng: 25.6022 },
+            'Free State': { lat: -29.0852, lng: 26.1596 },
+            'Mpumalanga': { lat: -25.4745, lng: 30.9703 },
+            'Limpopo': { lat: -23.9045, lng: 29.4689 },
+            'North West': { lat: -26.6639, lng: 27.0817 },
+            'Northern Cape': { lat: -28.7419, lng: 24.7719 }
+        };
         
         // Initialize cache persistence
         this.initCachePersistence();
@@ -133,7 +167,76 @@ export class GeocodingService {
     }
 
     /**
-     * Geocode a location string to coordinates
+     * Check if API is currently available (respects cooldown periods)
+     * @returns {boolean}
+     */
+    isApiAvailable() {
+        if (!this.apiStatus.available) {
+            const timeSinceLastFailure = Date.now() - this.apiStatus.lastSuccess;
+            if (timeSinceLastFailure > this.apiStatus.cooldownPeriod) {
+                // Reset API status after cooldown period
+                this.apiStatus.available = true;
+                this.apiStatus.consecutiveFailures = 0;
+                console.log('📍 API cooldown period ended, retrying...');
+            }
+        }
+        return this.apiStatus.available;
+    }
+
+    /**
+     * Enforce rate limiting between requests
+     * @returns {Promise<void>}
+     */
+    async enforceRateLimit() {
+        const timeSinceLastRequest = Date.now() - this.apiStatus.lastRequestTime;
+        if (timeSinceLastRequest < this.apiStatus.minRequestInterval) {
+            const waitTime = this.apiStatus.minRequestInterval - timeSinceLastRequest;
+            console.log(`⏳ Rate limiting: waiting ${waitTime}ms before next request`);
+            await new Promise(resolve => setTimeout(resolve, waitTime));
+        }
+        this.apiStatus.lastRequestTime = Date.now();
+    }
+
+    /**
+     * Handle API failure with exponential backoff
+     * @param {Error} error 
+     */
+    handleApiFailure(error) {
+        this.apiStatus.consecutiveFailures++;
+        
+        // Check for specific rate limiting errors
+        const errorMessage = error.message.toLowerCase();
+        const isRateLimit = errorMessage.includes('403') || 
+                           errorMessage.includes('rate') || 
+                           errorMessage.includes('limit') ||
+                           errorMessage.includes('cors');
+        
+        if (isRateLimit) {
+            console.warn('🚫 API Rate limiting detected:', error.message);
+            // Longer cooldown for rate limits
+            this.apiStatus.cooldownPeriod = 300000; // 5 minutes for rate limits
+        } else {
+            console.warn('❌ API request failed:', error.message);
+        }
+        
+        if (this.apiStatus.consecutiveFailures >= this.apiStatus.maxConsecutiveFailures) {
+            this.apiStatus.available = false;
+            console.warn(`🔴 API temporarily disabled after ${this.apiStatus.consecutiveFailures} consecutive failures`);
+        }
+    }
+
+    /**
+     * Record API success
+     */
+    recordApiSuccess() {
+        this.apiStatus.available = true;
+        this.apiStatus.consecutiveFailures = 0;
+        this.apiStatus.lastSuccess = Date.now();
+        this.apiStatus.cooldownPeriod = 60000; // Reset to normal cooldown
+    }
+
+    /**
+     * Geocode a location string to coordinates with enhanced error handling
      * @param {string} location - Location string (e.g., "Cape Town, Western Cape")
      * @returns {Promise<GeocodingResult>}
      */
@@ -167,20 +270,94 @@ export class GeocodingService {
             };
         }
 
-        // Call geocoding API
-        const result = await this.callGeocodingAPI(location);
-        
-        // Cache the result
-        await this.cacheGeocodingResult(cacheKey, result);
+        // Check if API is available before making request
+        if (!this.isApiAvailable()) {
+            console.log('📍 API unavailable, using fallback coordinates');
+            return this.getFallbackCoordinates(location);
+        }
+
+        try {
+            // Enforce rate limiting
+            await this.enforceRateLimit();
+
+            const result = await this.callGeocodingAPI(location);
+            
+            if (result.coordinates) {
+                // Cache the result
+                await this.cacheGeocodingResult(cacheKey, result);
+                // Record successful API call
+                this.recordApiSuccess();
+                return {
+                    ...result,
+                    source: 'geocoding_api'
+                };
+            } else {
+                // If API returns no results, use fallback
+                console.log('📍 No API results, using fallback');
+                return this.getFallbackCoordinates(location);
+            }
+        } catch (error) {
+            // Handle API failure with proper tracking
+            this.handleApiFailure(error);
+            console.warn('📍 Geocoding API failed, using fallback:', error.message);
+            return this.getFallbackCoordinates(location);
+        }
+    }
+
+    /**
+     * Get fallback coordinates using default location data structure
+     * @param {string} location 
+     * @returns {GeocodingResult}
+     */
+    getFallbackCoordinates(location) {
+        // Try to extract province for better fallback
+        const province = this.extractProvinceFromLocation(location);
+        const fallbackCoords = this.getProvinceFallbackCoordinates(province);
         
         return {
-            ...result,
-            source: 'geocoding_api'
+            coordinates: fallbackCoords,
+            serviceAreas: this.generateServiceAreas(location),
+            source: 'fallback',
+            timestamp: Date.now()
         };
     }
 
     /**
-     * Call the actual geocoding API
+     * Extract province from location string
+     * @param {string} location 
+     * @returns {string|null}
+     */
+    extractProvinceFromLocation(location) {
+        const provinces = Object.keys(this.defaultProvinceCoordinates);
+        
+        for (const province of provinces) {
+            if (location.toLowerCase().includes(province.toLowerCase())) {
+                return province;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Get fallback coordinates for a province using default location data
+     * @param {string|null} province 
+     * @returns {Coordinates|null}
+     */
+    getProvinceFallbackCoordinates(province) {
+        // Use the coordinates from defaultProvinceCoordinates which matches defaultLocations.js structure
+        if (province && this.defaultProvinceCoordinates[province]) {
+            console.log(`📍 Using fallback coordinates for ${province}:`, this.defaultProvinceCoordinates[province]);
+            return this.defaultProvinceCoordinates[province];
+        }
+        
+        // Default: South Africa center coordinates
+        const defaultCoords = { lat: -28.4793, lng: 24.6727 };
+        console.log('📍 Using default South Africa coordinates:', defaultCoords);
+        return defaultCoords;
+    }
+
+    /**
+     * Call the actual geocoding API with enhanced error handling
      * @param {string} location 
      * @returns {Promise<GeocodingResult>}
      */
@@ -211,9 +388,13 @@ export class GeocodingService {
                     };
                     serviceAreas = this.generateServiceAreas(location);
                 }
+            } else {
+                // Handle HTTP errors
+                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
             }
         } catch (error) {
             console.warn('Geocoding failed for location:', location, error);
+            throw error; // Re-throw to be handled by caller
         }
 
         return { 
@@ -299,9 +480,17 @@ export class GeocodingService {
             return [];
         }
 
+        // Check if API is available
+        if (!this.isApiAvailable()) {
+            console.log('📍 API unavailable for suggestions, returning empty array');
+            return [];
+        }
+
         const query = `${areaPrefix}, ${province}, South Africa`;
         
         try {
+            await this.enforceRateLimit();
+            
             const response = await fetch(
                 `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&countrycodes=za&limit=${options.limit || 5}`,
                 {
@@ -314,9 +503,13 @@ export class GeocodingService {
 
             if (response.ok) {
                 const data = await response.json();
+                this.recordApiSuccess();
                 return this.processAreaSuggestions(data, province, areaPrefix);
+            } else {
+                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
             }
         } catch (error) {
+            this.handleApiFailure(error);
             console.warn('Geocoding API failed for suggestions:', error);
         }
 
@@ -543,7 +736,8 @@ export class GeocodingService {
                 suggestions: this.areaSuggestionsCache.size
             },
             persistent: this.persistentCacheEnabled,
-            expiryHours: this.cacheExpiryHours
+            expiryHours: this.cacheExpiryHours,
+            apiStatus: this.apiStatus
         };
     }
 }

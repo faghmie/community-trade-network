@@ -76,6 +76,82 @@
     min-height: 1.5em;
 }
 
+/* EMPTY STATE STYLES - For "Add Supplier" functionality */
+.empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: var(--space-3xl) var(--space-lg);
+    text-align: center;
+    max-width: 400px;
+    margin: 0 auto;
+}
+
+.empty-state-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--space-lg);
+    width: 100%;
+}
+
+.empty-state-icon {
+    font-size: 4rem;
+    color: var(--surface-400);
+    margin-bottom: var(--space-md);
+}
+
+.empty-state-title {
+    font-size: var(--font-size-xl);
+    font-weight: var(--font-weight-bold);
+    color: var(--on-surface);
+    margin: 0;
+    line-height: var(--line-height-tight);
+}
+
+.empty-state-description {
+    font-size: var(--font-size-md);
+    color: var(--on-surface-variant);
+    margin: 0;
+    line-height: var(--line-height-normal);
+}
+
+.empty-state-hint {
+    font-size: var(--font-size-sm);
+    color: var(--surface-600);
+    margin: 0;
+    line-height: var(--line-height-normal);
+    font-style: italic;
+}
+
+.add-supplier-btn {
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+    padding: var(--space-md) var(--space-xl);
+    font-size: var(--font-size-md);
+    font-weight: var(--font-weight-medium);
+    border-radius: var(--border-radius-xl);
+    transition: var(--material-transition);
+    min-width: 200px;
+    justify-content: center;
+}
+
+.add-supplier-btn .btn-icon {
+    font-size: 1.25em;
+    line-height: 1;
+}
+
+.add-supplier-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-medium);
+}
+
+.add-supplier-btn:active {
+    transform: translateY(0);
+}
+
 /* Responsive design for feedback modal */
 @media (max-width: 600px) {
     .feedback-modal .modal-content {
@@ -89,6 +165,37 @@
     .star-icon {
         font-size: 1.875rem;
     }
+
+    /* Mobile empty state adjustments */
+    .empty-state {
+        padding: var(--space-2xl) var(--space-md);
+        min-height: 60vh;
+        justify-content: center;
+    }
+
+    .empty-state-icon {
+        font-size: 3rem;
+    }
+
+    .empty-state-title {
+        font-size: var(--font-size-lg);
+    }
+
+    .empty-state-description {
+        font-size: var(--font-size-sm);
+    }
+
+    .add-supplier-btn {
+        width: 100%;
+        max-width: 280px;
+    }
+}
+
+/* Tablet and desktop empty state adjustments */
+@media (min-width: 601px) and (max-width: 1024px) {
+    .empty-state {
+        padding: var(--space-3xl) var(--space-xl);
+    }
 }
 
 /* High contrast mode support */
@@ -101,6 +208,14 @@
         border-left: 3px solid var(--error-color);
         background-color: var(--error-50);
     }
+
+    .empty-state-icon {
+        filter: contrast(1.5);
+    }
+
+    .empty-state-hint {
+        color: var(--on-surface);
+    }
 }
 
 /* Reduced motion support */
@@ -108,4 +223,29 @@
     .star-rating-btn {
         transition: none;
     }
+
+    .add-supplier-btn {
+        transition: none;
+    }
+
+    .add-supplier-btn:hover {
+        transform: none;
+    }
+}
+
+/* Dark theme adjustments for empty state */
+@media (prefers-color-scheme: dark) {
+    .empty-state-icon {
+        color: var(--surface-500);
+    }
+
+    .empty-state-hint {
+        color: var(--surface-500);
+    }
+}
+
+/* Focus styles for accessibility */
+.add-supplier-btn:focus-visible {
+    outline: 2px solid var(--primary-color);
+    outline-offset: 2px;
 }

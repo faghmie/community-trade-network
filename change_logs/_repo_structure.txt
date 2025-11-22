@@ -56,17 +56,17 @@
 |   |       |-- 2025_11_19_07.md
 |   |       |-- 2025_11_19_08.md
 |   |       |-- 2025_11_19_09.md
-|   |       `-- 2025_11_19_10.md
-|   |-- 2025_11_20_01.md
-|   |-- 2025_11_20_02.md
-|   |-- 2025_11_20_03.md
-|   |-- 2025_11_20_04.md
-|   |-- 2025_11_20_05.md
-|   |-- 2025_11_20_06.md
+|   |       |-- 2025_11_19_10.md
+|   |       |-- 2025_11_20_01.md
+|   |       |-- 2025_11_20_02.md
+|   |       |-- 2025_11_20_03.md
+|   |       |-- 2025_11_20_04.md
+|   |       |-- 2025_11_20_05.md
+|   |       `-- 2025_11_20_06.md
 |   |-- _architecture.md
 |   |-- _coding_prompt.md
 |   |-- next_best_action.md
-|   |-- project_status_2025_11_20.md
+|   |-- project_status.md
 |   `-- _repo_structure.txt
 |-- css
 |   |-- base
@@ -116,6 +116,7 @@
 |   |   |-- modals
 |   |   |   |-- adminFeedbackModalManager.js
 |   |   |   |-- baseModalManager.js
+|   |   |   |-- contractorEditModalManager.js
 |   |   |   |-- contractorModalManager.js
 |   |   |   |-- feedbackModalManager.js
 |   |   |   `-- reviewModalManager.js
@@ -129,6 +130,14 @@
 |   |-- config
 |   |   `-- supabase-credentials.js
 |   |-- data
+|   |   |-- types
+|   |   |   |-- categoryTypes.js
+|   |   |   |-- contractorTypes.js
+|   |   |   |-- feedbackTypes.js
+|   |   |   |-- index.js
+|   |   |   |-- locationTypes.js
+|   |   |   |-- reviewTypes.js
+|   |   |   `-- uuidTypes.js
 |   |   |-- defaultCategories.js
 |   |   |-- defaultContractors.js
 |   |   |-- defaultData.js
@@ -140,13 +149,16 @@
 |   |   |-- admin-contractors.js
 |   |   |-- admin-feedback.js
 |   |   |-- admin-reviews.js
+|   |   |-- areaAutocomplete.js
 |   |   |-- auth.js
+|   |   |-- backButtonManager.js
 |   |   |-- cardManager.js
 |   |   |-- categories.js
 |   |   |-- contractorManager.js
 |   |   |-- data.js
 |   |   |-- favoritesDataManager.js
 |   |   |-- feedbackDataManager.js
+|   |   |-- geocodingService.js
 |   |   |-- loadingScreen.js
 |   |   |-- mapManager.js
 |   |   |-- notifications.js
@@ -175,4 +187,4 @@
 |-- README
 `-- sw.js
 
-16 directories, 160 files
+17 directories, 171 files

@@ -1,4 +1,5 @@
-// js/app/filterManager.js - FIXED: Proper favorites handling without breaking existing filters
+// js/app/filterManager.js - FIXED: Pure event-driven architecture for add supplier
+// UPDATED: Removed direct callback, using only Custom Events
 
 export class FilterManager {
     constructor() {
@@ -6,12 +7,14 @@ export class FilterManager {
         this.eventHandlers = {
             onFiltersChange: null,
             onViewChange: null
+            // REMOVED: onAddSupplierRequest - using events instead
         };
         this.currentFilters = {};
         this.isAdvancedFiltersVisible = true;
         this.isFilterPanelVisible = false;
         this.dataModule = null;
         this.categoriesModule = null;
+        this.lastSearchResults = [];
     }
 
     async init(dataModule) {
@@ -65,7 +68,9 @@ export class FilterManager {
             bottomNavItems: document.querySelectorAll('.bottom-nav-item'),
             // UI elements for view management
             mapContainer: document.getElementById('map-container'),
-            contractorList: document.getElementById('contractorList')
+            contractorList: document.getElementById('contractorList'),
+            // NEW: Empty state container for "Add Supplier" button
+            emptyStateContainer: document.getElementById('emptyStateContainer')
         };
 
         // Hide toggle button and expansion header
@@ -79,10 +84,50 @@ export class FilterManager {
         if (this.elements.advancedFilters) {
             this.elements.advancedFilters.classList.remove('hidden');
         }
+
+        // NEW: Create empty state container if it doesn't exist
+        if (!this.elements.emptyStateContainer) {
+            this.createEmptyStateContainer();
+        }
+    }
+
+    // NEW: Create empty state container for "Add Supplier" functionality
+    createEmptyStateContainer() {
+        const emptyStateContainer = document.createElement('div');
+        emptyStateContainer.id = 'emptyStateContainer';
+        emptyStateContainer.className = 'empty-state hidden';
+        
+        const emptyStateContent = document.createElement('div');
+        emptyStateContent.className = 'empty-state-content';
+        
+        emptyStateContent.innerHTML = `
+            <div class="empty-state-icon">🔍</div>
+            <h3 class="empty-state-title">No suppliers found</h3>
+            <p class="empty-state-description">We couldn't find any suppliers matching your search criteria.</p>
+            <button class="btn btn-primary add-supplier-btn" id="addSupplierBtn">
+                <span class="btn-icon">➕</span>
+                Add Supplier to Directory
+            </button>
+            <p class="empty-state-hint">Help grow the community by adding a trusted supplier</p>
+        `;
+        
+        emptyStateContainer.appendChild(emptyStateContent);
+        
+        // Insert after contractor list or at the end of main content
+        const mainContent = document.querySelector('main') || document.body;
+        const contractorList = document.getElementById('contractorList');
+        if (contractorList) {
+            contractorList.parentNode.insertBefore(emptyStateContainer, contractorList.nextSibling);
+        } else {
+            mainContent.appendChild(emptyStateContainer);
+        }
+        
+        this.elements.emptyStateContainer = emptyStateContainer;
+        this.elements.addSupplierBtn = document.getElementById('addSupplierBtn');
     }
 
     bindEvents() {
-        const { searchInput, viewToggle, closeFiltersPanel, bottomNavItems } = this.elements;
+        const { searchInput, viewToggle, closeFiltersPanel, bottomNavItems, addSupplierBtn } = this.elements;
 
         // Search input with debounce
         if (searchInput) {
@@ -95,6 +140,14 @@ export class FilterManager {
             closeFiltersPanel.addEventListener('click', (e) => {
                 e.preventDefault();
                 this.hideFilterPanel();
+            });
+        }
+
+        // NEW: Add Supplier button event - DISPATCHES EVENT ONLY
+        if (addSupplierBtn) {
+            addSupplierBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                this.handleAddSupplierRequest();
             });
         }
 
@@ -127,6 +180,32 @@ export class FilterManager {
         // Add event listeners for all filter changes
         this.setupFilterEventListeners();
     }
+
+    // NEW: Handle add supplier request - PURE EVENT-DRIVEN VERSION
+    handleAddSupplierRequest() {
+        const { searchInput, categoryFilter, locationFilter } = this.elements;
+        
+        // Collect pre-fill data from current search
+        const prefillData = {
+            name: searchInput?.value || '',
+            category: categoryFilter?.value || '',
+            location: locationFilter?.value || ''
+        };
+
+        console.log('FilterManager: Dispatching addSupplierRequested event with data:', prefillData);
+        
+        // DISPATCH EVENT ONLY - no direct callbacks or dependencies
+        document.dispatchEvent(new CustomEvent('addSupplierRequested', {
+            detail: {
+                prefillData: prefillData,
+                source: 'filterManager',
+                timestamp: new Date().toISOString()
+            }
+        }));
+    }
+
+    // REMOVED: onAddSupplierRequest callback registration method
+    // No direct coupling to modal systems - pure event-driven architecture
 
     debounce(func, wait, immediate) {
         let timeout;
@@ -337,6 +416,9 @@ export class FilterManager {
         // Apply sorting and get filtered contractors
         const filteredContractors = this.applySorting();
 
+        // NEW: Update empty state based on search results
+        this.updateEmptyState(filteredContractors);
+
         // Notify about filter change with the actual filtered contractors
         if (this.eventHandlers.onFiltersChange) {
             this.eventHandlers.onFiltersChange(this.currentFilters, filteredContractors);
@@ -345,6 +427,41 @@ export class FilterManager {
         this.updateFilterCount();
         this.updateClearButton();
         this.updateFilterIndicator();
+    }
+
+    // NEW: Update empty state visibility based on search results
+    updateEmptyState(filteredContractors) {
+        const { emptyStateContainer, contractorList } = this.elements;
+        
+        if (!emptyStateContainer || !contractorList) return;
+
+        // Store last search results for reference
+        this.lastSearchResults = filteredContractors || [];
+
+        const hasResults = filteredContractors && filteredContractors.length > 0;
+        const hasActiveSearch = this.hasActiveSearchFilters();
+
+        // Show empty state when no results AND user has actively searched/filtered
+        if (!hasResults && hasActiveSearch) {
+            emptyStateContainer.classList.remove('hidden');
+            contractorList.classList.add('hidden'); // Hide empty list
+        } else {
+            emptyStateContainer.classList.add('hidden');
+            contractorList.classList.remove('hidden'); // Show list (even if empty for initial state)
+        }
+    }
+
+    // NEW: Check if user has active search filters (not just initial state)
+    hasActiveSearchFilters() {
+        const { searchInput, categoryFilter, locationFilter, ratingFilter } = this.elements;
+        
+        return (
+            (searchInput?.value && searchInput.value.trim() !== '') ||
+            (categoryFilter?.value && categoryFilter.value !== '') ||
+            (locationFilter?.value && locationFilter.value !== '') ||
+            (ratingFilter?.value && ratingFilter.value !== '') ||
+            this.currentFilters.favorites === 'favorites'
+        );
     }
 
     updateFilterCount() {
