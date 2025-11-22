@@ -93,26 +93,10 @@
         </div>
     </header>
 
-    <div class="container">
-        <!-- REMOVED: Old Hero Section (now in header) -->
-
-        <!-- REMOVED: Quick Filter Chips section - functionality moved to bottom navigation -->
-
-        <!-- Map Container -->
-        <section class="map-section">
-            <div id="map-container" class="map-container material-card hidden"></div>
-        </section>
-
-        <!-- Service Provider List -->
-        <section class="contractor-list" id="contractorList">
-            <div class="contractor-list-content">
-                <div class="contractors-grid" id="contractorsGrid">
-                    <!-- Service providers will be loaded here -->
-                </div>
-            </div>
-        </section>
-
-    </div>
+    <!-- Main View Container -->
+    <main id="mainViewContainer" class="main-view-container">
+        <!-- Views will be dynamically loaded here by view modules -->
+    </main>
 
     <!-- Material Design Modal Bottom Sheet for Filters -->
     <div class="bottom-sheet modal-bottom-sheet hidden" id="filtersSheet" role="dialog" aria-modal="true"
@@ -134,8 +118,6 @@
 
                 <!-- Content -->
                 <div class="bottom-sheet-content">
-                    <!-- REMOVED: Search Input (moved to main page) -->
-
                     <!-- Filter Grid -->
                     <div class="filter-grid">
                         <!-- Location Filter -->

@@ -1,4 +1,4 @@
-# Community Trade Network App - Complete Project Structure & Architecture
+# Community Trade Network - Current Project Architecture & Structure
 
 ## 🏗️ **Architecture Overview**
 
@@ -6,7 +6,7 @@
 
 **1. Layered Architecture with Clean Separation**
 ```
-Presentation Layer (UI Components & Modals)
+Presentation Layer (Views & UI Components)
     ↓
 Application Layer (Managers & Controllers)
     ↓
@@ -17,10 +17,11 @@ Infrastructure Layer (Storage & Services)
 Persistence Layer (LocalStorage + Supabase + Cache API)
 ```
 
-**2. Hybrid Communication Pattern**
-- **Direct Method Calls** for performance-critical operations
-- **Event-Driven** for cross-component notifications
-- **Callback Registration** for tightly coupled components
+**2. Event-Driven Communication Pattern**
+- **Custom Events** for cross-component notifications
+- **Loose coupling** between modules
+- **Unidirectional data flow** from data layer to presentation
+- **View-based architecture** for modular UI management
 
 **3. Mobile-First PWA Strategy**
 - Service Worker for offline capability
@@ -35,7 +36,7 @@ Persistence Layer (LocalStorage + Supabase + Cache API)
 ### **🌐 ROOT LEVEL FILES**
 
 **Entry Points:**
-- **`index.html`** - Main consumer PWA interface for contractor browsing and reviews
+- **`index.html`** - Main consumer PWA interface with view container architecture
 - **`admin.html`** - Administrative portal for content management and moderation
 - **`manifest.json`** - PWA configuration for app installation and metadata
 - **`sw.js`** - Service Worker for offline caching and update management
@@ -93,7 +94,11 @@ Persistence Layer (LocalStorage + Supabase + Cache API)
 - **`favoritesManager.js`** - User favorites interface management
 - **`statsManager.js`** - Analytics and statistics display
 - **`lazyLoader.js`** - Performance optimization for lazy loading
-- **`modalManager.js`** - Central modal coordination and lifecycle management
+
+**View System (`js/app/views/`)**
+- **`contractorListView.js`** - Self-contained contractor list display module
+- **`categoriesListView.js`** - Self-contained categories display module
+- **`mapView.js`** - Geographic interface and location services integration
 
 **Modal System (`js/app/modals/`)**
 - **`baseModalManager.js`** - Abstract base class for modal patterns and common functionality
@@ -131,7 +136,6 @@ Persistence Layer (LocalStorage + Supabase + Cache API)
 
 **UI Components:**
 - **`cardManager.js`** - Contractor card rendering and management
-- **`mapManager.js`** - Geographic interface and location services integration
 - **`notifications.js`** - User feedback and status updates (toasts, alerts)
 - **`tabs.js`** - Tab navigation system with state management
 
@@ -190,25 +194,34 @@ Persistence Layer (LocalStorage + Supabase + Cache API)
 
 ## 🔄 **ARCHITECTURE DECISIONS & PATTERNS**
 
-### **1. Hybrid Communication Pattern**
+### **1. Event-Driven Communication Pattern**
 
-**Direct Method Calls:**
-- Used for performance-critical data operations
-- Manager-to-manager communication within application layer
-- Synchronous operations where immediate response is required
+**Custom Events:**
+- Used for cross-component notifications and state changes
+- Modal open/close operations via events
+- Data synchronization events between layers
+- View switching and navigation events
 
-**Event-Driven Communication:**
-- Cross-component notifications and state changes
-- Modal open/close operations
-- Data synchronization events
-- Back button and navigation events
+**Benefits:**
+- Loose coupling between modules
+- Easy debugging and monitoring
+- Scalable architecture for feature additions
+- Clear separation of concerns
 
-**Callback Registration:**
-- Tightly coupled components with direct dependencies
-- Filter state changes
-- UI state updates between managers
+### **2. View-Based Architecture**
 
-### **2. Data Persistence Strategy**
+**Self-Contained Views:**
+- Each view manages its own HTML structure
+- Views can be shown/hidden independently
+- Clear view lifecycle management
+- Easy to add new views without breaking existing functionality
+
+**View Coordination:**
+- Main app orchestrates view visibility
+- Events control view transitions
+- Consistent user experience across views
+
+### **3. Data Persistence Strategy**
 
 **Local-First Architecture:**
 - Primary data storage in browser's localStorage
@@ -225,12 +238,13 @@ Persistence Layer (LocalStorage + Supabase + Cache API)
 - In-memory caching for frequently accessed data
 - Geocoding results caching for performance
 
-### **3. Modular Design Principles**
+### **4. Modular Design Principles**
 
 **Single Responsibility:**
 - Each manager handles specific domain logic
 - Modal managers focus on UI interaction patterns
 - Data managers handle persistence and business logic
+- View managers handle display and user interaction
 
 **Dependency Injection:**
 - Main.js acts as composition root
@@ -238,11 +252,12 @@ Persistence Layer (LocalStorage + Supabase + Cache API)
 - Clear dependency graph for maintainability
 
 **Separation of Concerns:**
-- Presentation logic in UI managers
+- Presentation logic in view managers
 - Business logic in data managers
 - Infrastructure concerns in service modules
+- Coordination logic in application managers
 
-### **4. Type Safety Approach**
+### **5. Type Safety Approach**
 
 **JSDoc Type System:**
 - Comprehensive type definitions without build step
@@ -256,7 +271,7 @@ Persistence Layer (LocalStorage + Supabase + Cache API)
 - Unified rating and review formats
 - Consistent status enumerations
 
-### **5. PWA Optimization Strategy**
+### **6. PWA Optimization Strategy**
 
 **Offline-First:**
 - Service Worker for core app shell caching
@@ -279,15 +294,22 @@ Persistence Layer (LocalStorage + Supabase + Cache API)
 
 ### **Application Bootstrap Flow:**
 1. **Entry Point** (`script.js`/`admin.js`) initializes core dependencies
-2. **Main Manager** (`main.js`) composes all sub-managers
+2. **Main Manager** (`main.js`) composes all sub-managers and views
 3. **Data Module** (`data.js`) initializes storage and sync layers
-4. **UI Managers** set up event listeners and render initial state
+4. **View Managers** set up event listeners and render initial state
 5. **Service Workers** register for offline capability
 
 ### **Data Flow Patterns:**
-- **User Action** → **UI Manager** → **Data Manager** → **Storage** → **Sync** → **UI Update**
-- **Background Sync** → **Storage** → **Data Manager** → **Event Notification**
-- **Modal Interaction** → **Modal Manager** → **Data Operation** → **UI Refresh**
+- **User Action** → **View Manager** → **Event** → **Application Manager** → **Data Manager** → **Storage** → **Sync** → **UI Update**
+- **Background Sync** → **Storage** → **Data Manager** → **Event Notification** → **View Update**
+- **View Interaction** → **Event** → **Filter Manager** → **Data Operation** → **View Refresh**
+
+### **View Management Flow:**
+1. **View Initialization** - Views render their HTML structure
+2. **Event Registration** - Views listen for relevant events
+3. **View Coordination** - Main app manages view visibility
+4. **Data Binding** - Views receive data via events
+5. **User Interaction** - Views dispatch events for actions
 
 ### **Error Handling Strategy:**
 - **UI Level**: User-friendly notifications and fallback states
@@ -295,4 +317,4 @@ Persistence Layer (LocalStorage + Supabase + Cache API)
 - **Network Level**: Offline queuing and synchronization
 - **Application Level**: Graceful degradation and error boundaries
 
-This architecture provides a robust foundation for the Community Trade Network app with clear separation of concerns, comprehensive type safety, and optimized mobile PWA experience. The hybrid communication pattern balances performance with loose coupling, while the local-first data strategy ensures reliable offline operation.
+This architecture provides a robust foundation for the Community Trade Network app with clear separation of concerns, comprehensive type safety, and optimized mobile PWA experience. The event-driven communication pattern ensures loose coupling between modules, while the view-based architecture enables flexible UI management and easy feature additions.

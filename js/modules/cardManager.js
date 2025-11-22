@@ -30,11 +30,11 @@ export class CardManager {
         return `
             <div class="card contractor-card material-card" 
                  data-contractor-id="${sanitizeHtml(contractor.id)}"
-                 onclick="app.showContractorDetails('${sanitizeHtml(contractor.id)}')">
+                 onclick="document.dispatchEvent(new CustomEvent('showContractorDetails', { detail: { contractorId: '${sanitizeHtml(contractor.id)}' } }))">
                 <div class="card-content">
                     <button class="favorite-btn ${isFavorite ? 'favorited' : ''}" 
                             data-contractor-id="${sanitizeHtml(contractor.id)}"
-                            onclick="toggleFavorite('${sanitizeHtml(contractor.id)}'); event.stopPropagation();"
+                            onclick="document.dispatchEvent(new CustomEvent('toggleFavorite', { detail: { contractorId: '${sanitizeHtml(contractor.id)}' } })); event.stopPropagation();"
                             title="${isFavorite ? 'Remove from favorites' : 'Add to favorites'}">
                         <i class="material-icons">${isFavorite ? 'favorite' : 'favorite_border'}</i>
                     </button>

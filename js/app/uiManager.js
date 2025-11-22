@@ -4,6 +4,7 @@
 import { LazyLoader } from './lazyLoader.js';
 import { FavoritesManager } from './favoritesManager.js';
 import { StatsManager } from './statsManager.js';
+import { ContractorListView } from './views/contractorListView.js';
 import backButtonManager from '../modules/backButtonManager.js';
 
 export class UIManager {
@@ -19,13 +20,15 @@ export class UIManager {
         this.favoritesManager = null;
         this.filterManager = null;
         this.statsManager = null;
+        this.contractorListView = null;
 
         // FIXED: Define the method first, then bind it
         this.handleCategoriesUpdated = this.handleCategoriesUpdated.bind(this);
-        this.handleFiltersChange = this.handleFiltersChange.bind(this);
         this.handleFavoritesUpdated = this.handleFavoritesUpdated.bind(this);
         this.handleModalOpened = this.handleModalOpened.bind(this);
         this.handleModalClosed = this.handleModalClosed.bind(this);
+        // REMOVED: handleContractorsListUpdate - now handled by ContractorListView
+        // REMOVED: handleFiltersChange - no longer needed
     }
 
     // Define the methods as class properties to ensure they exist before binding
@@ -33,13 +36,9 @@ export class UIManager {
         this.filterManager?.handleCategoriesUpdated();
     }
 
-    handleFiltersChange(filters) {
-        // REMOVED: updateFilterIndicator() - now handled by FilterManager
-    }
-
     handleFavoritesUpdated(event) {
         this.updateFavoritesBadges(event.detail?.count);
-        this.updateAllFavoriteButtons();
+        // REMOVED: updateAllFavoriteButtons - now handled by ContractorListView
     }
 
     handleModalOpened(event) {
@@ -75,7 +74,15 @@ export class UIManager {
     }
 
     async setupManagers() {
-        // Setup LazyLoader
+        // Setup ContractorListView first - NOW HANDLES ALL CONTRACTOR LIST FUNCTIONALITY
+        try {
+            this.contractorListView = new ContractorListView(this.dataModule, this.reviewManager);
+        } catch (error) {
+            console.error('Failed to initialize ContractorListView:', error);
+            this.contractorListView = null;
+        }
+
+        // Setup LazyLoader - NOTE: May need to be moved to ContractorListView later
         try {
             this.lazyLoader = new LazyLoader({
                 batchSize: 12,
@@ -87,7 +94,11 @@ export class UIManager {
                 // Optional: Add minimal logging here if needed for performance monitoring
             });
 
-            await this.lazyLoader.init(this.elements.contractorsGrid, this.cardManager);
+            // UPDATED: Use contractor list view's grid instead of old element
+            const contractorsGrid = document.getElementById('contractors-grid');
+            if (contractorsGrid) {
+                await this.lazyLoader.init(contractorsGrid, this.cardManager);
+            }
         } catch (error) {
             console.error('Failed to initialize LazyLoader:', error);
             this.lazyLoader = null;
@@ -100,7 +111,10 @@ export class UIManager {
             
             // Listen to favorites manager events
             this.favoritesManager.onFavoritesFilterApplied((detail) => {
-                this.renderContractors(detail.contractors);
+                // Use event-driven approach instead of direct method call
+                document.dispatchEvent(new CustomEvent('contractorsListUpdate', {
+                    detail: { contractors: detail.contractors }
+                }));
                 this.statsManager?.updateStats(detail.contractors);
             });
         } catch (error) {
@@ -120,7 +134,7 @@ export class UIManager {
 
     cacheElements() {
         this.elements = {
-            contractorsGrid: document.getElementById('contractorsGrid'),
+            // REMOVED: contractorsGrid - now handled by ContractorListView
             favoritesSection: document.getElementById('favoritesSection'),
             favoritesGrid: document.getElementById('favoritesGrid'),
             favoritesNotice: document.getElementById('favoritesNotice'),
@@ -128,7 +142,7 @@ export class UIManager {
             actionButtons: document.querySelectorAll('[data-action]'),
             mainContent: document.querySelector('.main-content'),
             mapContainer: document.getElementById('map-container'),
-            contractorList: document.getElementById('contractorList'),
+            // REMOVED: contractorList - now handled by ContractorListView
             filtersPanel: document.getElementById('filtersPanel'),
             // FIXED: Ensure all badge elements are properly cached
             mobileFavBadge: document.getElementById('mobileFavBadge'),
@@ -141,7 +155,7 @@ export class UIManager {
     updateInitialFavoritesState() {
         const initialCount = this.dataModule.getFavoritesCount();
         this.updateFavoritesBadges(initialCount);
-        this.updateAllFavoriteButtons();
+        // REMOVED: updateAllFavoriteButtons - now handled by ContractorListView
     }
 
     setupCategories() {
@@ -172,29 +186,7 @@ export class UIManager {
         }
     }
 
-    updateAllFavoriteButtons() {
-        const favoriteButtons = document.querySelectorAll('.favorite-btn');
-        
-        favoriteButtons.forEach(button => {
-            const contractorId = button.getAttribute('data-contractor-id');
-            if (contractorId) {
-                const isFav = this.dataModule.isFavorite(contractorId);
-                const icon = button.querySelector('.material-icons');
-                
-                if (isFav) {
-                    button.classList.add('favorited');
-                    button.setAttribute('aria-pressed', 'true');
-                    button.title = 'Remove from favorites';
-                    if (icon) icon.textContent = 'favorite';
-                } else {
-                    button.classList.remove('favorited');
-                    button.setAttribute('aria-pressed', 'false');
-                    button.title = 'Add to favorites';
-                    if (icon) icon.textContent = 'favorite_border';
-                }
-            }
-        });
-    }
+    // REMOVED: updateAllFavoriteButtons - moved to ContractorListView
 
     setupActionHandlers() {
         document.addEventListener('click', (e) => {
@@ -208,11 +200,16 @@ export class UIManager {
     }
 
     setupEventListeners() {
+        // REMOVED: contractor list update listener - now handled by ContractorListView
+
         // Listen for filter changes from FilterManager
         if (this.filterManager) {
             this.filterManager.onFiltersChange((filters) => {
                 const contractors = this.filterManager.applyFilters(filters);
-                this.renderContractors(contractors);
+                // Use event-driven approach - ContractorListView will handle this
+                document.dispatchEvent(new CustomEvent('contractorsListUpdate', {
+                    detail: { contractors }
+                }));
                 if (this.statsManager) {
                     this.statsManager.updateStats(contractors);
                 }
@@ -223,6 +220,10 @@ export class UIManager {
         if (this.filterManager) {
             this.filterManager.onViewChange((view) => {
                 // FilterManager handles its own navigation state
+                // Dispatch view state change for views to handle
+                document.dispatchEvent(new CustomEvent('viewStateChanged', {
+                    detail: { view }
+                }));
             });
         }
 
@@ -273,21 +274,7 @@ export class UIManager {
         }
     }
 
-    renderContractors = (contractorsToRender = null, targetGrid = null) => {
-        if (targetGrid && targetGrid !== this.elements.contractorsGrid) {
-            const contractors = contractorsToRender || this.dataModule.getContractors();
-            this.cardManager.renderContractorCards(contractors, targetGrid);
-            return;
-        }
-
-        const contractors = contractorsToRender || this.dataModule.getContractors();
-
-        if (this.lazyLoader) {
-            this.lazyLoader.render(contractors);
-        } else {
-            this.cardManager.renderContractorCards(contractors, this.elements.contractorsGrid);
-        }
-    }
+    // REMOVED: renderContractors method - completely moved to ContractorListView
 
     setLazyLoading(enabled) {
         if (this.lazyLoader) {
@@ -300,6 +287,7 @@ export class UIManager {
         document.removeEventListener('favoritesUpdated', this.handleFavoritesUpdated);
         document.removeEventListener('modalOpened', this.handleModalOpened);
         document.removeEventListener('modalClosed', this.handleModalClosed);
+        // REMOVED: contractorsListUpdate cleanup
 
         // Clean up back button manager
         backButtonManager.destroy();
@@ -312,6 +300,9 @@ export class UIManager {
         }
         if (this.statsManager) {
             this.statsManager.destroy();
+        }
+        if (this.contractorListView) {
+            this.contractorListView.destroy();
         }
     }
 }

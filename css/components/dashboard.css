@@ -1,5 +1,28 @@
 /* ===== DASHBOARD COMPONENT STYLES ===== */
 
+/* View Visibility Control - CRITICAL FIX */
+.contractor-list-view[style*="display: none"] {
+    display: none !important;
+}
+
+.categories-view[style*="display: none"] {
+    display: none !important;
+}
+
+.contractor-list-view[style*="display: block"] {
+    display: block !important;
+}
+
+.categories-view[style*="display: block"] {
+    display: block !important;
+}
+
+/* Override the mobile flex display when view is hidden */
+.contractor-list-view[style*="display: none"] .contractors-grid,
+.categories-view[style*="display: none"] .categories-type-grid {
+    display: none !important;
+}
+
 /* Main Dashboard Container */
 .dashboard {
     background: var(--surface-container-lowest);
@@ -194,6 +217,23 @@
 
 /* ===== MOBILE LIST VIEW FIXES FOR DASHBOARD ===== */
 @media (max-width: 599px) {
+    /* View Visibility Control - MUST COME FIRST */
+    .contractor-list-view[style*="display: none"] {
+        display: none !important;
+    }
+
+    .categories-view[style*="display: none"] {
+        display: none !important;
+    }
+
+    .contractor-list-view[style*="display: block"] {
+        display: block !important;
+    }
+
+    .categories-view[style*="display: block"] {
+        display: block !important;
+    }
+
     /* Remove ALL padding from dashboard container for full-width list */
     .dashboard {
         padding: 0 !important;
@@ -240,13 +280,20 @@
         border-bottom: none !important;
     }
 
-    /* Ensure contractors grid uses list layout */
-    .cards-container .contractors-grid {
+    /* Ensure contractors grid uses list layout - BUT RESPECT VISIBILITY */
+    .contractor-list-view[style*="display: block"] .contractors-grid,
+    .categories-view[style*="display: block"] .categories-type-grid {
         display: flex !important;
         flex-direction: column !important;
         gap: 0 !important;
         margin: 0 !important;
         padding: 0 !important;
+    }
+
+    /* Hide grids when parent view is hidden */
+    .contractor-list-view[style*="display: none"] .contractors-grid,
+    .categories-view[style*="display: none"] .categories-type-grid {
+        display: none !important;
     }
 
     /* Remove any background that might interfere with list view */

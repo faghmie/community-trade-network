@@ -120,6 +120,10 @@
 |   |   |   |-- contractorModalManager.js
 |   |   |   |-- feedbackModalManager.js
 |   |   |   `-- reviewModalManager.js
+|   |   |-- views
+|   |   |   |-- categoriesListView.js
+|   |   |   |-- contractorListView.js
+|   |   |   `-- mapView.js
 |   |   |-- favoritesManager.js
 |   |   |-- filterManager.js
 |   |   |-- lazyLoader.js
@@ -160,7 +164,6 @@
 |   |   |-- feedbackDataManager.js
 |   |   |-- geocodingService.js
 |   |   |-- loadingScreen.js
-|   |   |-- mapManager.js
 |   |   |-- notifications.js
 |   |   |-- pwa-install-manager.js
 |   |   |-- reviewManager.js
@@ -187,4 +190,4 @@
 |-- README
 `-- sw.js
 
-17 directories, 171 files
+18 directories, 173 files

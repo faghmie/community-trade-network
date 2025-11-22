@@ -11,9 +11,27 @@ export class ContractorModalManager {
         this.isOpen = false;
         this.currentContractorId = null;
         this.modalId = 'contractor-details-modal'; // Unique identifier for back button manager
+        
+        // NEW: Initialize event listeners
+        this.initializeEventListeners();
+    }
+
+    // NEW: Initialize event listeners for this modal manager
+    initializeEventListeners() {
+        // Listen for showContractorDetails event from card clicks
+        document.addEventListener('showContractorDetails', (event) => {
+            console.log('🎯 ContractorModalManager received showContractorDetails event:', event.detail);
+            this.open(event.detail.contractorId);
+        });
+
+        // Listen for closeContractorModal event
+        document.addEventListener('closeContractorModal', () => {
+            this.close();
+        });
     }
 
     open(contractorId) {
+        console.log('🔧 ContractorModalManager opening for contractor:', contractorId);
         const contractor = this.dataModule.getContractor(contractorId);
         if (!contractor) {
             console.error('Service Provider not found:', contractorId);

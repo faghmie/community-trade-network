@@ -1,5 +1,4 @@
-// js/app/filterManager.js - FIXED: Pure event-driven architecture for add supplier
-// UPDATED: Removed direct callback, using only Custom Events
+// js/app/filterManager.js - FIXED: Removed view visibility handling, pure filtering only
 
 export class FilterManager {
     constructor() {
@@ -7,7 +6,6 @@ export class FilterManager {
         this.eventHandlers = {
             onFiltersChange: null,
             onViewChange: null
-            // REMOVED: onAddSupplierRequest - using events instead
         };
         this.currentFilters = {};
         this.isAdvancedFiltersVisible = true;
@@ -36,6 +34,7 @@ export class FilterManager {
         this.currentFilters = {
             searchTerm: '',
             category: '',
+            categoryType: '', // NEW: Track category type filtering
             location: '',
             rating: '',
             favorites: '', // Programmatic filter - no form element
@@ -66,9 +65,6 @@ export class FilterManager {
             closeFiltersPanel: document.getElementById('closeFiltersPanel'),
             // Bottom navigation elements
             bottomNavItems: document.querySelectorAll('.bottom-nav-item'),
-            // UI elements for view management
-            mapContainer: document.getElementById('map-container'),
-            contractorList: document.getElementById('contractorList'),
             // NEW: Empty state container for "Add Supplier" button
             emptyStateContainer: document.getElementById('emptyStateContainer')
         };
@@ -179,6 +175,50 @@ export class FilterManager {
 
         // Add event listeners for all filter changes
         this.setupFilterEventListeners();
+
+        // NEW: Setup category filtering event listeners
+        this.setupCategoryEventListeners();
+    }
+
+    // NEW: Setup category filtering event listeners
+    setupCategoryEventListeners() {
+        // Listen for category selection from categories view
+        document.addEventListener('filterByCategory', (event) => {
+            this.handleCategoryFilter(event.detail.category);
+        });
+
+        // Listen for category type selection from categories view
+        document.addEventListener('filterByCategoryType', (event) => {
+            this.handleCategoryTypeFilter(event.detail.type, event.detail.categoryNames);
+        });
+    }
+
+    // NEW: Handle category filter from categories view
+    handleCategoryFilter(category) {
+        const { categoryFilter } = this.elements;
+        
+        if (categoryFilter) {
+            categoryFilter.value = category;
+            this.applyCurrentFilters();
+            this.updateFilterCount();
+            this.updateClearButton();
+            this.updateFilterIndicator();
+        }
+    }
+
+    // NEW: Handle category type filter from categories view
+    handleCategoryTypeFilter(type, categoryNames) {
+        console.log(`🎯 FilterManager: Filtering by category type "${type}" with categories:`, categoryNames);
+        
+        // Set category type filter
+        this.currentFilters.categoryType = type;
+        this.currentFilters.categoryTypeNames = categoryNames;
+        
+        // Apply the filters
+        this.applyCurrentFilters();
+        this.updateFilterCount();
+        this.updateClearButton();
+        this.updateFilterIndicator();
     }
 
     // NEW: Handle add supplier request - PURE EVENT-DRIVEN VERSION
@@ -203,9 +243,6 @@ export class FilterManager {
             }
         }));
     }
-
-    // REMOVED: onAddSupplierRequest callback registration method
-    // No direct coupling to modal systems - pure event-driven architecture
 
     debounce(func, wait, immediate) {
         let timeout;
@@ -239,29 +276,21 @@ export class FilterManager {
         });
     }
 
-    // Handle bottom navigation
+    // Handle bottom navigation - UPDATED: Only dispatch events, no direct view manipulation
     handleBottomNavigation(view, item) {
         // Update active state
         this.updateBottomNavigationActiveState(view);
 
-        switch (view) {
-            case 'home':
-                this.showHomeView();
-                break;
-            case 'favorites':
-                this.showFavoritesView();
-                break;
-            case 'search':
-                this.showSearchView(); // This should show the filter panel
-                break;
-            case 'map':
-                this.showMapView();
-                break;
-            case 'admin':
-                this.showAdminView();
-                break;
-            default:
-                console.warn('Unknown bottom nav view:', view);
+        // Dispatch event for main.js to handle view switching
+        document.dispatchEvent(new CustomEvent('navigationViewChange', {
+            detail: { view }
+        }));
+
+        // Handle filter panel visibility for search view
+        if (view === 'search') {
+            this.showFilterPanel();
+        } else {
+            this.hideFilterPanel();
         }
     }
 
@@ -283,97 +312,7 @@ export class FilterManager {
         }
     }
 
-    // Bottom navigation view methods
-    showHomeView() {
-        this.hideFilterPanel();
-        this.clearFilters();
-        this.notifyViewChange('list');
-        this.updateViewState('list');
-    }
-
-    showFavoritesView() {
-        this.hideFilterPanel();
-        this.applyFavoritesFilter();
-        this.notifyViewChange('list');
-        this.updateViewState('list');
-    }
-
-    showSearchView() {
-        this.showFilterPanel();
-        // Focus on search input
-        setTimeout(() => {
-            if (this.elements.searchInput) {
-                this.elements.searchInput.focus();
-            }
-        }, 300);
-    }
-
-    showMapView() {
-        this.hideFilterPanel();
-        this.notifyViewChange('map');
-        this.updateViewState('map');
-    }
-
-    showAdminView() {
-        window.location.href = 'admin.html';
-    }
-
-    // Update UI view state
-    updateViewState(view) {
-        const { mapContainer, contractorList, filtersPanel } = this.elements;
-
-        if (view === 'map') {
-            // Show map, hide list
-            if (mapContainer) mapContainer.classList.remove('hidden');
-            if (contractorList) contractorList.classList.add('hidden');
-            if (filtersPanel) filtersPanel.classList.add('hidden');
-        } else {
-            // Show list, hide map
-            if (mapContainer) mapContainer.classList.add('hidden');
-            if (contractorList) contractorList.classList.remove('hidden');
-        }
-    }
-
-    // Apply favorites filter - FIXED: Programmatic approach
-    applyFavoritesFilter() {
-        // Clear other filters first to ensure favorites filter works properly
-        this.clearOtherFiltersForFavorites();
-
-        // FIXED: Set favorites filter programmatically (no form element)
-        this.currentFilters.favorites = 'favorites';
-
-        // Apply the filters
-        this.applyCurrentFilters();
-    }
-
-    // Apply high rated filter
-    applyHighRatedFilter() {
-        // Clear favorites filter when switching to high rated
-        this.currentFilters.favorites = '';
-
-        if (this.elements.ratingFilter) {
-            this.elements.ratingFilter.value = '4.0';
-        }
-
-        this.applyCurrentFilters();
-    }
-
-    // Clear other filters when applying favorites to avoid conflicts
-    clearOtherFiltersForFavorites() {
-        if (this.elements.searchInput) this.elements.searchInput.value = '';
-        if (this.elements.categoryFilter) this.elements.categoryFilter.value = '';
-        if (this.elements.locationFilter) this.elements.locationFilter.value = '';
-        if (this.elements.ratingFilter) this.elements.ratingFilter.value = '';
-        if (this.elements.sortBy) this.elements.sortBy.value = 'name';
-    }
-
-    // Notify view change
-    notifyViewChange(view) {
-        if (this.eventHandlers.onViewChange) {
-            this.eventHandlers.onViewChange(view);
-        }
-    }
-
+    // Handle view toggle - UPDATED: Only dispatch events
     handleViewToggle(button) {
         const { viewToggleBtns } = this.elements;
         const view = button.getAttribute('data-view');
@@ -386,8 +325,18 @@ export class FilterManager {
 
         button.classList.add('active');
 
+        // Dispatch event for main.js to handle view switching
         this.notifyViewChange(view);
-        this.updateViewState(view);
+    }
+
+    // REMOVED: All view-specific methods (showHomeView, showFavoritesView, etc.)
+    // View visibility is now handled exclusively by main.js
+
+    // Notify view change
+    notifyViewChange(view) {
+        if (this.eventHandlers.onViewChange) {
+            this.eventHandlers.onViewChange(view);
+        }
     }
 
     onFiltersChange(callback) {
@@ -401,10 +350,12 @@ export class FilterManager {
     applyCurrentFilters() {
         const { searchInput, categoryFilter, locationFilter, ratingFilter, sortBy } = this.elements;
 
-        // FIXED: Create new filters object but preserve programmatic favorites
+        // FIXED: Create new filters object but preserve programmatic favorites and category type
         const newFilters = {
             searchTerm: searchInput?.value || '',
             category: categoryFilter?.value || '',
+            categoryType: this.currentFilters.categoryType || '', // Preserve category type
+            categoryTypeNames: this.currentFilters.categoryTypeNames || [], // Preserve category names
             location: locationFilter?.value || '',
             rating: ratingFilter?.value || '',
             sortBy: sortBy?.value || 'name',
@@ -431,9 +382,9 @@ export class FilterManager {
 
     // NEW: Update empty state visibility based on search results
     updateEmptyState(filteredContractors) {
-        const { emptyStateContainer, contractorList } = this.elements;
+        const { emptyStateContainer } = this.elements;
         
-        if (!emptyStateContainer || !contractorList) return;
+        if (!emptyStateContainer) return;
 
         // Store last search results for reference
         this.lastSearchResults = filteredContractors || [];
@@ -444,10 +395,8 @@ export class FilterManager {
         // Show empty state when no results AND user has actively searched/filtered
         if (!hasResults && hasActiveSearch) {
             emptyStateContainer.classList.remove('hidden');
-            contractorList.classList.add('hidden'); // Hide empty list
         } else {
             emptyStateContainer.classList.add('hidden');
-            contractorList.classList.remove('hidden'); // Show list (even if empty for initial state)
         }
     }
 
@@ -460,7 +409,8 @@ export class FilterManager {
             (categoryFilter?.value && categoryFilter.value !== '') ||
             (locationFilter?.value && locationFilter.value !== '') ||
             (ratingFilter?.value && ratingFilter.value !== '') ||
-            this.currentFilters.favorites === 'favorites'
+            this.currentFilters.favorites === 'favorites' ||
+            this.currentFilters.categoryType !== '' // Include category type filtering
         );
     }
 
@@ -528,6 +478,9 @@ export class FilterManager {
         // FIXED: Include programmatic favorites filter in count
         if (this.currentFilters.favorites === 'favorites') count++;
 
+        // NEW: Include category type filtering in count
+        if (this.currentFilters.categoryType !== '') count++;
+
         return count;
     }
 
@@ -544,6 +497,17 @@ export class FilterManager {
             filters.rating,
             filters.location
         );
+
+        // Apply category type filter if specified
+        if (filters.categoryType && filters.categoryTypeNames && filters.categoryTypeNames.length > 0) {
+            const beforeCount = contractors.length;
+            
+            contractors = contractors.filter(contractor => {
+                return filters.categoryTypeNames.includes(contractor.category);
+            });
+            
+            console.log(`🔍 Category type filter "${filters.categoryType}": ${beforeCount} -> ${contractors.length} contractors`);
+        }
 
         // Apply favorites filter if specified
         if (filters.favorites === 'favorites') {
@@ -611,8 +575,10 @@ export class FilterManager {
         if (ratingFilter) ratingFilter.value = '';
         if (sortBy) sortBy.value = 'name';
 
-        // FIXED: Clear programmatic favorites filter
+        // FIXED: Clear programmatic filters
         this.currentFilters.favorites = '';
+        this.currentFilters.categoryType = '';
+        this.currentFilters.categoryTypeNames = [];
 
         this.applyCurrentFilters();
     }
@@ -746,6 +712,43 @@ export class FilterManager {
             default:
                 console.log('Unhandled action:', action);
         }
+    }
+
+    // Apply favorites filter - FIXED: Programmatic approach
+    applyFavoritesFilter() {
+        // Clear other filters first to ensure favorites filter works properly
+        this.clearOtherFiltersForFavorites();
+
+        // FIXED: Set favorites filter programmatically (no form element)
+        this.currentFilters.favorites = 'favorites';
+
+        // Apply the filters
+        this.applyCurrentFilters();
+    }
+
+    // Apply high rated filter
+    applyHighRatedFilter() {
+        // Clear favorites filter when switching to high rated
+        this.currentFilters.favorites = '';
+
+        if (this.elements.ratingFilter) {
+            this.elements.ratingFilter.value = '4.0';
+        }
+
+        this.applyCurrentFilters();
+    }
+
+    // Clear other filters when applying favorites to avoid conflicts
+    clearOtherFiltersForFavorites() {
+        if (this.elements.searchInput) this.elements.searchInput.value = '';
+        if (this.elements.categoryFilter) this.elements.categoryFilter.value = '';
+        if (this.elements.locationFilter) this.elements.locationFilter.value = '';
+        if (this.elements.ratingFilter) this.elements.ratingFilter.value = '';
+        if (this.elements.sortBy) this.elements.sortBy.value = 'name';
+        
+        // Clear category type filter
+        this.currentFilters.categoryType = '';
+        this.currentFilters.categoryTypeNames = [];
     }
 
     // Update categories when they change
