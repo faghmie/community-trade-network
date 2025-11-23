@@ -79,6 +79,7 @@
 |   |   |-- bottom-sheet.css
 |   |   |-- buttons.css
 |   |   |-- cards.css
+|   |   |-- confirmation-modal.css
 |   |   |-- contractor-details.css
 |   |   |-- dashboard.css
 |   |   |-- feedback.css
@@ -160,6 +161,7 @@
 |   |   |-- auth.js
 |   |   |-- backButtonManager.js
 |   |   |-- categories.js
+|   |   |-- confirmationModal.js
 |   |   |-- contractorManager.js
 |   |   |-- data.js
 |   |   |-- favoritesDataManager.js
@@ -193,4 +195,4 @@
 |-- README
 `-- sw.js
 
-19 directories, 175 files
+19 directories, 177 files

@@ -32,7 +32,7 @@ export class ContractorReviewApp {
             await this.createManagers();
             this.setupViews();
             this.setupEventListeners();
-            
+
             // Initialize navigation with home view
             this.navigationStack.push({ view: 'categories', context: {} });
             this.showView('categories');
@@ -114,7 +114,7 @@ export class ContractorReviewApp {
 
         // Handle back button from UI
         document.addEventListener('click', (e) => {
-            if (e.target.matches('[data-action="back"]') || 
+            if (e.target.matches('[data-action="back"]') ||
                 e.target.closest('[data-action="back"]')) {
                 e.preventDefault();
                 this.goBack();
@@ -154,12 +154,12 @@ export class ContractorReviewApp {
 
         // Update navigation stack (unless it's a back navigation or same view)
         if (!isBackNavigation && viewName !== this.currentView) {
-            this.navigationStack.push({ 
-                view: viewName, 
+            this.navigationStack.push({
+                view: viewName,
                 context: context,
-                timestamp: Date.now() 
+                timestamp: Date.now()
             });
-            
+
             // Limit stack size
             if (this.navigationStack.length > this.maxStackSize) {
                 this.navigationStack.shift();
@@ -198,7 +198,7 @@ export class ContractorReviewApp {
 
         // Remove current view from stack
         this.navigationStack.pop();
-        
+
         // Navigate to previous view
         const previous = this.navigationStack[this.navigationStack.length - 1];
         if (previous) {
@@ -408,7 +408,6 @@ export class ContractorReviewApp {
     handleCategorySelected(detail) {
         this.showView('contractors', { categoryType: detail.type });
         document.dispatchEvent(new CustomEvent('filterByCategoryType', { detail }));
-        showNotification(`Showing contractors in ${detail.type}`, 'info');
     }
 
     async handleToggleFavorite(contractorId) {
@@ -452,21 +451,25 @@ export class ContractorReviewApp {
     }
 
     handleContractorCreated(contractorData) {
-        const { contractor, wasCreated } = contractorData;
+        const { contractor, wasCreated, skipNavigation } = contractorData;
 
         if (wasCreated && contractor) {
             showNotification(`Successfully added ${contractor.name} to the directory!`, 'success');
             this.filterManager.clearFilters();
-            this.showView('contractors');
 
-            setTimeout(() => {
-                const contractorCard = document.querySelector(`[data-contractor-id="${contractor.id}"]`);
-                if (contractorCard) {
-                    contractorCard.classList.add('new-contractor-highlight');
-                    contractorCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                    setTimeout(() => contractorCard.classList.remove('new-contractor-highlight'), 3000);
-                }
-            }, 500);
+            // Only navigate to contractors view if we're not in the recommendation flow
+            if (!skipNavigation) {
+                this.showView('contractors');
+
+                setTimeout(() => {
+                    const contractorCard = document.querySelector(`[data-contractor-id="${contractor.id}"]`);
+                    if (contractorCard) {
+                        contractorCard.classList.add('new-contractor-highlight');
+                        contractorCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                        setTimeout(() => contractorCard.classList.remove('new-contractor-highlight'), 3000);
+                    }
+                }, 500);
+            }
         }
     }
 

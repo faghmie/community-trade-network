@@ -234,6 +234,7 @@
 /* FIXED: Enhanced Disabled State with proper specificity */
 .btn:disabled,
 .btn.disabled,
+.btn.submitting
 .btn-primary:disabled,
 .btn-primary.disabled,
 .btn-secondary:disabled, 

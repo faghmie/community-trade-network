@@ -71,7 +71,7 @@ Infrastructure Layer (Storage & Services)
 
 **Component Layer (`css/components/`)**
 - **Material Design Components**: `material.css`, `buttons.css`, `cards.css`
-- **Layout Components**: `modals.css`, `bottom-nav.css`, `tabs.css`, `bottom-sheet.css`
+- **Layout Components**: `modals.css`, `bottom-nav.css`, `tabs.css`, `bottom-sheet.css`, `confirmation-modal.css`
 - **Feature Components**: `ratings.css`, `map.css`, `forms.css`, `feedback.css`
 - **State Components**: `notifications.css`, `auth.css`, `stats-cards.css`
 - **Data Display**: `tables.css`, `contractor-details.css`, `dashboard.css`
@@ -134,6 +134,7 @@ Infrastructure Layer (Storage & Services)
 - **`supabase.js`** - **Cloud integration** - real-time sync with PostgreSQL backend
 - **`geocodingService.js`** - **Location services** - coordinates conversion with caching
 - **`validation.js`** - Form validation and data sanitization
+- **`confirmationModal.js`** - **Material Design confirmation dialogs** - replaces browser confirm with consistent UX
 - **`utilities.js`** - **Generic utilities** - debounce, throttle, formatting, clipboard, viewport helpers
 - **`uuid.js`** - ID generation using UUID v4
 - **`loadingScreen.js`** - Application loading states and user feedback

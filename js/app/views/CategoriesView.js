@@ -1,4 +1,4 @@
-// js/app/views/CategoriesView.js - Enhanced UX version
+// js/app/views/CategoriesView.js - Updated with contractor edit integration (no headers)
 import { BaseView } from './BaseView.js';
 
 export class CategoriesView extends BaseView {
@@ -23,12 +23,12 @@ export class CategoriesView extends BaseView {
             mainContainer.appendChild(this.container);
         }
 
-        // Render categories grid
+        // Render categories list
         this.renderCategories();
     }
 
     /**
-     * Render categories list with enhanced UX
+     * Render categories list with enhanced UX and list-view layout
      */
     renderCategories() {
         const categories = this.dataModule.getCategories();
@@ -42,20 +42,10 @@ export class CategoriesView extends BaseView {
         const { categoriesWithContractors, categoriesWithoutContractors } = this.separateCategoriesByAvailability(categories);
         
         this.container.innerHTML = `
-            <div class="categories-header">
-                <h2>Available Services</h2>
-                <p>Browse professionals in your community</p>
-            </div>
-
             ${categoriesWithContractors.length > 0 ? `
                 <div class="categories-section available-services">
-                    <h3 class="section-title">
-                        <i class="material-icons">check_circle</i>
-                        Available Now
-                        <span class="section-count">${categoriesWithContractors.length}</span>
-                    </h3>
-                    <div class="categories-type-grid" id="categories-with-contractors">
-                        ${categoriesWithContractors.map(([type, typeData]) => this.createCategoryCard(type, typeData, true)).join('')}
+                    <div class="categories-list" id="categories-with-contractors">
+                        ${categoriesWithContractors.map(([type, typeData]) => this.createCategoryListItem(type, typeData, true)).join('')}
                     </div>
                 </div>
             ` : ''}
@@ -68,8 +58,8 @@ export class CategoriesView extends BaseView {
                         <span class="section-count">${categoriesWithoutContractors.length}</span>
                     </h3>
                     <p class="section-description">Be the first to add suppliers for these services</p>
-                    <div class="categories-type-grid" id="categories-without-contractors">
-                        ${categoriesWithoutContractors.map(([type, typeData]) => this.createCategoryCard(type, typeData, false)).join('')}
+                    <div class="categories-list" id="categories-without-contractors">
+                        ${categoriesWithoutContractors.map(([type, typeData]) => this.createCategoryListItem(type, typeData, false)).join('')}
                     </div>
                 </div>
             ` : ''}
@@ -129,46 +119,49 @@ export class CategoriesView extends BaseView {
     }
 
     /**
-     * Create category card HTML with enhanced UX
+     * Create category list item HTML
      */
-    createCategoryCard(type, typeData, hasContractors) {
+    createCategoryListItem(type, typeData, hasContractors) {
         const icon = typeData.categories[0]?.icon || 'category';
         const contractorCount = typeData.contractorCount;
         
         return `
-            <div class="card contractor-card material-card category-type-card ${hasContractors ? 'has-contractors available' : 'no-contractors needed'}" 
+            <div class="category-list-item ${hasContractors ? 'available' : 'needed'}" 
                  data-category-type="${type}"
                  data-has-contractors="${hasContractors}">
                 <div class="card-content">
-                    <div class="category-type-icon">
+                    <div class="category-list-icon">
                         <i class="material-icons">${icon}</i>
-                        ${hasContractors ? 
-                            `<div class="contractors-badge available">${contractorCount}</div>` : 
-                            `<div class="contractors-badge needed">
-                                <i class="material-icons">add</i>
-                            </div>`
-                        }
                     </div>
                     
-                    <h3 class="contractor-name">${type}</h3>
-                    
-                    <div class="contractor-meta">
-                        <p class="contractor-category">
-                            <i class="material-icons">category</i>
-                            ${typeData.categories.length} service${typeData.categories.length !== 1 ? 's' : ''}
-                        </p>
-                        <p class="contractor-location ${hasContractors ? 'available' : 'needed'}">
-                            <i class="material-icons">${hasContractors ? 'groups' : 'person_add'}</i>
-                            ${hasContractors ? 
-                                `${contractorCount} professional${contractorCount !== 1 ? 's' : ''} available` : 
-                                'No professionals yet'
-                            }
-                        </p>
+                    <div class="category-content">
+                        <h3 class="category-name">${type}</h3>
+                        
+                        <div class="category-meta">
+                            <p class="category-service-count">
+                                <i class="material-icons">category</i>
+                                ${typeData.categories.length} service${typeData.categories.length !== 1 ? 's' : ''}
+                            </p>
+                            <p class="category-contractor-count ${hasContractors ? 'available' : 'needed'}">
+                                <i class="material-icons">${hasContractors ? 'groups' : 'person_add'}</i>
+                                ${hasContractors ? 
+                                    `${contractorCount} professional${contractorCount !== 1 ? 's' : ''}` : 
+                                    'No professionals yet'
+                                }
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="contractors-badge-list ${hasContractors ? 'available' : 'needed'}">
+                        ${hasContractors ? 
+                            contractorCount : 
+                            '<i class="material-icons">add</i>'
+                        }
                     </div>
 
                     ${!hasContractors ? `
-                        <div class="category-action">
-                            <button class="btn-secondary add-supplier-btn" data-category-type="${type}">
+                        <div class="category-list-action">
+                            <button class="add-supplier-btn-list" data-category-type="${type}">
                                 <i class="material-icons">person_add</i>
                                 Add Supplier
                             </button>
@@ -189,7 +182,7 @@ export class CategoriesView extends BaseView {
                     <i class="material-icons">diversity</i>
                     <h4>Help Grow Your Community</h4>
                     <p>Know a great contractor? Add them to help others find quality services</p>
-                    <button class="btn-primary" id="add-contractor-global">
+                    <button class="btn btn-primary" id="add-contractor-global">
                         <i class="material-icons">add_business</i>
                         Add a Contractor
                     </button>
@@ -207,7 +200,7 @@ export class CategoriesView extends BaseView {
         availableCards.forEach(card => {
             card.addEventListener('click', (e) => {
                 // Don't trigger if clicking the add supplier button
-                if (e.target.closest('.add-supplier-btn')) return;
+                if (e.target.closest('.add-supplier-btn-list')) return;
                 
                 const type = card.getAttribute('data-category-type');
                 this.handleCategoryClick(type);
@@ -215,7 +208,7 @@ export class CategoriesView extends BaseView {
         });
 
         // Handle add supplier buttons (for categories without contractors)
-        const addSupplierButtons = this.container.querySelectorAll('.add-supplier-btn');
+        const addSupplierButtons = this.container.querySelectorAll('.add-supplier-btn-list');
         addSupplierButtons.forEach(button => {
             button.addEventListener('click', (e) => {
                 e.stopPropagation();
@@ -249,11 +242,18 @@ export class CategoriesView extends BaseView {
      * Handle add supplier click (for categories without contractors)
      */
     handleAddSupplierClick(type = null) {
-        document.dispatchEvent(new CustomEvent('showContractorForm', {
+        // Create context data to prefill the contractor form
+        const context = {
+            category: type,
+            source: 'categories_view',
+            context: type ? `No suppliers found for ${type}` : 'Add new contractor to community'
+        };
+
+        // Dispatch navigation event to show contractor edit view
+        document.dispatchEvent(new CustomEvent('navigationViewChange', {
             detail: { 
-                presetCategory: type,
-                source: 'categories_view',
-                context: type ? `No suppliers found for ${type}` : 'Add new contractor to community'
+                view: 'contractorEdit',
+                context: context
             }
         }));
     }

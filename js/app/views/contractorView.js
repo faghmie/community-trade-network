@@ -75,12 +75,12 @@ export class ContractorView extends BaseView {
     }
 
     // KEEP: Essential for main.js integration
-    open(contractorId) { 
-        this.show(contractorId); 
+    open(contractorId) {
+        this.show(contractorId);
     }
 
     // KEEP: Enhanced hide with state cleanup
-    close() { 
+    close() {
         this.hide();
     }
 
@@ -88,7 +88,7 @@ export class ContractorView extends BaseView {
         if (this.headerHelper) {
             this.headerHelper.bindBackButton(() => this.handleBack());
         }
-        
+
         document.getElementById('contractorReviewBtn')?.addEventListener('click', () => this.handleReviewClick());
     }
 
@@ -250,10 +250,10 @@ export class ContractorView extends BaseView {
                 </h3>
                 
                 <div class="recommendations-list material-list">
-                    ${recommendations.length > 0 ? 
-                        recommendations.map(recommendation => this.createMaterialRecommendationItem(recommendation)).join('') :
-                        this.createNoRecommendationsState()
-                    }
+                    ${recommendations.length > 0 ?
+                recommendations.map(recommendation => this.createMaterialRecommendationItem(recommendation)).join('') :
+                this.createNoRecommendationsState()
+            }
                 </div>
             </div>
         `;
@@ -302,7 +302,6 @@ export class ContractorView extends BaseView {
                     <div class="rating-bar-track"></div>
                     <div class="rating-bar-fill" style="width: ${percentage}%"></div>
                 </div>
-                <div class="rating-stars-mini">${this.createStarDisplay(rating)}</div>
             </div>
         `;
     }
@@ -402,17 +401,10 @@ export class ContractorView extends BaseView {
 
     // SIMPLIFIED: Renamed from createFallbackStarDisplay
     createStarDisplay(rating) {
-        const fullStars = Math.floor(rating);
-        const hasHalfStar = rating % 1 >= 0.5;
-        const emptyStars = 5 - fullStars - (hasHalfStar ? 1 : 0);
-
-        return 'star'.repeat(fullStars) + 
-               (hasHalfStar ? 'star_half' : '') + 
-               'star_border'.repeat(emptyStars)
-               .split('')
-               .filter(Boolean)
-               .map(icon => `<i class="material-icons star-icon">${icon}</i>`)
-               .join('');
+        return `
+            <i class="rating-number">${rating.toFixed(0)}</i>
+            <i class="material-icons star-icon">star</i>
+        `;
     }
 }
 

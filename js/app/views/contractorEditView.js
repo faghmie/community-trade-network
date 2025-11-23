@@ -5,6 +5,7 @@ import { isValidEmail, isValidSouthAfricanPhone, isValidUrl } from '../../module
 import { AreaAutocomplete } from '../../modules/areaAutocomplete.js';
 import { BaseView } from './BaseView.js';
 import { createViewHeader } from '../utils/viewHelpers.js';
+import { confirmationModal } from '../../modules/confirmationModal.js';
 
 export class ContractorEditView extends BaseView {
     constructor(dataModule, contractorManager, categoriesModule, locationData) {
@@ -18,6 +19,7 @@ export class ContractorEditView extends BaseView {
         this.areaAutocomplete = null;
         this.prefillData = null;
         this.headerHelper = null;
+        this.originalFormData = null; // Track original form state
     }
 
     render() {
@@ -116,38 +118,27 @@ export class ContractorEditView extends BaseView {
 
     createLocationSection() {
         return `
-            <div class="contractor-form-section">
-                <h3 class="material-section-title">
-                    <i class="material-icons">location_on</i>
-                    Service Location
-                </h3>
-                <div class="contractor-form-fields">
-                    <div class="material-form-group">
-                        <label for="contractorEditViewProvince" class="material-input-label">Province *</label>
-                        <select id="contractorEditViewProvince" name="province" class="material-select" required>
-                            <option value="">Select Province</option>
-                        </select>
-                    </div>
-                    <div class="material-form-group">
-                        <label for="contractorEditViewArea" class="material-input-label">Area *</label>
-                        <div id="areaAutocompleteViewContainer" class="area-autocomplete-container">
-                            <input type="text" id="contractorEditViewArea" name="area" class="material-input" required disabled 
-                                   placeholder="Select province first" autocomplete="off">
-                        </div>
-                        <div class="material-input-helper">Start typing area name for suggestions</div>
-                    </div>
-                    
-                    <div id="geocodingEditViewStatusContainer" class="geocoding-status-container" style="display: none;">
-                        <div class="material-form-group">
-                            <div id="geocodingEditViewStatus" class="geocoding-status">
-                                <i class="material-icons geocoding-status-icon">location_searching</i>
-                                <span class="geocoding-status-text">Location detection ready</span>
-                            </div>
-                        </div>
-                    </div>
+        <div class="contractor-form-section">
+            <h3 class="material-section-title">
+                <i class="material-icons">location_on</i>
+                Service Location
+            </h3>
+            <div class="contractor-form-fields">
+                <div class="material-form-group">
+                    <label for="contractorEditViewProvince" class="material-input-label">Province *</label>
+                    <select id="contractorEditViewProvince" name="province" class="material-select" required>
+                        <option value="">Select Province</option>
+                    </select>
+                </div>
+                <div class="material-form-group">
+                    <label for="contractorEditViewArea" class="material-input-label">Area *</label>
+                    <input type="text" id="contractorEditViewArea" name="area" class="material-input" required 
+                           placeholder="Enter area name (e.g., Cape Town, Johannesburg)" autocomplete="off">
+                    <div class="material-input-helper">Enter the area where the service provider operates</div>
                 </div>
             </div>
-        `;
+        </div>
+    `;
     }
 
     createActionsSection() {
@@ -168,21 +159,28 @@ export class ContractorEditView extends BaseView {
         super.show(); // Use BaseView display logic
         this.currentContractor = contractor;
         this.prefillData = prefillData;
-        
+
         this.populateForm(contractor);
-        
+
         if (prefillData) {
             setTimeout(() => this.prefillForm(prefillData), 50);
         }
+
+        // Store original form state after population
+        setTimeout(() => {
+            this.storeOriginalFormState();
+        }, 100);
     }
 
     hide() {
         super.hide(); // Use BaseView display logic
         this.currentContractor = null;
         this.prefillData = null;
+        this.originalFormData = null;
         this.areaAutocomplete?.destroy();
     }
 
+    // In bindEvents method, remove the area change listener that triggers geocoding
     bindEvents() {
         if (this.headerHelper) {
             this.headerHelper.bindBackButton(() => this.handleCancel());
@@ -199,24 +197,137 @@ export class ContractorEditView extends BaseView {
         });
 
         document.getElementById('contractorEditViewProvince')?.addEventListener('change', (e) => {
-            this.handleProvinceChange(e.target.value);
+            // Just log the province change, no geocoding
+            console.log('Province changed to:', e.target.value);
         });
 
-        document.getElementById('contractorEditViewArea')?.addEventListener('change', (e) => {
-            if (e.target.value.trim()) {
-                this.setupRealTimeGeocoding();
-            }
-        });
+        // Remove the area change listener entirely
+        // document.getElementById('contractorEditViewArea')?.addEventListener('change', (e) => {
+        //     if (e.target.value.trim()) {
+        //         this.setupRealTimeGeocoding();
+        //     }
+        // });
 
         document.getElementById('contractorEditViewForm')?.addEventListener('submit', (e) => {
             e.preventDefault();
         });
+
+        // Track form changes for unsaved data detection
+        this.setupFormChangeTracking();
     }
 
-    handleCancel() {
+    setupFormChangeTracking() {
+        const form = document.getElementById('contractorEditViewForm');
+        if (!form) return;
+
+        const trackedFields = [
+            'contractorEditViewName',
+            'contractorEditViewCategory',
+            'contractorEditViewEmail',
+            'contractorEditViewPhone',
+            'contractorEditViewWebsite',
+            'contractorEditViewProvince',
+            'contractorEditViewArea'
+        ];
+
+        trackedFields.forEach(fieldId => {
+            const field = document.getElementById(fieldId);
+            if (field) {
+                field.addEventListener('input', () => this.handleFormChange());
+                field.addEventListener('change', () => this.handleFormChange());
+            }
+        });
+    }
+
+    handleFormChange() {
+        // This method can be used to update UI indicators if needed
+        // For now, we'll just track changes internally
+    }
+
+    storeOriginalFormState() {
+        this.originalFormData = this.getCurrentFormData();
+    }
+
+    getCurrentFormData() {
+        const form = document.getElementById('contractorEditViewForm');
+        if (!form) return null;
+
+        const formData = new FormData(form);
+        return {
+            name: formData.get('name') || '',
+            category: formData.get('category') || '',
+            email: formData.get('email') || '',
+            phone: formData.get('phone') || '',
+            website: formData.get('website') || '',
+            province: formData.get('province') || '',
+            area: formData.get('area') || ''
+        };
+    }
+
+    hasFormChanges() {
+        if (!this.originalFormData) return false;
+
+        const currentData = this.getCurrentFormData();
+        if (!currentData) return false;
+
+        // Check if any field has changed
+        const fields = ['name', 'category', 'email', 'phone', 'website', 'province', 'area'];
+        return fields.some(field => {
+            const original = this.originalFormData[field] || '';
+            const current = currentData[field] || '';
+            return original.trim() !== current.trim();
+        });
+    }
+
+    hasRequiredFieldsFilled() {
+        const currentData = this.getCurrentFormData();
+        if (!currentData) return false;
+
+        // Check if any required field has data
+        const requiredFields = ['name', 'category', 'phone', 'province', 'area'];
+        return requiredFields.some(field => {
+            const value = currentData[field] || '';
+            return value.trim().length > 0;
+        });
+    }
+
+    // In contractorEditView.js - Update the handleCancel method
+    // In contractorEditView.js - Update handleCancel with debug logging
+    async handleCancel() {
+        console.log('🔄 handleCancel called');
+
+        const hasChanges = this.hasFormChanges();
+        const hasRequiredData = this.hasRequiredFieldsFilled();
+
+        console.log('📊 Form state:', { hasChanges, hasRequiredData });
+
+        // Only show confirmation if there are changes AND required fields have data
+        if (hasChanges && hasRequiredData) {
+            console.log('⚠️ Showing discard confirmation');
+            const confirmed = await confirmationModal.show({
+                title: 'Discard Changes?',
+                message: 'You have unsaved changes. Are you sure you want to discard them?',
+                confirmText: 'Discard Changes',
+                cancelText: 'Continue Editing',
+                icon: 'warning',
+                type: 'warning'
+            });
+
+            console.log('✅ User confirmed discard:', confirmed);
+
+            if (!confirmed) {
+                console.log('❌ User cancelled - staying on form');
+                return; // User chose to continue editing
+            }
+        }
+
+        // User confirmed discard or no changes - navigate back
+        console.log('🚀 Dispatching back navigation');
         document.dispatchEvent(new CustomEvent('navigationViewChange', {
             detail: { view: 'back' }
         }));
+
+        console.log('✅ Back navigation event dispatched');
     }
 
     populateForm(contractor) {
@@ -236,17 +347,22 @@ export class ContractorEditView extends BaseView {
             );
             document.getElementById('contractorEditViewId').value = '';
             document.getElementById('contractorEditViewForm').reset();
-            this.disableAreaInput();
+            // this.disableAreaInput();
         }
 
         this.populateCategories();
         this.populateProvinces();
-        this.initAreaAutocomplete();
-        this.updateGeocodingStatus('ready', 'Location detection ready');
+        // this.initAreaAutocomplete();
+        // this.updateGeocodingStatus('ready', 'Location detection ready');
 
         if (this.prefillData && !contractor) {
             setTimeout(() => this.prefillForm(this.prefillData), 50);
         }
+
+        // Store original state after population
+        setTimeout(() => {
+            this.storeOriginalFormState();
+        }, 150);
     }
 
     disableAreaInput() {
@@ -283,13 +399,18 @@ export class ContractorEditView extends BaseView {
         }
 
         this.focusNextEmptyField();
+
+        // Update original form state after prefill
+        setTimeout(() => {
+            this.storeOriginalFormState();
+        }, 100);
     }
 
     prefillLocation(location) {
         if (!location) return;
 
         const locationParts = location.split(',').map(part => part.trim());
-        
+
         if (locationParts.length === 2) {
             this.setProvinceAndArea(locationParts[1], locationParts[0]);
         } else if (locationParts.length === 1) {
@@ -326,7 +447,7 @@ export class ContractorEditView extends BaseView {
 
     focusNextEmptyField() {
         const requiredFields = [
-            'contractorEditViewName', 'contractorEditViewCategory', 'contractorEditViewPhone', 
+            'contractorEditViewName', 'contractorEditViewCategory', 'contractorEditViewPhone',
             'contractorEditViewProvince', 'contractorEditViewArea'
         ].map(id => document.getElementById(id)).filter(field => field && !field.value.trim());
 
@@ -340,11 +461,11 @@ export class ContractorEditView extends BaseView {
         if (!select) return;
 
         select.innerHTML = '<option value="">Select Province</option>';
-        
-        const provinces = this.locationData?.southAfricanProvinces 
+
+        const provinces = this.locationData?.southAfricanProvinces
             ? Object.keys(this.locationData.southAfricanProvinces).sort()
-            : ['Eastern Cape', 'Free State', 'Gauteng', 'KwaZulu-Natal', 'Limpopo', 
-               'Mpumalanga', 'North West', 'Northern Cape', 'Western Cape'];
+            : ['Eastern Cape', 'Free State', 'Gauteng', 'KwaZulu-Natal', 'Limpopo',
+                'Mpumalanga', 'North West', 'Northern Cape', 'Western Cape'];
 
         provinces.forEach(province => {
             select.innerHTML += `<option value="${province}">${province}</option>`;
@@ -371,7 +492,7 @@ export class ContractorEditView extends BaseView {
 
         select.innerHTML = '<option value="">Select Category</option>';
         const categories = this.categoriesModule.getCategories();
-        
+
         categories.sort((a, b) => a.name.localeCompare(b.name))
             .forEach(category => {
                 select.innerHTML += `<option value="${category.name}">${category.name}</option>`;
@@ -402,7 +523,7 @@ export class ContractorEditView extends BaseView {
 
     updateAreaInput(province, selectedArea = '') {
         const areaInput = document.getElementById('contractorEditViewArea');
-        
+
         if (!province) {
             this.disableAreaInput();
             this.updateGeocodingStatus('ready', 'Select province first');
@@ -425,7 +546,7 @@ export class ContractorEditView extends BaseView {
 
         try {
             const geocodingResult = await geocodingService.geocodeLocation(`${area}, ${province}`);
-            
+
             if (geocodingResult.coordinates) {
                 this.updateGeocodingStatus('success', `Location confirmed`);
             } else {
@@ -451,9 +572,9 @@ export class ContractorEditView extends BaseView {
 
         container.style.display = 'block';
         statusElement.className = `geocoding-status geocoding-status--${status}`;
-        
-        const icon = status === 'success' ? 'location_on' : 
-                    status === 'error' ? 'location_off' : 'location_searching';
+
+        const icon = status === 'success' ? 'location_on' :
+            status === 'error' ? 'location_off' : 'location_searching';
 
         statusElement.innerHTML = `
             <i class="material-icons geocoding-status-icon">${icon}</i>
@@ -461,55 +582,108 @@ export class ContractorEditView extends BaseView {
         `;
     }
 
-    async handleSubmit() {
-        const province = document.getElementById('contractorEditViewProvince')?.value;
-        const area = document.getElementById('contractorEditViewArea')?.value;
+    // Add this method to update the button state
+    setSubmitButtonState(isSubmitting) {
+        const saveButton = document.getElementById('saveContractorEditView');
+        if (!saveButton) return;
 
-        if (!province || !area) {
-            showNotification('Please select both province and area', 'error');
+        if (isSubmitting) {
+            saveButton.disabled = true;
+            saveButton.innerHTML = '<i class="material-icons mdc-button__icon">hourglass_empty</i>Saving...';
+            saveButton.classList.add('submitting');
+        } else {
+            saveButton.disabled = false;
+            saveButton.innerHTML = '<i class="material-icons mdc-button__icon">save</i>Save Service Provider';
+            saveButton.classList.remove('submitting');
+        }
+    }
+
+    // Update the handleSubmit method
+    // In contractorEditView.js - Fix the handleSubmit method
+    async handleSubmit() {
+        // Prevent multiple submissions while already processing
+        if (this.isSubmitting) {
+            console.log('🛑 Submission already in progress, ignoring duplicate click');
             return;
         }
 
-        const location = `${area}, ${province}`;
-        let coordinates = null;
+        // Set submitting state
+        this.isSubmitting = true;
+        this.setSubmitButtonState(true);
 
         try {
-            const geocodingResult = await geocodingService.geocodeLocation(location);
-            coordinates = geocodingResult.coordinates;
-        } catch (error) {
-            console.warn('Geocoding failed:', error);
-        }
+            const province = document.getElementById('contractorEditViewProvince')?.value;
+            const area = document.getElementById('contractorEditViewArea')?.value;
 
-        const formData = new FormData(document.getElementById('contractorEditViewForm'));
-        const contractorData = {
-            name: formData.get('name'),
-            category: formData.get('category'),
-            email: formData.get('email'),
-            phone: formData.get('phone'),
-            website: formData.get('website'),
-            location: location,
-            coordinates: coordinates,
-            serviceAreas: []
-        };
+            if (!province || !area) {
+                showNotification('Please select both province and area', 'error');
+                return;
+            }
 
-        if (!this.validateContractorData(contractorData)) return;
+            const location = `${area}, ${province}`;
+            let coordinates = null;
 
-        const contractorId = document.getElementById('contractorEditViewId').value;
+            const formData = new FormData(document.getElementById('contractorEditViewForm'));
+            const contractorData = {
+                name: formData.get('name'),
+                category: formData.get('category'),
+                email: formData.get('email'),
+                phone: formData.get('phone'),
+                website: formData.get('website'),
+                location: location,
+                coordinates: coordinates,
+                serviceAreas: []
+            };
 
-        try {
+            if (!this.validateContractorData(contractorData)) {
+                return;
+            }
+
+            const contractorId = document.getElementById('contractorEditViewId').value;
+
             let savedContractor;
             let wasCreated = false;
+            let wantsToRecommend = false; // Define the variable here
 
             if (contractorId) {
                 savedContractor = this.contractorManager.update(contractorId, contractorData);
                 showNotification('Service Provider updated successfully', 'success');
+
+                // For edits, navigate back
+                document.dispatchEvent(new CustomEvent('navigationViewChange', {
+                    detail: { view: 'back' }
+                }));
             } else {
                 savedContractor = this.contractorManager.create(contractorData);
                 wasCreated = true;
                 showNotification('Service Provider added successfully', 'success');
-            }
 
-            this.handleCancel();
+                // If this was a new contractor creation, ask if they want to leave a recommendation
+                if (wasCreated && savedContractor) {
+                    wantsToRecommend = await this.askForRecommendation(savedContractor);
+
+                    if (wantsToRecommend) {
+                        console.log('🎯 User wants to leave recommendation, navigating to recommendation view');
+
+                        // Navigate to recommendation edit view for this contractor
+                        document.dispatchEvent(new CustomEvent('navigationViewChange', {
+                            detail: {
+                                view: 'recommendationEdit',
+                                context: {
+                                    contractorId: savedContractor.id,
+                                    source: 'contractorCreation'
+                                }
+                            }
+                        }));
+                    } else {
+                        console.log('🎯 User does not want to leave recommendation, navigating back');
+                        // Navigate back to categories view
+                        document.dispatchEvent(new CustomEvent('navigationViewChange', {
+                            detail: { view: 'back' }
+                        }));
+                    }
+                }
+            }
 
             document.dispatchEvent(new CustomEvent('contractorsUpdated', {
                 detail: { action: contractorId ? 'updated' : 'created', contractor: savedContractor }
@@ -517,44 +691,80 @@ export class ContractorEditView extends BaseView {
 
             if (wasCreated) {
                 document.dispatchEvent(new CustomEvent('contractorCreated', {
-                    detail: { contractor: savedContractor, wasCreated: true }
+                    detail: {
+                        contractor: savedContractor,
+                        wasCreated: true,
+                        skipNavigation: wantsToRecommend // Now this variable is defined
+                    }
                 }));
             }
 
         } catch (error) {
             console.error('Error saving contractor:', error);
             showNotification('Failed to save contractor. Please try again.', 'error');
+        } finally {
+            // Always reset submitting state, even if there was an error
+            this.isSubmitting = false;
+            this.setSubmitButtonState(false);
         }
     }
 
+    // Also update the validation method to reset state on validation failure
     validateContractorData(data) {
         if (!data.name?.trim()) {
             showNotification('Contractor name is required', 'error');
+            this.isSubmitting = false;
+            this.setSubmitButtonState(false);
             return false;
         }
 
         if (!data.category?.trim()) {
             showNotification('Category is required', 'error');
+            this.isSubmitting = false;
+            this.setSubmitButtonState(false);
             return false;
         }
 
         if (data.email && data.email.trim() && !isValidEmail(data.email)) {
             showNotification('Please enter a valid email address', 'error');
+            this.isSubmitting = false;
+            this.setSubmitButtonState(false);
             return false;
         }
 
         if (!isValidSouthAfricanPhone(data.phone)) {
             showNotification('Please enter a valid South African phone number', 'error');
+            this.isSubmitting = false;
+            this.setSubmitButtonState(false);
             return false;
         }
 
         if (data.website && !isValidUrl(data.website)) {
             showNotification('Please enter a valid website URL', 'error');
+            this.isSubmitting = false;
+            this.setSubmitButtonState(false);
             return false;
         }
 
         return true;
     }
+
+    /**
+     * Ask user if they want to leave a recommendation for the newly added contractor
+     */
+    async askForRecommendation(contractor) {
+        const confirmed = await confirmationModal.show({
+            title: 'Leave a Recommendation?',
+            message: `Would you like to share your experience with ${contractor.name}? Your recommendation helps build trust in the community.`,
+            confirmText: 'Yes, Leave Recommendation',
+            cancelText: 'Not Now',
+            icon: 'thumb_up',
+            type: 'success'
+        });
+
+        return confirmed;
+    }
+
 }
 
 export default ContractorEditView;

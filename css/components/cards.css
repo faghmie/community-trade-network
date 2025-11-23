@@ -556,12 +556,12 @@
     }
 }
 
-/* ===== ENHANCED CATEGORIES VIEW STYLES (ADDED AT END - NO BREAKING CHANGES) ===== */
+/* ===== CATEGORIES LIST VIEW STYLES ===== */
 
 /* Categories View Header */
 .categories-header {
     text-align: center;
-    margin-bottom: var(--space-xxl);
+    margin-bottom: var(--space-xl);
     padding: 0 var(--space-lg);
 }
 
@@ -582,33 +582,35 @@
 
 /* Categories Sections */
 .categories-section {
-    margin-bottom: var(--space-xxl);
-}
-
-.categories-section:last-child {
     margin-bottom: var(--space-xl);
 }
 
-.section-title {
+.categories-section:last-child {
+    margin-bottom: var(--space-lg);
+}
+
+/* Needed Services Section - Keep title styles */
+.needed-services .section-title {
     display: flex;
     align-items: center;
     gap: var(--space-sm);
     font-size: var(--font-size-lg);
     font-weight: var(--font-weight-medium);
     color: var(--on-surface);
-    margin: 0 0 var(--space-lg) 0;
+    margin: 0 0 var(--space-md) 0;
     padding: 0 var(--space-lg);
 }
 
-.section-title .material-icons {
+.needed-services .section-title .material-icons {
     font-size: 1.5rem;
     width: 1.5rem;
     height: 1.5rem;
+    color: var(--primary-color);
 }
 
-.section-title .section-count {
-    background: var(--surface-container);
-    color: var(--on-surface-variant);
+.needed-services .section-title .section-count {
+    background: var(--primary-container);
+    color: var(--on-primary-container);
     padding: var(--space-xxs) var(--space-sm);
     border-radius: var(--shape-full);
     font-size: var(--font-size-sm);
@@ -616,99 +618,72 @@
     margin-left: auto;
 }
 
-/* Available Services Section */
-.available-services .section-title .material-icons {
-    color: var(--success-color);
-}
-
-.available-services .section-count {
-    background: var(--success-container);
-    color: var(--on-success-container);
-}
-
-/* Needed Services Section */
-.needed-services .section-title .material-icons {
-    color: var(--primary-color);
-}
-
-.needed-services .section-count {
-    background: var(--primary-container);
-    color: var(--on-primary-container);
-}
-
 .section-description {
     font-size: var(--font-size-base);
     color: var(--on-surface-variant);
-    margin: calc(-1 * var(--space-md)) 0 var(--space-lg) 0;
+    margin: calc(-1 * var(--space-sm)) 0 var(--space-md) 0;
     padding: 0 var(--space-lg);
     line-height: var(--line-height-normal);
 }
 
-/* Categories Grid Layout */
-.categories-type-grid {
-    display: grid;
-    grid-template-columns: 1fr;
-    gap: var(--space-lg);
-    padding: 0 var(--space-lg);
+/* Categories List Layout - Similar to contractor list */
+.categories-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    padding: 0;
+    margin: 0;
 }
 
-/* Category Type Cards - Using existing card styles as base */
-.category-type-card {
+/* Category List Item - Matches contractor list item style */
+.category-list-item {
     cursor: pointer;
+    min-height: 104px;
+    border-radius: 0;
+    box-shadow: none;
+    border: none;
     background: var(--surface);
-    border-radius: var(--shape-medium);
-    box-shadow: var(--elevation-1);
-    transition: all var(--transition-standard);
+    transition: all var(--transition-short);
     position: relative;
     overflow: hidden;
-    min-height: 140px;
-    border: 1px solid var(--outline-variant);
+    margin: 0;
+    width: 100%;
+    border-bottom: 1px solid var(--outline-variant);
+    display: flex;
+    align-items: center;
 }
 
-.category-type-card:hover {
-    box-shadow: var(--elevation-3);
-    transform: translateY(-2px);
-    border-color: var(--outline);
+/* Remove last item border */
+.category-list-item:last-child {
+    border-bottom: none;
 }
 
-.category-type-card:active {
-    transform: translateY(0);
-    box-shadow: var(--elevation-2);
-}
-
-/* Available Category Cards */
-.category-type-card.has-contractors.available {
-    border-left: 4px solid var(--success-color);
-}
-
-.category-type-card.has-contractors.available:hover {
-    background: var(--success-container);
-    border-color: var(--success-color);
-}
-
-/* Needed Category Cards */
-.category-type-card.no-contractors.needed {
-    border-left: 4px solid var(--primary-color);
+.category-list-item:hover {
+    box-shadow: none;
+    transform: none;
+    border-color: transparent;
     background: var(--surface-container-low);
 }
 
-.category-type-card.no-contractors.needed:hover {
-    background: var(--primary-container);
-    border-color: var(--primary-color);
+.category-list-item:active {
+    background: var(--surface-container);
+    transform: none;
 }
 
-/* Category Card Content */
-.category-type-card .card-content {
-    padding: var(--space-lg);
+/* Category List Item Content */
+.category-list-item .card-content {
+    padding: var(--space-md) var(--space-lg);
     display: flex;
-    flex-direction: column;
+    flex-direction: row;
+    align-items: center;
     gap: var(--space-md);
     flex: 1;
     position: relative;
+    min-height: 104px;
 }
 
-/* Category Icon with Badge */
-.category-type-icon {
+/* Category Icon in List View */
+.category-list-icon {
     position: relative;
     width: 48px;
     height: 48px;
@@ -717,35 +692,101 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    margin-bottom: var(--space-xs);
+    flex-shrink: 0;
 }
 
-.category-type-card.available .category-type-icon {
+.category-list-item.available .category-list-icon {
     background: var(--success-container);
 }
 
-.category-type-card.needed .category-type-icon {
+.category-list-item.needed .category-list-icon {
     background: var(--primary-container);
 }
 
-.category-type-icon .material-icons {
+.category-list-icon .material-icons {
     font-size: 1.5rem;
     color: var(--on-surface-variant);
 }
 
-.category-type-card.available .category-type-icon .material-icons {
+.category-list-item.available .category-list-icon .material-icons {
     color: var(--on-success-container);
 }
 
-.category-type-card.needed .category-type-icon .material-icons {
+.category-list-item.needed .category-list-icon .material-icons {
     color: var(--on-primary-container);
 }
 
-/* Contractors Badge */
-.contractors-badge {
-    position: absolute;
-    top: -8px;
-    right: -8px;
+/* Category Content Area */
+.category-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-xs);
+    min-width: 0; /* Allow text truncation */
+}
+
+/* Category Name in List View */
+.category-list-item .category-name {
+    font-size: var(--font-size-base);
+    font-weight: var(--font-weight-medium);
+    color: var(--on-surface);
+    margin: 0;
+    line-height: var(--line-height-tight);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* Category Meta in List View */
+.category-list-item .category-meta {
+    display: flex;
+    flex-direction: row;
+    gap: var(--space-md);
+    align-items: center;
+    width: 100%;
+    margin: 0;
+}
+
+.category-list-item .category-service-count,
+.category-list-item .category-contractor-count {
+    display: flex;
+    align-items: center;
+    gap: var(--space-xs);
+    color: var(--on-surface-variant);
+    font-size: var(--font-size-sm);
+    line-height: var(--line-height-normal);
+    margin: 0;
+    white-space: nowrap;
+}
+
+.category-list-item .category-service-count .material-icons,
+.category-list-item .category-contractor-count .material-icons {
+    font-size: 1.125rem;
+    width: 1.125rem;
+    height: 1.125rem;
+    color: var(--on-surface-variant);
+    opacity: 0.8;
+}
+
+/* Available vs Needed contractor count text */
+.category-list-item .category-contractor-count.available {
+    color: var(--on-success-container);
+}
+
+.category-list-item .category-contractor-count.available .material-icons {
+    color: var(--on-success-container);
+}
+
+.category-list-item .category-contractor-count.needed {
+    color: var(--on-primary-container);
+}
+
+.category-list-item .category-contractor-count.needed .material-icons {
+    color: var(--on-primary-container);
+}
+
+/* Contractors Badge in List View */
+.contractors-badge-list {
     width: 24px;
     height: 24px;
     border-radius: var(--shape-full);
@@ -755,84 +796,33 @@
     font-size: var(--font-size-sm);
     font-weight: var(--font-weight-medium);
     box-shadow: var(--elevation-1);
+    flex-shrink: 0;
+    margin-left: auto;
 }
 
-.contractors-badge.available {
+.contractors-badge-list.available {
     background: var(--success-color);
     color: var(--text-on-success);
 }
 
-.contractors-badge.needed {
+.contractors-badge-list.needed {
     background: var(--primary-color);
     color: var(--text-on-primary);
 }
 
-.contractors-badge.needed .material-icons {
+.contractors-badge-list.needed .material-icons {
     font-size: 1rem;
     width: 1rem;
     height: 1rem;
 }
 
-/* Category Name */
-.category-type-card .contractor-name {
-    font-size: var(--font-size-lg);
-    font-weight: var(--font-weight-medium);
-    color: var(--on-surface);
-    margin: 0;
-    line-height: var(--line-height-tight);
+/* Add Supplier Button in List View */
+.category-list-action {
+    margin-left: var(--space-md);
+    flex-shrink: 0;
 }
 
-/* Category Meta */
-.category-type-card .contractor-meta {
-    display: flex;
-    flex-direction: column;
-    gap: var(--space-xs);
-    margin: 0;
-}
-
-.category-type-card .contractor-category,
-.category-type-card .contractor-location {
-    display: flex;
-    align-items: center;
-    gap: var(--space-sm);
-    color: var(--on-surface-variant);
-    font-size: var(--font-size-base);
-    line-height: var(--line-height-normal);
-    margin: 0;
-}
-
-.category-type-card .contractor-category .material-icons,
-.category-type-card .contractor-location .material-icons {
-    font-size: 1.25rem;
-    width: 1.25rem;
-    height: 1.25rem;
-    color: var(--on-surface-variant);
-    opacity: 0.8;
-}
-
-/* Available vs Needed location text */
-.category-type-card .contractor-location.available {
-    color: var(--on-success-container);
-}
-
-.category-type-card .contractor-location.available .material-icons {
-    color: var(--on-success-container);
-}
-
-.category-type-card .contractor-location.needed {
-    color: var(--on-primary-container);
-}
-
-.category-type-card .contractor-location.needed .material-icons {
-    color: var(--on-primary-container);
-}
-
-/* Add Supplier Button */
-.category-action {
-    margin-top: var(--space-sm);
-}
-
-.add-supplier-btn {
+.add-supplier-btn-list {
     display: flex;
     align-items: center;
     gap: var(--space-xs);
@@ -846,20 +836,20 @@
     cursor: pointer;
     transition: all var(--transition-short);
     text-decoration: none;
-    width: fit-content;
+    white-space: nowrap;
 }
 
-.add-supplier-btn:hover {
+.add-supplier-btn-list:hover {
     background: var(--primary-color-dark);
     transform: translateY(-1px);
     box-shadow: var(--elevation-1);
 }
 
-.add-supplier-btn:active {
+.add-supplier-btn-list:active {
     transform: translateY(0);
 }
 
-.add-supplier-btn .material-icons {
+.add-supplier-btn-list .material-icons {
     font-size: 1.125rem;
     width: 1.125rem;
     height: 1.125rem;
@@ -870,7 +860,7 @@
     background: var(--surface-container);
     border-radius: var(--shape-medium);
     padding: var(--space-xl);
-    margin: var(--space-xxl) var(--space-lg) var(--space-lg);
+    margin: var(--space-xl) var(--space-lg) var(--space-lg);
     text-align: center;
     border: 1px solid var(--outline-variant);
 }
@@ -917,163 +907,141 @@
     margin: 0;
 }
 
-/* ===== RESPONSIVE BREAKPOINTS FOR CATEGORIES ===== */
+/* ===== RESPONSIVE BREAKPOINTS FOR CATEGORIES LIST ===== */
 
 /* Small tablets and large phones (600px+) */
 @media (min-width: 600px) {
-    .categories-type-grid {
-        grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-        gap: var(--space-xl);
-    }
-    
     .categories-header h2 {
         font-size: var(--font-size-xxxl);
     }
     
-    .section-title {
+    .needed-services .section-title {
         font-size: var(--font-size-xl);
         padding: 0 var(--space-xl);
     }
     
-    .categories-type-grid {
+    .section-description {
         padding: 0 var(--space-xl);
     }
     
-    .category-type-card .card-content {
-        padding: var(--space-xl);
+    .category-list-item .card-content {
+        padding: var(--space-md) var(--space-xl);
     }
     
-    .category-type-card .contractor-name {
-        font-size: var(--font-size-xl);
+    .category-list-item .category-name {
+        font-size: var(--font-size-lg);
     }
 }
 
-/* Desktop (900px+) - 3-column layout */
+/* Desktop (900px+) */
 @media (min-width: 900px) {
-    .categories-type-grid {
-        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-    }
-    
     .community-cta {
-        margin: var(--space-xxl) var(--space-xl) var(--space-lg);
+        margin: var(--space-xl) var(--space-xl) var(--space-lg);
     }
 }
 
 /* Large desktop (1200px+) */
 @media (min-width: 1200px) {
-    .categories-type-grid {
-        grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
-        gap: var(--space-xxl);
+    .category-list-item {
+        min-height: 112px;
     }
     
-    .category-type-card {
-        min-height: 160px;
+    .category-list-item .card-content {
+        min-height: 112px;
+        padding: var(--space-lg) var(--space-xl);
     }
     
-    .category-type-card .contractor-name {
-        font-size: var(--font-size-xl);
+    .category-list-item .category-name {
+        font-size: var(--font-size-lg);
+    }
+    
+    .category-list-item .category-service-count,
+    .category-list-item .category-contractor-count {
+        font-size: var(--font-size-base);
     }
 }
 
-/* Mobile list view for categories */
-@media (max-width: 599px) {
+/* Compact mobile screens */
+@media (max-width: 359px) {
     .categories-header {
-        margin-bottom: var(--space-xl);
-        padding: 0 var(--space-md);
+        padding: 0 var(--space-sm);
     }
     
-    .categories-header h2 {
-        font-size: var(--font-size-xl);
-    }
-    
-    .section-title {
-        padding: 0 var(--space-md);
-        margin-bottom: var(--space-md);
+    .needed-services .section-title {
+        padding: 0 var(--space-sm);
+        margin-bottom: var(--space-sm);
     }
     
     .section-description {
-        padding: 0 var(--space-md);
-        margin-bottom: var(--space-md);
+        padding: 0 var(--space-sm);
+        margin-bottom: var(--space-sm);
     }
     
-    .categories-type-grid {
-        padding: 0 var(--space-md);
-        gap: var(--space-md);
-    }
-    
-    .category-type-card .card-content {
-        padding: var(--space-md);
+    .category-list-item .card-content {
+        padding: var(--space-sm) var(--space-md);
         gap: var(--space-sm);
     }
     
-    .category-type-icon {
+    .category-list-icon {
         width: 40px;
         height: 40px;
     }
     
-    .category-type-icon .material-icons {
+    .category-list-icon .material-icons {
         font-size: 1.25rem;
     }
     
-    .contractors-badge {
+    .category-list-item .category-meta {
+        gap: var(--space-sm);
+    }
+    
+    .category-list-item .category-service-count,
+    .category-list-item .category-contractor-count {
+        font-size: var(--font-size-xs);
+        gap: var(--space-xxs);
+    }
+    
+    .contractors-badge-list {
         width: 20px;
         height: 20px;
         font-size: var(--font-size-xs);
     }
     
-    .contractors-badge.needed .material-icons {
+    .contractors-badge-list.needed .material-icons {
         font-size: 0.875rem;
         width: 0.875rem;
         height: 0.875rem;
     }
     
     .community-cta {
-        margin: var(--space-xl) var(--space-md) var(--space-lg);
-        padding: var(--space-lg);
+        margin: var(--space-lg) var(--space-sm) var(--space-lg);
+        padding: var(--space-md);
     }
     
     .cta-content .material-icons {
         font-size: 2.5rem;
     }
-}
-
-/* Very small mobile screens */
-@media (max-width: 359px) {
-    .categories-header {
-        padding: 0 var(--space-sm);
+    
+    .add-supplier-btn-list {
+        padding: var(--space-xxs) var(--space-xs);
+        font-size: var(--font-size-xs);
     }
     
-    .section-title {
-        padding: 0 var(--space-sm);
-    }
-    
-    .section-description {
-        padding: 0 var(--space-sm);
-    }
-    
-    .categories-type-grid {
-        padding: 0 var(--space-sm);
-        gap: var(--space-sm);
-    }
-    
-    .category-type-card .card-content {
-        padding: var(--space-sm);
-    }
-    
-    .community-cta {
-        margin: var(--space-lg) var(--space-sm) var(--space-lg);
-        padding: var(--space-md);
+    .add-supplier-btn-list .material-icons {
+        font-size: 1rem;
+        width: 1rem;
+        height: 1rem;
     }
 }
 
 /* ===== DARK THEME ENHANCEMENTS ===== */
 @media (prefers-color-scheme: dark) {
-    .category-type-card.no-contractors.needed {
-        background: var(--surface-container);
+    .category-list-item.needed {
+        background: var(--surface);
     }
     
-    .category-type-card.no-contractors.needed:hover {
-        background: var(--primary-container);
+    .category-list-item.needed:hover {
+        background: var(--surface-container-low);
     }
     
     .community-cta {
@@ -1081,7 +1049,18 @@
         border-color: var(--outline);
     }
     
-    .category-type-icon {
+    .category-list-icon {
         background: var(--surface-container-high);
+    }
+}
+
+/* ===== ACCESSIBILITY ENHANCEMENTS ===== */
+@media (prefers-reduced-motion: reduce) {
+    .category-list-item,
+    .category-list-item:hover,
+    .add-supplier-btn-list,
+    .add-supplier-btn-list:hover {
+        transition: none;
+        transform: none;
     }
 }

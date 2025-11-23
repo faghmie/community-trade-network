@@ -20,6 +20,7 @@
 @import url('components/bottom-nav.css');
 @import url('./components/bottom-sheet.css');
 @import url('components/feedback.css');
+@import url('components/confirmation-modal.css');
 @import url('layout.css');
 
 /* ===== GLOBAL BASE STYLES ===== */
