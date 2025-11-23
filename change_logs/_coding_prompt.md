@@ -5,6 +5,8 @@ let's stop the session here and update the project-structure. Based on the code 
 
 let's stop the session here and update the project-structure. Based on the code that you have been reviewing and updating describe what each file in the project does. Also describe the various architecture decisions and patterns. Explain it such that the next session understands how the application is built and how modules and components integrate with each other. do not describe what was achieved in the session only what the project structure looks like now
 
+here is the current project folder structure and content
+
 
 <paste output from bash script here>
 

@@ -63,6 +63,7 @@
 |   |       |-- 2025_11_20_04.md
 |   |       |-- 2025_11_20_05.md
 |   |       `-- 2025_11_20_06.md
+|   |-- 2025_11_22_01.md
 |   |-- _architecture.md
 |   |-- _coding_prompt.md
 |   |-- next_best_action.md
@@ -115,22 +116,23 @@
 |   |-- app
 |   |   |-- modals
 |   |   |   |-- adminFeedbackModalManager.js
-|   |   |   |-- baseModalManager.js
 |   |   |   |-- contractorEditModalManager.js
-|   |   |   |-- contractorModalManager.js
-|   |   |   |-- feedbackModalManager.js
-|   |   |   `-- reviewModalManager.js
+|   |   |   `-- contractorModalManager.js
+|   |   |-- utils
+|   |   |   `-- viewHelpers.js
 |   |   |-- views
-|   |   |   |-- categoriesListView.js
+|   |   |   |-- BaseView.js
+|   |   |   |-- CategoriesView.js
+|   |   |   |-- contractorEditView.js
 |   |   |   |-- contractorListView.js
-|   |   |   `-- mapView.js
-|   |   |-- favoritesManager.js
+|   |   |   |-- contractorView.js
+|   |   |   |-- feedbackView.js
+|   |   |   |-- mapView.js
+|   |   |   `-- recommendationEditView.js
 |   |   |-- filterManager.js
 |   |   |-- lazyLoader.js
 |   |   |-- main.js
-|   |   |-- modalManager.js
-|   |   |-- statsManager.js
-|   |   `-- uiManager.js
+|   |   `-- statsManager.js
 |   |-- config
 |   |   `-- supabase-credentials.js
 |   |-- data
@@ -140,6 +142,7 @@
 |   |   |   |-- feedbackTypes.js
 |   |   |   |-- index.js
 |   |   |   |-- locationTypes.js
+|   |   |   |-- recommendationTypes.js
 |   |   |   |-- reviewTypes.js
 |   |   |   `-- uuidTypes.js
 |   |   |-- defaultCategories.js
@@ -156,7 +159,6 @@
 |   |   |-- areaAutocomplete.js
 |   |   |-- auth.js
 |   |   |-- backButtonManager.js
-|   |   |-- cardManager.js
 |   |   |-- categories.js
 |   |   |-- contractorManager.js
 |   |   |-- data.js
@@ -166,6 +168,7 @@
 |   |   |-- loadingScreen.js
 |   |   |-- notifications.js
 |   |   |-- pwa-install-manager.js
+|   |   |-- recommendationDataManager.js
 |   |   |-- reviewManager.js
 |   |   |-- service-worker-manager.js
 |   |   |-- statsDataManager.js
@@ -190,4 +193,4 @@
 |-- README
 `-- sw.js
 
-18 directories, 173 files
+19 directories, 175 files

@@ -1,14 +1,14 @@
-// js/app/views/ContractorListView.js - SIMPLIFIED: Complete card rendering without CardManager
-
+// js/app/views/ContractorListView.js - UPDATED: Add back button using viewHelpers
 import { BaseView } from './BaseView.js';
 import { sanitizeHtml } from '../../modules/utilities.js';
+import { createViewHeader } from '../utils/viewHelpers.js';
 
 export class ContractorListView extends BaseView {
-    constructor(dataModule, reviewManager) {
+    constructor(dataModule) {
         super('contractor-list-view');
         this.dataModule = dataModule;
-        this.reviewManager = reviewManager;
         this.contractorsGrid = null;
+        this.currentContext = {}; // Track current context for back navigation
     }
 
     /**
@@ -26,13 +26,82 @@ export class ContractorListView extends BaseView {
             mainContainer.appendChild(this.container);
         }
 
+        // Create header using viewHelpers
+        const header = createViewHeader(
+            this.viewId,
+            'Service Providers',
+            'Browse our trusted community contractors',
+            true // Show back button
+        );
+
         this.container.innerHTML = `
-            <div class="contractors-grid" id="contractors-grid">
-                <!-- Contractors will be populated here -->
+            ${header.html}
+            <div class="contractors-content">
+                <div class="contractors-grid" id="contractors-grid">
+                    <!-- Contractors will be populated here -->
+                </div>
             </div>
         `;
 
         this.contractorsGrid = document.getElementById('contractors-grid');
+        
+        // Bind back button handler
+        header.bindBackButton(() => {
+            this.handleBackButton();
+        });
+    }
+
+    /**
+     * Handle back button click
+     */
+    handleBackButton() {
+        document.dispatchEvent(new CustomEvent('navigationViewChange', {
+            detail: { view: 'back' }
+        }));
+    }
+
+    /**
+     * Show method with context support
+     */
+    show(context = {}) {
+        this.currentContext = context;
+        
+        // Update header based on context
+        this.updateHeader(context);
+        
+        // Call parent show method
+        super.show();
+    }
+
+    /**
+     * Update header based on context
+     */
+    updateHeader(context = {}) {
+        const titleElement = document.getElementById(`${this.viewId}Title`);
+        const subtitleElement = document.getElementById(`${this.viewId}Subtitle`);
+        
+        if (!titleElement) return;
+
+        if (context.categoryType) {
+            // Showing contractors from category selection
+            titleElement.textContent = `${context.categoryType} Contractors`;
+            if (subtitleElement) {
+                subtitleElement.textContent = `Specialists in ${context.categoryType}`;
+            }
+        } else if (context.isFavorites) {
+            // Showing favorites
+            titleElement.textContent = 'My Favorites';
+            if (subtitleElement) {
+                const favoritesCount = this.dataModule.getFavoritesCount();
+                subtitleElement.textContent = `${favoritesCount} saved contractor${favoritesCount !== 1 ? 's' : ''}`;
+            }
+        } else {
+            // Default list view
+            titleElement.textContent = 'Service Providers';
+            if (subtitleElement) {
+                subtitleElement.textContent = 'Browse our trusted community contractors';
+            }
+        }
     }
 
     /**
@@ -48,6 +117,9 @@ export class ContractorListView extends BaseView {
             return;
         }
 
+        // Update header with count
+        this.updateHeaderWithCount(contractorsToRender.length);
+
         // Direct card rendering - no abstraction layer
         this.contractorsGrid.innerHTML = contractorsToRender
             .map(contractor => this.createContractorCard(contractor))
@@ -57,22 +129,36 @@ export class ContractorListView extends BaseView {
     }
 
     /**
+     * Update header with contractor count
+     */
+    updateHeaderWithCount(count) {
+        const subtitleElement = document.getElementById(`${this.viewId}Subtitle`);
+        if (subtitleElement) {
+            if (this.currentContext.categoryType) {
+                subtitleElement.textContent = `${count} ${this.currentContext.categoryType} contractor${count !== 1 ? 's' : ''}`;
+            } else if (this.currentContext.isFavorites) {
+                subtitleElement.textContent = `${count} saved contractor${count !== 1 ? 's' : ''}`;
+            } else {
+                subtitleElement.textContent = `${count} trusted community contractor${count !== 1 ? 's' : ''}`;
+            }
+        }
+    }
+
+    /**
      * Create individual contractor card
      */
     createContractorCard(contractor) {
-        const approvedReviews = this.reviewManager.getApprovedReviewsByContractor(contractor.id);
-        const displayRating = approvedReviews.length > 0 ? 
-            this.dataModule.calculateAverageRating(approvedReviews) : 0;
-        
-        const ratingValue = typeof displayRating === 'number' ? displayRating : parseFloat(displayRating) || 0;
-        const displayRatingFormatted = !isNaN(ratingValue) ? ratingValue.toFixed(1) : '0.0';
+        // UPDATED: Use trust metrics instead of reviews
+        const trustMetrics = contractor.trustMetrics || this.dataModule.getContractorTrustMetrics(contractor.id);
+        const displayRating = trustMetrics?.trustScore ? (trustMetrics.trustScore / 20).toFixed(1) : '0.0'; // Convert 0-100 to 0-5 scale
+        const recommendationCount = trustMetrics?.totalRecommendations || 0;
         const isFavorite = this.dataModule.isFavorite(contractor.id);
         const serviceAreasDisplay = this.formatServiceAreas(contractor.serviceAreas);
 
         return `
             <div class="card contractor-card material-card" 
                  data-contractor-id="${sanitizeHtml(contractor.id)}"
-                 onclick="document.dispatchEvent(new CustomEvent('showContractorDetails', { detail: { contractorId: '${sanitizeHtml(contractor.id)}' } }))">
+                 onclick="document.dispatchEvent(new CustomEvent('navigationViewChange', { detail: { view: 'contractor', context: { contractorId: '${sanitizeHtml(contractor.id)}' } } }))">
                 <div class="card-content">
                     <button class="favorite-btn ${isFavorite ? 'favorited' : ''}" 
                             data-contractor-id="${sanitizeHtml(contractor.id)}"
@@ -98,9 +184,18 @@ export class ContractorListView extends BaseView {
                         <div class="rating-icon">
                             <i class="material-icons">star</i>
                         </div>
-                        <span class="rating-value">${displayRatingFormatted}</span>
-                        <span class="review-count">${approvedReviews.length} review${approvedReviews.length !== 1 ? 's' : ''}</span>
+                        <span class="rating-value">${displayRating}</span>
+                        <span class="review-count">${recommendationCount} recommendation${recommendationCount !== 1 ? 's' : ''}</span>
                     </div>
+
+                    ${trustMetrics?.recommendationRate ? `
+                        <div class="trust-metrics">
+                            <div class="recommendation-rate">
+                                <i class="material-icons">thumb_up</i>
+                                <span>${trustMetrics.recommendationRate}% would recommend</span>
+                            </div>
+                        </div>
+                    ` : ''}
 
                     <div class="contractor-details">
                         <p class="service-areas">
@@ -197,6 +292,9 @@ export class ContractorListView extends BaseView {
             this.dataModule.isFavorite(contractor.id)
         );
 
+        this.currentContext = { isFavorites: true };
+        this.updateHeader(this.currentContext);
+
         if (favoriteContractors.length === 0) {
             this.contractorsGrid.innerHTML = this.createFavoritesEmptyState();
         } else {
@@ -212,6 +310,9 @@ export class ContractorListView extends BaseView {
         const filteredContractors = allContractors.filter(contractor => 
             contractor.category === category
         );
+        
+        this.currentContext = { categoryType: category };
+        this.updateHeader(this.currentContext);
         this.renderContractors(filteredContractors);
     }
 
@@ -225,6 +326,9 @@ export class ContractorListView extends BaseView {
             contractor.category.toLowerCase().includes(searchTerm.toLowerCase()) ||
             (contractor.description && contractor.description.toLowerCase().includes(searchTerm.toLowerCase()))
         );
+        
+        this.currentContext = { searchTerm: searchTerm };
+        this.updateHeader(this.currentContext);
         this.renderContractors(filteredContractors);
     }
 }

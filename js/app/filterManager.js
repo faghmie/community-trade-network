@@ -1,4 +1,4 @@
-// js/app/filterManager.js - SIMPLIFIED: Reduced complexity while maintaining functionality
+// js/app/filterManager.js - UPDATED: Support for view-based contractor editing
 
 export class FilterManager {
     constructor(dataModule) {
@@ -49,14 +49,14 @@ export class FilterManager {
                     <div class="empty-state-icon">🔍</div>
                     <h3 class="empty-state-title">No suppliers found</h3>
                     <p class="empty-state-description">We couldn't find any suppliers matching your search criteria.</p>
-                    <button class="btn btn-primary add-supplier-btn" id="addSupplierBtn">
+                    <button class="btn btn-primary add-supplier-btn" data-action="add-supplier">
                         <span class="btn-icon">➕</span>
                         Add Supplier to Directory
                     </button>
                     <p class="empty-state-hint">Help grow the community by adding a trusted supplier</p>
                 </div>
             `;
-            
+
             const mainContent = document.querySelector('main') || document.body;
             const contractorList = document.getElementById('contractorList');
             if (contractorList) {
@@ -71,7 +71,7 @@ export class FilterManager {
     bindEvents() {
         // Search with debounce
         if (this.elements.searchInput) {
-            this.elements.searchInput.addEventListener('input', 
+            this.elements.searchInput.addEventListener('input',
                 this.debounce(() => this.applyCurrentFilters(), 300)
             );
         }
@@ -121,15 +121,45 @@ export class FilterManager {
             case 'show-favorites':
                 this.applyFavoritesFilter();
                 break;
+            case 'add-supplier':
+                this.handleAddSupplier();
+                break;
             default:
                 // Other actions handled elsewhere
                 break;
         }
     }
 
+    // In the handleAddSupplier method in filterManager.js, add logging:
+    handleAddSupplier() {
+        // Get the current search input value directly to ensure we have the latest
+        const currentSearchValue = this.elements.searchInput?.value || '';
+
+        console.log('🔍 FilterManager: Add Supplier clicked, search value:', currentSearchValue);
+        console.log('🔍 FilterManager: Dispatching navigationViewChange with contractorEdit');
+
+        // UPDATED: Dispatch navigation event to show contractor edit view
+        document.dispatchEvent(new CustomEvent('navigationViewChange', {
+            detail: {
+                view: 'contractorEdit',
+                context: {
+                    name: currentSearchValue,
+                    location: this.currentFilters.location,
+                    category: this.currentFilters.category
+                }
+            }
+        }));
+    }
+
     handleNavigation(view) {
+        // FIX: Check if view is valid before proceeding
+        if (!view) {
+            console.warn('⚠️ FilterManager: Navigation called with null/undefined view');
+            return;
+        }
+
         this.updateBottomNavigationActiveState(view);
-        
+
         document.dispatchEvent(new CustomEvent('navigationViewChange', {
             detail: { view }
         }));
@@ -157,7 +187,7 @@ export class FilterManager {
         this.updateFiltersFromUI();
         const results = this.applyFiltersAndSorting();
         this.updateUIState(results);
-        
+
         // Notify listeners
         document.dispatchEvent(new CustomEvent('filtersChanged', {
             detail: { filters: this.currentFilters, results }
@@ -183,7 +213,7 @@ export class FilterManager {
         // Apply filters
         if (this.currentFilters.search) {
             const searchTerm = this.currentFilters.search.toLowerCase();
-            contractors = contractors.filter(c => 
+            contractors = contractors.filter(c =>
                 c.name.toLowerCase().includes(searchTerm) ||
                 (c.description && c.description.toLowerCase().includes(searchTerm)) ||
                 (c.services && c.services.toLowerCase().includes(searchTerm))
@@ -195,19 +225,19 @@ export class FilterManager {
         }
 
         if (this.currentFilters.categoryTypeNames?.length > 0) {
-            contractors = contractors.filter(c => 
+            contractors = contractors.filter(c =>
                 this.currentFilters.categoryTypeNames.includes(c.category)
             );
         }
 
         if (this.currentFilters.location) {
-            contractors = contractors.filter(c => 
+            contractors = contractors.filter(c =>
                 c.location && c.location.includes(this.currentFilters.location)
             );
         }
 
         if (this.currentFilters.minRating > 0) {
-            contractors = contractors.filter(c => 
+            contractors = contractors.filter(c =>
                 parseFloat(c.rating) >= this.currentFilters.minRating
             );
         }
@@ -225,7 +255,7 @@ export class FilterManager {
 
     sortContractors(contractors) {
         const sortBy = this.currentFilters.sortBy || 'name';
-        
+
         return [...contractors].sort((a, b) => {
             switch (sortBy) {
                 case 'rating':
@@ -249,9 +279,9 @@ export class FilterManager {
     updateEmptyState(results) {
         const hasResults = results && results.length > 0;
         const hasActiveFilters = this.hasActiveFilters();
-        
+
         if (this.elements.emptyStateContainer) {
-            this.elements.emptyStateContainer.classList.toggle('hidden', 
+            this.elements.emptyStateContainer.classList.toggle('hidden',
                 hasResults || !hasActiveFilters
             );
         }
@@ -259,11 +289,11 @@ export class FilterManager {
 
     updateFilterIndicators() {
         const activeCount = this.getActiveFilterCount();
-        
+
         // Update filter badge
         const searchNavItem = document.querySelector('[data-view="search"]');
         let badge = searchNavItem?.querySelector('.bottom-nav-badge');
-        
+
         if (activeCount > 0) {
             if (!badge) {
                 badge = document.createElement('span');

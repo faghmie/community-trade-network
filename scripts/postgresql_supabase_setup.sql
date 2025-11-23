@@ -6,12 +6,12 @@ CREATE TABLE contractors (
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
--- Create reviews table with JSONB  
-CREATE TABLE reviews (
+-- Create recommendations table with JSONB  
+CREATE TABLE recommendations (
     id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
     contractor_id UUID REFERENCES contractors(id) ON DELETE CASCADE,
     data JSONB NOT NULL,  -- All review data in one flexible document
-    status TEXT DEFAULT 'pending' CHECK (status IN ('pending', 'approved', 'rejected')),
+    moderation_status TEXT DEFAULT 'pending' CHECK (status IN ('pending', 'approved', 'rejected')),
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
@@ -24,7 +24,7 @@ CREATE TABLE categories (
 );
 
 -- User Feedback Table for Contractor Review App
--- Stores customer feedback about the app experience (not contractor reviews)
+-- Stores customer feedback about the app experience (not contractor recommendations)
 
 CREATE TABLE IF NOT EXISTS user_feedback (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -60,16 +60,16 @@ CREATE INDEX IF NOT EXISTS idx_user_feedback_data ON user_feedback USING GIN (fe
 
 -- Enable Row Level Security
 ALTER TABLE contractors ENABLE ROW LEVEL SECURITY;
-ALTER TABLE reviews ENABLE ROW LEVEL SECURITY;
+ALTER TABLE recommendations ENABLE ROW LEVEL SECURITY;
 ALTER TABLE categories ENABLE ROW LEVEL SECURITY;
 
 -- Create policies to allow all operations
 CREATE POLICY "Allow all operations on contractors" ON contractors FOR ALL USING (true);
-CREATE POLICY "Allow all operations on reviews" ON reviews FOR ALL USING (true);
+CREATE POLICY "Allow all operations on recommendations" ON recommendations FOR ALL USING (true);
 CREATE POLICY "Allow all operations on categories" ON categories FOR ALL USING (true);
 
 -- Create indexes for better performance
 CREATE INDEX idx_contractors_data ON contractors USING gin(data);
-CREATE INDEX idx_reviews_contractor_id ON reviews(contractor_id);
-CREATE INDEX idx_reviews_data ON reviews USING gin(data);
+CREATE INDEX idx_recommendations_contractor_id ON recommendations(contractor_id);
+CREATE INDEX idx_recommendations_data ON recommendations USING gin(data);
 CREATE INDEX idx_categories_data ON categories USING gin(data);

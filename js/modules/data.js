@@ -1,4 +1,4 @@
-// js/modules/data.js - FIXED: Remove setReviewManager dependency
+// js/modules/data.js - UPDATED: Remove review code, add recommendation support
 // ES6 Module for data orchestration - PURE DATA ONLY
 
 // Import data directly from ES6 modules
@@ -6,7 +6,7 @@ import { southAfricanProvinces } from '../data/defaultLocations.js';
 
 import { Storage } from './storage.js';
 import { ContractorManager } from './contractorManager.js';
-import { ReviewManager } from './reviewManager.js';
+import { RecommendationDataManager } from './recommendationDataManager.js';
 import { CategoriesModule } from './categories.js';
 import { FavoritesDataManager } from './favoritesDataManager.js';
 import { StatsDataManager } from './statsDataManager.js';
@@ -25,7 +25,7 @@ export class DataModule {
         this.initPromise = null;
         this.storage = null;
         this.contractorManager = null;
-        this.reviewManager = null;
+        this.recommendationDataManager = null;
         this.categoriesModule = null;
         this.favoritesDataManager = null;
         this.statsManager = null;
@@ -64,7 +64,7 @@ export class DataModule {
                 
                 // Create all managers
                 this.contractorManager = new ContractorManager();
-                this.reviewManager = new ReviewManager();
+                this.recommendationDataManager = new RecommendationDataManager();
                 this.categoriesModule = new CategoriesModule(this);
                 this.favoritesDataManager = new FavoritesDataManager();
                 this.statsManager = new StatsDataManager();
@@ -73,14 +73,11 @@ export class DataModule {
                 // Initialize all managers with storage that now has fresh data
                 await this.contractorManager.init(this.storage);
                 await this.categoriesModule.init(this.storage, this);
-                await this.reviewManager.init(this.contractorManager, this.storage);
-                
-                // FIXED: Remove setReviewManager call - no longer needed
-                // this.contractorManager.setReviewManager(this.reviewManager);
+                await this.recommendationDataManager.init(this.contractorManager, this.storage);
                 
                 // Initialize remaining managers
                 await this.favoritesDataManager.init(this.storage, this.contractorManager);
-                this.statsManager.init(this.contractorManager, this.reviewManager);
+                this.statsManager.init(this.contractorManager, this.recommendationDataManager);
                 this.feedbackDataManager.init(this.storage);
 
                 // Verify all managers have data
@@ -139,12 +136,12 @@ export class DataModule {
             console.log(`✅ CategoriesModule: ${categories.length} categories`);
         }
         
-        // Check review manager
-        const reviews = this.reviewManager.getAllReviews();
-        if (!reviews || reviews.length === 0) {
-            console.log('ℹ️ ReviewManager: No reviews (this might be normal)');
+        // Check recommendation manager
+        const recommendations = this.recommendationDataManager.getAllRecommendations();
+        if (!recommendations || recommendations.length === 0) {
+            console.log('ℹ️ RecommendationDataManager: No recommendations (this might be normal)');
         } else {
-            console.log(`✅ ReviewManager: ${reviews.length} reviews`);
+            console.log(`✅ RecommendationDataManager: ${recommendations.length} recommendations`);
         }
         
         // If we have issues and Supabase is connected, try one more refresh
@@ -202,7 +199,7 @@ export class DataModule {
         const eventDetail = {
             contractorsCount: this.contractorManager.getAll().length,
             categoriesCount: this.categoriesModule.getCategories().length,
-            reviewsCount: this.reviewManager.getAllReviews().length,
+            recommendationsCount: this.recommendationDataManager.getAllRecommendations().length,
             supabaseConnected: this.supabaseConnected,
             timestamp: new Date().toISOString()
         };
@@ -231,14 +228,16 @@ export class DataModule {
 
     getAllLocations = () => this.contractorManager.getAllLocations();
 
-    // Review methods
-    getAllReviews = () => this.reviewManager.getAllReviews();
+    // Recommendation methods
+    getAllRecommendations = () => this.recommendationDataManager.getAllRecommendations();
 
-    getReviewsForContractor = (contractorId) => this.reviewManager.getReviewsByContractor(contractorId);
+    getRecommendationsForContractor = (contractorId) => this.recommendationDataManager.getRecommendationsByContractor(contractorId);
 
-    calculateAverageRating = (reviews) => this.reviewManager.calculateOverallRating(reviews);
+    getApprovedRecommendationsForContractor = (contractorId) => this.recommendationDataManager.getApprovedRecommendationsForContractor(contractorId);
 
-    searchReviews = (...args) => this.reviewManager.searchReviews(...args);
+    getRecommendationSummariesForContractor = (contractorId) => this.recommendationDataManager.getRecommendationSummariesForContractor(contractorId);
+
+    searchRecommendations = (...args) => this.recommendationDataManager.searchRecommendations(...args);
 
     // Category methods
     getCategories = () => this.categoriesModule.getCategories();
@@ -276,16 +275,16 @@ export class DataModule {
         return this.contractorManager.delete(id);
     }
 
-    addReview(contractorId, data) { 
-        return this.reviewManager.addReview(contractorId, data);
+    addRecommendation(contractorId, data) { 
+        return this.recommendationDataManager.addRecommendation(contractorId, data);
     }
 
-    updateReviewStatus(...args) { 
-        return this.reviewManager.updateReviewStatus(...args);
+    updateRecommendationStatus(...args) { 
+        return this.recommendationDataManager.updateRecommendationStatus(...args);
     }
 
-    deleteReview(...args) { 
-        return this.reviewManager.deleteReview(...args);
+    deleteRecommendation(...args) { 
+        return this.recommendationDataManager.deleteRecommendation(...args);
     }
 
     addCategory(name) { 
@@ -318,8 +317,6 @@ export class DataModule {
 
     // Stats methods
     getStats = () => this.statsManager.getStats();
-
-    getReviewStats = () => this.statsManager.getReviewStats();
 
     // Get favorite contractors
     getFavoriteContractors() {
@@ -381,8 +378,8 @@ export class DataModule {
         if (this.contractorManager && this.contractorManager.refresh) {
             refreshPromises.push(this.contractorManager.refresh());
         }
-        if (this.reviewManager && this.reviewManager.refresh) {
-            refreshPromises.push(this.reviewManager.refresh());
+        if (this.recommendationDataManager && this.recommendationDataManager.refresh) {
+            refreshPromises.push(this.recommendationDataManager.refresh());
         }
         if (this.categoriesModule && this.categoriesModule.refresh) {
             refreshPromises.push(this.categoriesModule.refresh());
@@ -404,8 +401,8 @@ export class DataModule {
         return this.contractorManager;
     }
 
-    getReviewManager() {
-        return this.reviewManager;
+    getRecommendationDataManager() {
+        return this.recommendationDataManager;
     }
 
     getCategoriesModule() {
@@ -434,12 +431,22 @@ export class DataModule {
         return southAfricanProvinces;
     }
 
+    // Get pending counts for admin
+    getPendingRecommendationsCount() {
+        return this.recommendationDataManager.getPendingRecommendationsCount();
+    }
+
+    // Get trust metrics for contractor
+    getContractorTrustMetrics(contractorId) {
+        return this.recommendationDataManager.calculateContractorTrustMetrics(contractorId);
+    }
+
     // Debug method
     debugDataLoading() {
         console.log('🔍 DataModule Debug:');
         console.log('- Contractors:', this.contractorManager?.getAll().length);
         console.log('- Categories:', this.categoriesModule?.getCategories().length);
-        console.log('- Reviews:', this.reviewManager?.getAllReviews().length);
+        console.log('- Recommendations:', this.recommendationDataManager?.getAllRecommendations().length);
         console.log('- Supabase connected:', this.supabaseConnected);
     }
 }

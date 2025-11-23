@@ -1,4 +1,4 @@
-// js/modules/storage.js - FIXED SYNC STRATEGY
+// js/modules/storage.js - UPDATED: Add recommendation support
 // ES6 Module for storage management with Supabase sync
 
 export class Storage {
@@ -56,10 +56,10 @@ export class Storage {
                     const remoteData = await this.loadFromSupabase(key);
 
                     if (remoteData !== null && remoteData !== undefined) {
-                        // For reviews: Only preserve local pending reviews that don't exist in Supabase
+                        // For recommendations: Only preserve local pending recommendations that don't exist in Supabase
                         let finalData = remoteData;
-                        if (key === 'reviews') {
-                            finalData = await this.mergeReviewsWithLocalPending(remoteData);
+                        if (key === 'recommendations') {
+                            finalData = await this.mergeRecommendationsWithLocalPending(remoteData);
                         }
 
                         // Update localStorage with the final data (Supabase is source of truth)
@@ -93,66 +93,66 @@ export class Storage {
         }
     }
 
-    // FIXED: Merge reviews - Use Supabase as source of truth, preserve ONLY pending reviews
-    async mergeReviewsWithLocalPending(remoteReviews) {
+    // NEW: Merge recommendations - Use Supabase as source of truth, preserve ONLY pending recommendations
+    async mergeRecommendationsWithLocalPending(remoteRecommendations) {
         try {
-            // Get local reviews from localStorage
-            const localReviewsJson = localStorage.getItem('reviews');
-            const localReviews = localReviewsJson ? JSON.parse(localReviewsJson) : [];
+            // Get local recommendations from localStorage
+            const localRecommendationsJson = localStorage.getItem('recommendations');
+            const localRecommendations = localRecommendationsJson ? JSON.parse(localRecommendationsJson) : [];
 
-            if (!localReviews || localReviews.length === 0) {
-                return remoteReviews;
+            if (!localRecommendations || localRecommendations.length === 0) {
+                return remoteRecommendations;
             }
 
-            // CRITICAL FIX: Get the current list of contractors from Supabase to validate reviews
+            // CRITICAL: Get the current list of contractors from Supabase to validate recommendations
             let validContractors = [];
             try {
                 validContractors = await this.loadFromSupabase('contractors') || [];
             } catch (error) {
-                console.warn('Could not load contractors from Supabase, cannot validate reviews');
-                // If we can't get contractors, we can't properly validate - use remote reviews only
-                return remoteReviews;
+                console.warn('Could not load contractors from Supabase, cannot validate recommendations');
+                // If we can't get contractors, we can't properly validate - use remote recommendations only
+                return remoteRecommendations;
             }
 
             // Create a set of valid contractor IDs
             const validContractorIds = new Set();
             validContractors.forEach(contractor => validContractorIds.add(contractor.id));
 
-            // Create a map of remote review IDs for quick lookup
-            const remoteReviewIds = new Set();
-            remoteReviews.forEach(review => remoteReviewIds.add(review.id));
+            // Create a map of remote recommendation IDs for quick lookup
+            const remoteRecommendationIds = new Set();
+            remoteRecommendations.forEach(recommendation => remoteRecommendationIds.add(recommendation.id));
 
-            // CRITICAL FIX: Find ONLY local pending reviews that should be preserved
-            const validLocalPendingReviews = [];
-            const staleLocalReviews = [];
+            // CRITICAL: Find ONLY local pending recommendations that should be preserved
+            const validLocalPendingRecommendations = [];
+            const staleLocalRecommendations = [];
 
-            localReviews.forEach(review => {
-                const existsInRemote = remoteReviewIds.has(review.id);
-                const contractorExists = validContractorIds.has(review.contractor_id);
-                const isPending = review.status === 'pending';
+            localRecommendations.forEach(recommendation => {
+                const existsInRemote = remoteRecommendationIds.has(recommendation.id);
+                const contractorExists = validContractorIds.has(recommendation.contractor_id);
+                const isPending = recommendation.moderationStatus === 'pending';
 
                 if (existsInRemote) {
-                    // Review exists in both remote and local - remote is source of truth, ignore local
+                    // Recommendation exists in both remote and local - remote is source of truth, ignore local
                 } else if (isPending && contractorExists) {
-                    // ONLY preserve local pending reviews for valid contractors
-                    validLocalPendingReviews.push(review);
+                    // ONLY preserve local pending recommendations for valid contractors
+                    validLocalPendingRecommendations.push(recommendation);
                 } else if (!contractorExists) {
-                    // Review for deleted contractor - remove it regardless of status
-                    staleLocalReviews.push(review);
+                    // Recommendation for deleted contractor - remove it regardless of status
+                    staleLocalRecommendations.push(recommendation);
                 } else {
-                    // Approved/rejected review that doesn't exist in remote - this is stale data, remove it
-                    staleLocalReviews.push(review);
+                    // Approved/rejected recommendation that doesn't exist in remote - this is stale data, remove it
+                    staleLocalRecommendations.push(recommendation);
                 }
             });
 
-            // Combine remote reviews with ONLY valid local pending reviews
-            const mergedReviews = [...remoteReviews, ...validLocalPendingReviews];
+            // Combine remote recommendations with ONLY valid local pending recommendations
+            const mergedRecommendations = [...remoteRecommendations, ...validLocalPendingRecommendations];
 
-            return mergedReviews;
+            return mergedRecommendations;
 
         } catch (error) {
-            console.error('Error merging reviews:', error);
-            return remoteReviews; // Fallback to remote data only
+            console.error('Error merging recommendations:', error);
+            return remoteRecommendations; // Fallback to remote data only
         }
     }
 
@@ -201,7 +201,7 @@ export class Storage {
     clear() {
         try {
             localStorage.removeItem('contractors');
-            localStorage.removeItem('reviews');
+            localStorage.removeItem('recommendations');
             localStorage.removeItem('categories');
             localStorage.removeItem('favorites');
             localStorage.removeItem('locations');
@@ -225,7 +225,7 @@ export class Storage {
             this.supabase.status === 'online';
     }
 
-    // FIXED: Sync specific data to Supabase (admin operations) - NOW HANDLES DELETIONS
+    // UPDATED: Sync specific data to Supabase (admin operations) - NOW INCLUDES RECOMMENDATIONS
     async syncToSupabase(key, data) {
         if (!this.isSupabaseAvailable()) {
             throw new Error('Cannot sync: Supabase not available');
@@ -241,16 +241,16 @@ export class Storage {
                     }
                     break;
 
-                case 'reviews':
+                case 'recommendations':
                     if (data && data.length > 0) {
-                        for (const review of data) {
-                            await this.supabase.saveReview(review);
+                        for (const recommendation of data) {
+                            await this.supabase.saveRecommendation(recommendation);
                         }
                     }
                     break;
 
                 case 'categories':
-                    // FIXED: Handle category deletions by comparing with last known state
+                    // Handle category deletions by comparing with last known state
                     await this.syncCategoriesToSupabase(data);
                     break;
 
@@ -325,7 +325,7 @@ export class Storage {
         this.lastKnownCategories = [...currentCategories];
     }
 
-    // Load data from Supabase
+    // UPDATED: Load data from Supabase - NOW INCLUDES RECOMMENDATIONS
     async loadFromSupabase(key) {
         if (!this.isSupabaseAvailable()) {
             throw new Error('Cannot load from Supabase: not available');
@@ -339,8 +339,8 @@ export class Storage {
                     remoteData = await this.supabase.getAllContractors();
                     break;
 
-                case 'reviews':
-                    remoteData = await this.supabase.getAllReviews();
+                case 'recommendations':
+                    remoteData = await this.supabase.getAllRecommendations();
                     break;
 
                 case 'categories':
@@ -368,7 +368,7 @@ export class Storage {
         }
     }
 
-    // Force refresh all shared data from Supabase
+    // UPDATED: Force refresh all shared data from Supabase - NOW INCLUDES RECOMMENDATIONS
     async forceRefreshAll() {
         if (!this.isSupabaseAvailable()) {
             throw new Error('Cannot force refresh: Supabase not available');
@@ -376,22 +376,22 @@ export class Storage {
 
         try {
             const contractors = await this.syncFromSupabase('contractors');
-            const reviews = await this.syncFromSupabase('reviews');
+            const recommendations = await this.syncFromSupabase('recommendations');
             const categories = await this.syncFromSupabase('categories');
             const feedback = await this.syncFromSupabase('user_feedback');
 
-            return { contractors, reviews, categories, feedback };
+            return { contractors, recommendations, categories, feedback };
         } catch (error) {
             console.error('Force refresh failed:', error);
             throw error;
         }
     }
 
-    // Get storage statistics
+    // UPDATED: Get storage statistics - NOW INCLUDES RECOMMENDATIONS
     getStats() {
         const stats = {
             contractors: (JSON.parse(localStorage.getItem('contractors') || '[]')).length,
-            reviews: (JSON.parse(localStorage.getItem('reviews') || '[]')).length,
+            recommendations: (JSON.parse(localStorage.getItem('recommendations') || '[]')).length,
             categories: (JSON.parse(localStorage.getItem('categories') || '[]')).length,
             favorites: (JSON.parse(localStorage.getItem('favorites') || '[]')).length,
             user_feedback: (JSON.parse(localStorage.getItem('user_feedback') || '[]')).length,

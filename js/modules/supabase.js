@@ -1,4 +1,5 @@
 // Supabase Integration - Main Supabase client and data operations
+// UPDATED: Add recommendation support
 
 import { supabaseUrl, supabaseAnonKey } from '../config/supabase-credentials.js';
 
@@ -92,34 +93,35 @@ export class SupabaseClient {
         }
     }
 
-    async saveReview(review) {
+    // NEW: Save recommendation to Supabase
+    async saveRecommendation(recommendation) {
         if (!this.initialized || this.status !== 'online') {
-            this.addToPendingSync('reviews', 'upsert', review);
+            this.addToPendingSync('recommendations', 'upsert', recommendation);
             return false;
         }
 
         try {
-            // Extract contractor_id and status for top-level columns, rest goes in data
-            const { id, contractor_id, status, createdAt, updatedAt, ...reviewData } = review;
+            // Extract contractor_id and moderationStatus for top-level columns, rest goes in data
+            const { id, contractor_id, moderationStatus, createdAt, updatedAt, ...recommendationData } = recommendation;
 
             const doc = {
                 id: id,
                 contractor_id: contractor_id,
-                status: status || 'pending',
-                data: reviewData,
+                moderation_status: moderationStatus || 'pending',
+                data: recommendationData,
                 created_at: createdAt || new Date().toISOString(),
                 updated_at: updatedAt || new Date().toISOString()
             };
 
             const { error } = await this.client
-                .from('reviews')
+                .from('recommendations')
                 .upsert(doc, { onConflict: 'id' });
 
             if (error) throw error;
             return true;
         } catch (error) {
-            console.error('Error saving review to Supabase:', error);
-            this.addToPendingSync('reviews', 'upsert', review);
+            console.error('Error saving recommendation to Supabase:', error);
+            this.addToPendingSync('recommendations', 'upsert', recommendation);
             return false;
         }
     }
@@ -153,7 +155,7 @@ export class SupabaseClient {
         }
     }
 
-    // NEW: Save feedback to Supabase
+    // Save feedback to Supabase
     async saveFeedback(feedback) {
         if (!this.initialized || this.status !== 'online') {
             this.addToPendingSync('user_feedback', 'upsert', feedback);
@@ -229,26 +231,27 @@ export class SupabaseClient {
         }
     }
 
-    async getAllReviews() {
+    // NEW: Get all recommendations from Supabase
+    async getAllRecommendations() {
         if (!this.initialized) return [];
 
         try {
             const { data, error } = await this.client
-                .from('reviews')
+                .from('recommendations')
                 .select('*');
 
             if (error) throw error;
 
-            // CRITICAL FIX: Check if data is valid before mapping
+            // CRITICAL: Check if data is valid before mapping
             if (!data || !Array.isArray(data)) {
-                console.warn('No reviews data or invalid format received');
+                console.warn('No recommendations data or invalid format received');
                 return [];
             }
 
-            const reviews = data.map(row => {
+            const recommendations = data.map(row => {
                 // Ensure we have valid row data
                 if (!row || typeof row !== 'object') {
-                    console.warn('Invalid review row:', row);
+                    console.warn('Invalid recommendation row:', row);
                     return null;
                 }
 
@@ -256,20 +259,20 @@ export class SupabaseClient {
                     return {
                         id: row.id,
                         contractor_id: row.contractor_id,
-                        status: row.status,
+                        moderationStatus: row.moderation_status,
                         ...row.data,
                         createdAt: row.created_at,
                         updatedAt: row.updated_at
                     };
                 } catch (error) {
-                    console.error('Error processing review row:', error, row);
+                    console.error('Error processing recommendation row:', error, row);
                     return null;
                 }
-            }).filter(review => review !== null); // Remove any null entries
+            }).filter(recommendation => recommendation !== null); // Remove any null entries
 
-            return reviews;
+            return recommendations;
         } catch (error) {
-            console.error('Error fetching reviews from Supabase:', error);
+            console.error('Error fetching recommendations from Supabase:', error);
             return [];
         }
     }
@@ -298,7 +301,7 @@ export class SupabaseClient {
         }
     }
 
-    // NEW: Get all feedback from Supabase
+    // Get all feedback from Supabase
     async getAllFeedback() {
         if (!this.initialized) return [];
 
@@ -356,8 +359,8 @@ export class SupabaseClient {
                     case 'contractors':
                         success = await this.saveContractor(sync.data);
                         break;
-                    case 'reviews':
-                        success = await this.saveReview(sync.data);
+                    case 'recommendations':
+                        success = await this.saveRecommendation(sync.data);
                         break;
                     case 'categories':
                         if (sync.operation === 'delete') {
@@ -367,7 +370,6 @@ export class SupabaseClient {
                         }
                         break;
                     case 'user_feedback':
-                        // NEW: Handle feedback sync
                         success = await this.saveFeedback(sync.data);
                         break;
                 }
