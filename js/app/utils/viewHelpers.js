@@ -9,16 +9,40 @@ import { sanitizeHtml } from '../../modules/utilities.js';
  * Creates standardized view header with consistent styling and behavior
  */
 export function createViewHeader(viewId, title, subtitle = '', showBackButton = true) {
-    const elements = {
-        backButton: showBackButton ? createBackButton(viewId) : createSpacer(),
-        subtitle: subtitle ? createSubtitle(viewId, subtitle) : ''
-    };
+    const leftContent = showBackButton ? createBackButton(viewId) : createSpacer();
+    const subtitleHtml = subtitle ? createSubtitle(viewId, subtitle) : '';
 
     return {
-        html: createHeaderHTML(viewId, title, elements),
-        bindBackButton: (handler) => bindBackButtonHandler(viewId, handler),
-        updateHeader: (newTitle, newSubtitle = '') => updateHeaderText(viewId, newTitle, newSubtitle),
-        getHeaderElements: () => getHeaderElements(viewId)
+        html: `
+            <div class="view-header">
+                <div class="header-top-row">
+                    ${leftContent}
+                    <h1 class="view-title" id="${viewId}Title">${title}</h1>
+                </div>
+                ${subtitleHtml}
+            </div>
+        `,
+
+        bindBackButton(handler) {
+            if (showBackButton) {
+                document.getElementById(`${viewId}BackBtn`)?.addEventListener('click', handler);
+            }
+        },
+
+        updateHeader(newTitle, newSubtitle = '') {
+            const titleElement = document.getElementById(`${viewId}Title`);
+            const subtitleElement = document.getElementById(`${viewId}Subtitle`);
+
+            if (titleElement) titleElement.textContent = newTitle;
+            if (subtitleElement && newSubtitle) subtitleElement.textContent = newSubtitle;
+        },
+
+        getHeaderElements() {
+            return {
+                title: document.getElementById(`${viewId}Title`),
+                subtitle: document.getElementById(`${viewId}Subtitle`)
+            };
+        }
     };
 }
 
@@ -62,7 +86,7 @@ function bindBackButtonHandler(viewId, handler) {
 function updateHeaderText(viewId, newTitle, newSubtitle) {
     const titleElement = document.getElementById(`${viewId}Title`);
     const subtitleElement = document.getElementById(`${viewId}Subtitle`);
-    
+
     if (titleElement) titleElement.textContent = newTitle;
     if (subtitleElement && newSubtitle) subtitleElement.textContent = newSubtitle;
 }
@@ -128,7 +152,7 @@ export function createCard(content, classes = '') {
 export function createButton(text, type = 'primary', icon = '', id = '') {
     const iconHTML = icon ? `<i class="material-icons">${icon}</i>` : '';
     const idAttr = id ? `id="${id}"` : '';
-    
+
     return `
         <button ${idAttr} class="material-button ${type}">
             ${iconHTML}
@@ -143,9 +167,9 @@ export function createButton(text, type = 'primary', icon = '', id = '') {
  */
 export function renderWithBindings(container, html, bindings = {}) {
     if (!container) return;
-    
+
     container.innerHTML = html;
-    
+
     // Bind events to elements
     Object.entries(bindings).forEach(([elementId, handler]) => {
         const element = document.getElementById(elementId);
@@ -160,20 +184,20 @@ export function renderWithBindings(container, html, bindings = {}) {
  */
 export function formatPhoneNumber(phone) {
     if (!phone) return '';
-    
+
     // Remove all non-digit characters
     const cleaned = phone.replace(/\D/g, '');
-    
+
     // South African phone number format
     if (cleaned.length === 10 && cleaned.startsWith('0')) {
         return `+27 ${cleaned.slice(1, 4)} ${cleaned.slice(4, 7)} ${cleaned.slice(7)}`;
     }
-    
+
     // International format
     if (cleaned.length === 11 && cleaned.startsWith('27')) {
         return `+27 ${cleaned.slice(2, 5)} ${cleaned.slice(5, 8)} ${cleaned.slice(8)}`;
     }
-    
+
     return phone; // Return original if format doesn't match
 }
 
@@ -182,7 +206,7 @@ export function formatPhoneNumber(phone) {
  */
 export function formatAddress(address) {
     if (!address) return 'No address provided';
-    
+
     const parts = [
         address.street,
         address.suburb,
@@ -190,7 +214,7 @@ export function formatAddress(address) {
         address.province,
         address.postalCode
     ].filter(part => part && part.trim());
-    
+
     return parts.join(', ') || 'Address not specified';
 }
 
@@ -221,24 +245,24 @@ export function createRatingStars(rating, maxRating = 5) {
     const fullStars = Math.floor(rating);
     const hasHalfStar = rating % 1 >= 0.5;
     const emptyStars = maxRating - fullStars - (hasHalfStar ? 1 : 0);
-    
+
     let starsHTML = '';
-    
+
     // Full stars
     for (let i = 0; i < fullStars; i++) {
         starsHTML += '<i class="material-icons star full">star</i>';
     }
-    
+
     // Half star
     if (hasHalfStar) {
         starsHTML += '<i class="material-icons star half">star_half</i>';
     }
-    
+
     // Empty stars
     for (let i = 0; i < emptyStars; i++) {
         starsHTML += '<i class="material-icons star empty">star_border</i>';
     }
-    
+
     return starsHTML;
 }
 
@@ -248,7 +272,7 @@ export function createRatingStars(rating, maxRating = 5) {
 export function createFavoriteButton(contractorId, isFavorite = false) {
     const favoriteClass = isFavorite ? 'favorited' : '';
     const icon = isFavorite ? 'favorite' : 'favorite_border';
-    
+
     return `
         <button class="material-icon-button favorite-button ${favoriteClass}" 
                 data-contractor-id="${contractorId}" 

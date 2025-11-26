@@ -1,15 +1,15 @@
-// js/app/views/contractorView.js
+// js/app/views/contractorView.js - Refactored for simplicity
 import { BaseView } from './BaseView.js';
 import { sanitizeHtml } from '../../modules/utilities.js';
-import { createViewHeader } from '../utils/viewHelpers.js';
+import { createViewHeader, createRatingStars, createButton } from '../utils/viewHelpers.js';
 
 export class ContractorView extends BaseView {
-    constructor(dataModule) { // REMOVED: contractorManager parameter (was unused)
+    constructor(dataModule) {
         super('contractor-view');
         this.dataModule = dataModule;
         this.currentContractorId = null;
         this.currentContractor = null;
-        this.currentTrustMetrics = null; // ADDED: Cache trust metrics
+        this.currentTrustMetrics = null;
         this.headerHelper = null;
     }
 
@@ -39,18 +39,9 @@ export class ContractorView extends BaseView {
         this.container.innerHTML = `
             <div class="contractor-view-content">
                 ${this.headerHelper.html}
-
-                <div class="view-content">
-                    <div class="contractor-details-content material-details" id="contractorDetailsContent"></div>
-                </div>
-
+                <div class="view-content" id="contractorDetailsContent"></div>
                 <div class="view-footer">
-                    <button class="mdc-button mdc-button--raised contractor-review-btn" id="contractorReviewBtn">
-                        <span class="mdc-button__label">
-                            <i class="material-icons mdc-button__icon">rate_review</i>
-                            Leave a Recommendation
-                        </span>
-                    </button>
+                    ${createButton('Leave a Recommendation', 'raised', 'rate_review', 'contractorReviewBtn')}
                 </div>
             </div>
         `;
@@ -59,7 +50,7 @@ export class ContractorView extends BaseView {
     }
 
     show(contractorId = null) {
-        super.show(); // CALL BASE SHOW
+        super.show();
         if (contractorId) {
             this.loadContractor(contractorId);
         } else if (this.currentContractorId) {
@@ -68,27 +59,18 @@ export class ContractorView extends BaseView {
     }
 
     hide() {
-        super.hide(); // CALL BASE HIDE
+        super.hide();
         this.currentContractorId = null;
         this.currentContractor = null;
         this.currentTrustMetrics = null;
     }
 
-    // KEEP: Essential for main.js integration
-    open(contractorId) {
-        this.show(contractorId);
-    }
-
-    // KEEP: Enhanced hide with state cleanup
-    close() {
-        this.hide();
-    }
+    // Navigation methods for main.js integration
+    open(contractorId) { this.show(contractorId); }
+    close() { this.hide(); }
 
     bindEvents() {
-        if (this.headerHelper) {
-            this.headerHelper.bindBackButton(() => this.handleBack());
-        }
-
+        this.headerHelper?.bindBackButton(() => this.handleBack());
         document.getElementById('contractorReviewBtn')?.addEventListener('click', () => this.handleReviewClick());
     }
 
@@ -157,34 +139,20 @@ export class ContractorView extends BaseView {
         const categoryAverages = this.getCategoryAverages();
         const hasCategoryRatings = Object.values(categoryAverages).some(rating => rating > 0);
 
-        return `
-            ${contractor.description ? this.renderDescriptionSection(contractor.description) : ''}
+        const sections = [
+            contractor.description && this.renderDescriptionSection(contractor.description),
+            this.renderContactSection(contractor),
+            contractor.services?.length > 0 && this.renderServicesSection(contractor.services),
+            contractor.yearsInBusiness && this.renderExperienceSection(contractor.yearsInBusiness),
+            this.currentTrustMetrics && this.renderTrustMetricsSection(),
+            hasCategoryRatings && this.renderRatingsSection(categoryAverages),
+            this.renderRecommendationsSection(recommendations)
+        ].filter(Boolean).join('');
 
-            <div class="contact-section">
-                <h3 class="material-section-title">
-                    <i class="material-icons">contact_page</i>Contact Information
-                </h3>
-                <div class="material-list contact-list">
-                    ${contractor.email ? this.createContactListItem('email', 'Email', contractor.email, 'mailto:' + contractor.email) : ''}
-                    ${contractor.phone ? this.createContactListItem('phone', 'Phone', contractor.phone, 'tel:' + contractor.phone) : ''}
-                    ${contractor.location ? this.createContactListItem('location_on', 'Service Area', contractor.location) : ''}
-                    ${contractor.website ? this.createContactListItem('language', 'Website', this.formatWebsite(contractor.website), contractor.website, true) : ''}
-                </div>
-            </div>
-
-            ${contractor.services && contractor.services.length > 0 ? this.renderServicesSection(contractor.services) : ''}
-
-            ${contractor.yearsInBusiness ? this.renderExperienceSection(contractor.yearsInBusiness) : ''}
-
-            ${this.currentTrustMetrics ? this.renderTrustMetricsSection() : ''}
-
-            ${hasCategoryRatings ? this.renderRatingsSection(categoryAverages) : ''}
-
-            ${this.renderRecommendationsSection(recommendations)}
-        `;
+        return sections;
     }
 
-    // NEW: Description section - placed at the top for prominence
+    // Section rendering methods
     renderDescriptionSection(description) {
         return `
             <div class="description-section">
@@ -192,15 +160,30 @@ export class ContractorView extends BaseView {
                     <i class="material-icons">description</i>About This Provider
                 </h3>
                 <div class="material-card description-card">
-                    <div class="description-content">
-                        <p class="description-text">${sanitizeHtml(description)}</p>
-                    </div>
+                    <p class="description-text">${sanitizeHtml(description)}</p>
                 </div>
             </div>
         `;
     }
 
-    // NEW: Services section
+    renderContactSection(contractor) {
+        const contactItems = [
+            contractor.email && this.createContactListItem('email', 'Email', contractor.email, 'mailto:' + contractor.email),
+            contractor.phone && this.createContactListItem('phone', 'Phone', contractor.phone, 'tel:' + contractor.phone),
+            contractor.location && this.createContactListItem('location_on', 'Service Area', contractor.location),
+            contractor.website && this.createContactListItem('language', 'Website', this.formatWebsite(contractor.website), contractor.website, true)
+        ].filter(Boolean).join('');
+
+        return `
+            <div class="contact-section">
+                <h3 class="material-section-title">
+                    <i class="material-icons">contact_page</i>Contact Information
+                </h3>
+                <div class="material-list contact-list">${contactItems}</div>
+            </div>
+        `;
+    }
+
     renderServicesSection(services) {
         const servicesList = services.map(service => 
             `<span class="service-chip material-chip">${sanitizeHtml(service)}</span>`
@@ -212,15 +195,12 @@ export class ContractorView extends BaseView {
                     <i class="material-icons">build</i>Services Offered
                 </h3>
                 <div class="material-card services-card">
-                    <div class="services-chips">
-                        ${servicesList}
-                    </div>
+                    <div class="services-chips">${servicesList}</div>
                 </div>
             </div>
         `;
     }
 
-    // NEW: Experience section
     renderExperienceSection(yearsInBusiness) {
         return `
             <div class="experience-section">
@@ -240,21 +220,6 @@ export class ContractorView extends BaseView {
         `;
     }
 
-    // SIMPLIFIED: Use cached trust metrics
-    getCategoryAverages() {
-        if (!this.currentTrustMetrics) {
-            return { quality: 0, communication: 0, timeliness: 0, value: 0 };
-        }
-
-        return {
-            quality: this.currentTrustMetrics.quality || 0,
-            communication: this.currentTrustMetrics.communication || 0,
-            timeliness: this.currentTrustMetrics.timeliness || 0,
-            value: this.currentTrustMetrics.value || 0
-        };
-    }
-
-    // EXTRACTED: Trust metrics section
     renderTrustMetricsSection() {
         return `
             <div class="trust-metrics-section">
@@ -283,42 +248,54 @@ export class ContractorView extends BaseView {
         `;
     }
 
-    // EXTRACTED: Ratings section
     renderRatingsSection(categoryAverages) {
+        const ratingItems = [
+            categoryAverages.quality > 0 && this.createRatingItem('Quality of Work', categoryAverages.quality, 'handyman'),
+            categoryAverages.communication > 0 && this.createRatingItem('Communication', categoryAverages.communication, 'chat'),
+            categoryAverages.timeliness > 0 && this.createRatingItem('Timeliness', categoryAverages.timeliness, 'schedule'),
+            categoryAverages.value > 0 && this.createRatingItem('Value for Money', categoryAverages.value, 'payments')
+        ].filter(Boolean).join('');
+
         return `
             <div class="ratings-section">
                 <h3 class="material-section-title">
                     <i class="material-icons">assessment</i>Rating Breakdown
                 </h3>
                 <div class="material-card ratings-card">
-                    <div class="ratings-grid">
-                        ${categoryAverages.quality > 0 ? this.createMaterialRatingItem('Quality of Work', categoryAverages.quality, 'handyman') : ''}
-                        ${categoryAverages.communication > 0 ? this.createMaterialRatingItem('Communication', categoryAverages.communication, 'chat') : ''}
-                        ${categoryAverages.timeliness > 0 ? this.createMaterialRatingItem('Timeliness', categoryAverages.timeliness, 'schedule') : ''}
-                        ${categoryAverages.value > 0 ? this.createMaterialRatingItem('Value for Money', categoryAverages.value, 'payments') : ''}
-                    </div>
+                    <div class="ratings-grid">${ratingItems}</div>
                 </div>
             </div>
         `;
     }
 
-    // EXTRACTED: Recommendations section
     renderRecommendationsSection(recommendations) {
+        const recommendationsContent = recommendations.length > 0
+            ? recommendations.map(rec => this.createRecommendationItem(rec)).join('')
+            : this.createNoRecommendationsState();
+
         return `
             <div class="recommendations-section">
                 <h3 class="material-section-title">
                     <i class="material-icons">rate_review</i>Community Recommendations
                     <span class="recommendations-count-badge">${recommendations.length}</span>
                 </h3>
-                
-                <div class="recommendations-list material-list">
-                    ${recommendations.length > 0 ?
-                recommendations.map(recommendation => this.createMaterialRecommendationItem(recommendation)).join('') :
-                this.createNoRecommendationsState()
-            }
-                </div>
+                <div class="recommendations-list material-list">${recommendationsContent}</div>
             </div>
         `;
+    }
+
+    // Helper methods
+    getCategoryAverages() {
+        if (!this.currentTrustMetrics) {
+            return { quality: 0, communication: 0, timeliness: 0, value: 0 };
+        }
+
+        return {
+            quality: this.currentTrustMetrics.quality || 0,
+            communication: this.currentTrustMetrics.communication || 0,
+            timeliness: this.currentTrustMetrics.timeliness || 0,
+            value: this.currentTrustMetrics.value || 0
+        };
     }
 
     createContactListItem(icon, label, value, href = null, external = false) {
@@ -329,9 +306,7 @@ export class ContractorView extends BaseView {
 
         return `
             <${tagName} class="${className}" ${attributes}>
-                <div class="list-item-icon">
-                    <i class="material-icons">${icon}</i>
-                </div>
+                <div class="list-item-icon"><i class="material-icons">${icon}</i></div>
                 <div class="list-item-content">
                     <div class="list-item-primary">${label}</div>
                     <div class="list-item-secondary">${sanitizeHtml(value)}</div>
@@ -345,7 +320,7 @@ export class ContractorView extends BaseView {
         `;
     }
 
-    createMaterialRatingItem(label, rating, icon) {
+    createRatingItem(label, rating, icon) {
         const percentage = (rating / 5) * 100;
 
         return `
@@ -368,7 +343,7 @@ export class ContractorView extends BaseView {
         `;
     }
 
-    createMaterialRecommendationItem(recommendation) {
+    createRecommendationItem(recommendation) {
         const metrics = recommendation.metrics || {};
         const hasMetrics = Object.values(metrics).some(rating => rating);
 
@@ -401,9 +376,7 @@ export class ContractorView extends BaseView {
                 
                 ${hasMetrics ? `
                 <div class="recommendation-metrics">
-                    <div class="metrics-mini">
-                        ${this.createMetricsPills(metrics)}
-                    </div>
+                    <div class="metrics-mini">${this.createMetricsPills(metrics)}</div>
                 </div>
                 ` : ''}
                 
@@ -442,7 +415,6 @@ export class ContractorView extends BaseView {
             `).join('');
     }
 
-    // SIMPLIFIED: Renamed from createMaterialNoRecommendationsState
     createNoRecommendationsState() {
         return `
             <div class="material-empty-state">
@@ -461,7 +433,6 @@ export class ContractorView extends BaseView {
         return website.replace(/^https?:\/\//, '').replace(/\/$/, '');
     }
 
-    // SIMPLIFIED: Renamed from createFallbackStarDisplay
     createStarDisplay(rating) {
         return `
             <i class="rating-number">${rating.toFixed(0)}</i>

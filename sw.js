@@ -1,6 +1,6 @@
 // sw.js - Service Worker for Community Trade Network
-const CACHE_NAME = 'community-trade-network-v1.4.0';
-const API_CACHE_NAME = 'community-trade-network-api-v1';
+const CACHE_NAME = 'community-trade-network-v1.5.0';
+const API_CACHE_NAME = 'community-trade-network-api-v1.4';
 
 // Cache configuration
 const CACHE_CONFIG = {
@@ -9,23 +9,24 @@ const CACHE_CONFIG = {
     HTML_MAX_AGE: 60 * 60 * 1000, // 1 hour
 };
 
-// Core app files to cache
+
+// Core app files to cache - COMPLETE list for offline functionality
 const CORE_ASSETS = [
-    // HTML Files
+    // HTML Files (all application entry points)
     './',
     './index.html',
     './admin.html',
     './generate_password.html',
 
-    // CSS Files
+    // Main CSS Files
     'css/main.css',
     'css/admin.css',
     'css/layout.css',
     'css/base/reset.css',
     'css/base/variables.css',
 
-    // Component CSS
-    'css/components/auth.css',
+    // Component CSS (all components used in the app)
+    'css/components/material.css',
     'css/components/buttons.css',
     'css/components/cards.css',
     'css/components/bottom-nav.css',
@@ -34,7 +35,6 @@ const CORE_ASSETS = [
     'css/components/dashboard.css',
     'css/components/forms.css',
     'css/components/map.css',
-    'css/components/material.css',
     'css/components/modals.css',
     'css/components/notifications.css',
     'css/components/ratings.css',
@@ -42,19 +42,32 @@ const CORE_ASSETS = [
     'css/components/tables.css',
     'css/components/tabs.css',
     'css/components/utilities.css',
+    'css/components/auth.css',
+    'css/components/profile.css',
+    'css/components/categories.css',
+    'css/components/feedback.css',
+    'css/components/search.css',
 
-    // JavaScript Files
+    // Core JavaScript (entry points)
     'js/script.js',
     'js/admin.js',
     'js/config/supabase-credentials.js',
 
-    // Data Files
+    // Data Layer (essential for offline data)
     'js/data/defaultData.js',
     'js/data/defaultCategories.js',
     'js/data/defaultContractors.js',
     'js/data/defaultLocations.js',
+    'js/data/defaultReviews.js',
+    'js/data/types/index.js',
+    'js/data/types/categoryTypes.js',
+    'js/data/types/contractorTypes.js',
+    'js/data/types/recommendationTypes.js',
+    'js/data/types/feedbackTypes.js',
+    'js/data/types/locationTypes.js',
+    'js/data/types/uuidTypes.js',
 
-    // Core Modules
+    // Core Modules (all data and utility modules)
     'js/modules/data.js',
     'js/modules/storage.js',
     'js/modules/contractorManager.js',
@@ -63,55 +76,70 @@ const CORE_ASSETS = [
     'js/modules/favoritesDataManager.js',
     'js/modules/statsDataManager.js',
     'js/modules/feedbackDataManager.js',
-    'js/modules/auth.js',
     'js/modules/supabase.js',
     'js/modules/utilities.js',
     'js/modules/notifications.js',
     'js/modules/validation.js',
-    'js/modules/uuid.js',
+    'js/modules/confirmationModal.js',
     'js/modules/tabs.js',
     'js/modules/geocodingService.js',
     'js/modules/areaAutocomplete.js',
     'js/modules/backButtonManager.js',
     'js/modules/service-worker-manager.js',
     'js/modules/pwa-install-manager.js',
+    'js/modules/loadingScreen.js',
 
-    // Admin Modules
-    'js/modules/admin-auth.js',
-    'js/modules/admin-contractors.js',
-    'js/modules/admin-categories.js',
-    'js/modules/admin-reviews.js',
-    'js/modules/admin-feedback.js',
+    // Admin Modules (complete admin functionality)
+    'js/admin/admin-app.js',
+    'js/admin/admin-dashboard.js',
+    'js/admin/admin-auth.js',
+    'js/admin/shared/base-modal.js',
+    
+    // Admin Feature Modules
+    'js/admin/categories/admin-categories.js',
+    'js/admin/categories/categories-table-manager.js',
+    'js/admin/categories/categories-modal.js',
+    
+    'js/admin/contractors/admin-contractors.js',
+    'js/admin/contractors/contractors-table-manager.js',
+    'js/admin/contractors/contractor-modal.js',
+    
+    'js/admin/recommendations/admin-recommendations.js',
+    'js/admin/recommendations/recommendations-table-manager.js',
+    'js/admin/recommendations/recommendation-modal.js',
+    
+    'js/admin/feedback/admin-feedback.js',
+    'js/admin/feedback/feedback-table-manager.js',
+    'js/admin/feedback/feedback-modal.js',
 
-    // App Components
+    // App Core (main application logic)
     'js/app/main.js',
-    'js/app/filterManager.js',
-    'js/app/lazyLoader.js',
-    'js/app/favoritesManager.js',
     'js/app/statsManager.js',
+    'js/app/lazyLoader.js',
 
-    // Views
+    // View System (all views for complete navigation)
     'js/app/views/BaseView.js',
     'js/app/views/CategoriesView.js',
-    'js/app/views/contractorListView.js',
-    'js/app/views/mapView.js',
-    'js/app/views/contractorEditView.js',
-    'js/app/views/contractorView.js',
-    'js/app/views/recommendationEditView.js',
-    'js/app/views/feedbackView.js',
+    'js/app/views/ContractorListView.js',
+    'js/app/views/MapView.js',
+    'js/app/views/ContractorView.js',
+    'js/app/views/ContractorEditView.js',
+    'js/app/views/RecommendationEditView.js',
+    'js/app/views/FeedbackView.js',
+    'js/app/views/SearchView.js',
+    'js/app/views/ProfileView.js',
 
-    // Admin Modal Managers (Only these remain)
-    'js/app/modals/contractorModalManager.js',
-    'js/app/modals/contractorEditModalManager.js',
-    'js/app/modals/adminFeedbackModalManager.js',
+    // View Utilities
+    'js/app/utils/viewHelpers.js',
 
-    // Manifest and Icons
+    // Manifest and Icons (PWA requirements)
     'manifest.json',
     'icons/icon-72x72.png',
     'icons/icon-96x96.png',
     'icons/icon-128x128.png',
     'icons/icon-144x144.png',
     'icons/icon-152x152.png',
+    'js/app/views/ProfileView.js',
     'icons/icon-192x192.png',
     'icons/icon-384x384.png',
     'icons/icon-512x512.png'

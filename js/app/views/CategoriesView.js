@@ -1,16 +1,17 @@
-// js/app/views/CategoriesView.js - Updated with proper contractor data updates
+// js/app/views/CategoriesView.js - Refactored for simplicity and maintainability
 import { BaseView } from './BaseView.js';
+import { createButton } from '../utils/viewHelpers.js';
+import { debounce } from '../../modules/utilities.js';
 
 export class CategoriesView extends BaseView {
     constructor(dataModule) {
         super('categories-view');
         this.dataModule = dataModule;
-        this.categoriesGrid = null;
-        this.searchInput = null;
-        this.isVisible = false;
         this.currentSearchTerm = '';
+        this.isVisible = false;
         
         // Bind methods
+        this.handleSearch = debounce(this.handleSearch.bind(this), 300);
         this.handleContractorsUpdated = this.handleContractorsUpdated.bind(this);
     }
 
@@ -122,22 +123,17 @@ export class CategoriesView extends BaseView {
      * Setup search input functionality
      */
     setupSearch() {
-        this.searchInput = document.getElementById('categoriesSearchInput');
+        const searchInput = document.getElementById('categoriesSearchInput');
 
-        if (this.searchInput) {
-            // Clear any existing event listeners to prevent duplicates
-            const newSearchInput = this.searchInput.cloneNode(true);
-            this.searchInput.parentNode.replaceChild(newSearchInput, this.searchInput);
-            this.searchInput = newSearchInput;
-
+        if (searchInput) {
             // Add input event listener for real-time search
-            this.searchInput.addEventListener('input', (e) => {
+            searchInput.addEventListener('input', (e) => {
                 this.currentSearchTerm = e.target.value;
                 this.handleSearch(e.target.value);
             });
 
             // Add keydown listener for Enter key
-            this.searchInput.addEventListener('keydown', (e) => {
+            searchInput.addEventListener('keydown', (e) => {
                 if (e.key === 'Enter') {
                     this.currentSearchTerm = e.target.value;
                     this.handleSearch(e.target.value);
@@ -145,12 +141,12 @@ export class CategoriesView extends BaseView {
             });
 
             // Add focus/blur for better UX
-            this.searchInput.addEventListener('focus', () => {
-                this.searchInput.parentElement.classList.add('focused');
+            searchInput.addEventListener('focus', () => {
+                searchInput.parentElement.classList.add('focused');
             });
 
-            this.searchInput.addEventListener('blur', () => {
-                this.searchInput.parentElement.classList.remove('focused');
+            searchInput.addEventListener('blur', () => {
+                searchInput.parentElement.classList.remove('focused');
             });
         }
     }
@@ -200,7 +196,7 @@ export class CategoriesView extends BaseView {
                 <div class="categories-section available-services">
                     <h3 class="section-title">
                         <i class="material-icons">check_circle</i>
-                        Available Services
+                        Search Results
                         <span class="section-count">${categoriesWithContractors.length}</span>
                     </h3>
                     <div class="categories-list" id="categories-with-contractors">
@@ -263,8 +259,9 @@ export class CategoriesView extends BaseView {
      */
     clearSearch() {
         this.currentSearchTerm = '';
-        if (this.searchInput) {
-            this.searchInput.value = '';
+        const searchInput = document.getElementById('categoriesSearchInput');
+        if (searchInput) {
+            searchInput.value = '';
         }
         this.renderCategories();
     }
@@ -569,8 +566,9 @@ export class CategoriesView extends BaseView {
         this.isVisible = true;
         
         // Ensure search is cleared when showing categories view
-        if (this.searchInput) {
-            this.searchInput.value = '';
+        const searchInput = document.getElementById('categoriesSearchInput');
+        if (searchInput) {
+            searchInput.value = '';
             this.currentSearchTerm = '';
         }
         

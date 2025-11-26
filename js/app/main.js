@@ -354,5 +354,3 @@ export class ContractorReviewApp {
         }
     }
 }
-
-window.ContractorReviewApp = ContractorReviewApp;

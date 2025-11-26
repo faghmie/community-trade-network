@@ -1,14 +1,14 @@
-// js/app/views/ContractorListView.js - UPDATED: Add back button using viewHelpers
+// js/app/views/ContractorListView.js - Fixed event handlers
 import { BaseView } from './BaseView.js';
 import { sanitizeHtml } from '../../modules/utilities.js';
-import { createViewHeader } from '../utils/viewHelpers.js';
+import { createViewHeader, createEmptyState } from '../utils/viewHelpers.js';
 
 export class ContractorListView extends BaseView {
     constructor(dataModule) {
         super('contractor-list-view');
         this.dataModule = dataModule;
         this.contractorsGrid = null;
-        this.currentContext = {}; // Track current context for back navigation
+        this.currentContext = {};
     }
 
     /**
@@ -18,7 +18,6 @@ export class ContractorListView extends BaseView {
         const mainContainer = document.getElementById('mainViewContainer');
         if (!mainContainer) return;
 
-        // Create or reuse container
         if (!this.container) {
             this.container = document.createElement('section');
             this.container.id = this.viewId;
@@ -26,29 +25,29 @@ export class ContractorListView extends BaseView {
             mainContainer.appendChild(this.container);
         }
 
-        // Create header using viewHelpers
+        this.renderView();
+    }
+
+    /**
+     * Render the complete view
+     */
+    renderView() {
         const header = createViewHeader(
             this.viewId,
             'Service Providers',
             'Browse our trusted community contractors',
-            true // Show back button
+            true
         );
 
         this.container.innerHTML = `
             ${header.html}
             <div class="contractors-content">
-                <div class="contractors-grid" id="contractors-grid">
-                    <!-- Contractors will be populated here -->
-                </div>
+                <div class="contractors-grid" id="contractors-grid"></div>
             </div>
         `;
 
         this.contractorsGrid = document.getElementById('contractors-grid');
-        
-        // Bind back button handler
-        header.bindBackButton(() => {
-            this.handleBackButton();
-        });
+        header.bindBackButton(() => this.handleBackButton());
     }
 
     /**
@@ -65,47 +64,49 @@ export class ContractorListView extends BaseView {
      */
     show(context = {}) {
         this.currentContext = context;
-        
-        // Update header based on context
-        this.updateHeader(context);
-        
-        // Call parent show method
+        this.updateHeader();
         super.show();
     }
 
     /**
      * Update header based on context
      */
-    updateHeader(context = {}) {
+    updateHeader() {
+        const { categoryType, isFavorites, searchTerm } = this.currentContext;
         const titleElement = document.getElementById(`${this.viewId}Title`);
         const subtitleElement = document.getElementById(`${this.viewId}Subtitle`);
         
         if (!titleElement) return;
 
-        if (context.categoryType) {
-            // Showing contractors from category selection
-            titleElement.textContent = `${context.categoryType} Contractors`;
-            if (subtitleElement) {
-                subtitleElement.textContent = `Specialists in ${context.categoryType}`;
+        const headerConfig = {
+            categoryType: {
+                title: `${categoryType} Contractors`,
+                subtitle: `Specialists in ${categoryType}`
+            },
+            isFavorites: {
+                title: 'My Favorites',
+                subtitle: `${this.dataModule.getFavoritesCount()} saved contractor${this.dataModule.getFavoritesCount() !== 1 ? 's' : ''}`
+            },
+            searchTerm: {
+                title: 'Search Results',
+                subtitle: `Results for "${searchTerm}"`
+            },
+            default: {
+                title: 'Service Providers',
+                subtitle: 'Browse our trusted community contractors'
             }
-        } else if (context.isFavorites) {
-            // Showing favorites
-            titleElement.textContent = 'My Favorites';
-            if (subtitleElement) {
-                const favoritesCount = this.dataModule.getFavoritesCount();
-                subtitleElement.textContent = `${favoritesCount} saved contractor${favoritesCount !== 1 ? 's' : ''}`;
-            }
-        } else {
-            // Default list view
-            titleElement.textContent = 'Service Providers';
-            if (subtitleElement) {
-                subtitleElement.textContent = 'Browse our trusted community contractors';
-            }
+        };
+
+        const config = headerConfig[categoryType ? 'categoryType' : isFavorites ? 'isFavorites' : searchTerm ? 'searchTerm' : 'default'];
+        
+        titleElement.textContent = config.title;
+        if (subtitleElement) {
+            subtitleElement.textContent = config.subtitle;
         }
     }
 
     /**
-     * Render contractors list directly without CardManager
+     * Render contractors list
      */
     renderContractors(contractors = null) {
         if (!this.contractorsGrid) return;
@@ -113,14 +114,11 @@ export class ContractorListView extends BaseView {
         const contractorsToRender = contractors || this.dataModule.getContractors();
 
         if (!contractorsToRender || contractorsToRender.length === 0) {
-            this.contractorsGrid.innerHTML = this.createEmptyState();
+            this.showEmptyState();
             return;
         }
 
-        // Update header with count
         this.updateHeaderWithCount(contractorsToRender.length);
-
-        // Direct card rendering - no abstraction layer
         this.contractorsGrid.innerHTML = contractorsToRender
             .map(contractor => this.createContractorCard(contractor))
             .join('');
@@ -129,18 +127,77 @@ export class ContractorListView extends BaseView {
     }
 
     /**
+     * Bind card events properly
+     */
+    bindCardEvents() {
+        const cards = this.contractorsGrid.querySelectorAll('.contractor-card');
+        cards.forEach(card => {
+            const contractorId = card.getAttribute('data-contractor-id');
+            
+            // Remove any existing event listeners to prevent duplicates
+            card.replaceWith(card.cloneNode(true));
+            const newCard = this.contractorsGrid.querySelector(`[data-contractor-id="${contractorId}"]`);
+            
+            // Add click event for navigation
+            newCard.addEventListener('click', () => {
+                this.navigateToContractor(contractorId);
+            });
+
+            // Add favorite button event
+            const favoriteBtn = newCard.querySelector('.favorite-btn');
+            if (favoriteBtn) {
+                favoriteBtn.addEventListener('click', (event) => {
+                    event.stopPropagation();
+                    this.toggleFavorite(contractorId);
+                });
+            }
+        });
+    }
+
+    /**
      * Update header with contractor count
      */
     updateHeaderWithCount(count) {
         const subtitleElement = document.getElementById(`${this.viewId}Subtitle`);
-        if (subtitleElement) {
-            if (this.currentContext.categoryType) {
-                subtitleElement.textContent = `${count} ${this.currentContext.categoryType} contractor${count !== 1 ? 's' : ''}`;
-            } else if (this.currentContext.isFavorites) {
-                subtitleElement.textContent = `${count} saved contractor${count !== 1 ? 's' : ''}`;
-            } else {
-                subtitleElement.textContent = `${count} trusted community contractor${count !== 1 ? 's' : ''}`;
-            }
+        if (!subtitleElement) return;
+
+        const { categoryType, isFavorites } = this.currentContext;
+        
+        const subtitleText = categoryType 
+            ? `${count} ${categoryType} contractor${count !== 1 ? 's' : ''}`
+            : isFavorites
+            ? `${count} saved contractor${count !== 1 ? 's' : ''}`
+            : `${count} trusted community contractor${count !== 1 ? 's' : ''}`;
+
+        subtitleElement.textContent = subtitleText;
+    }
+
+    /**
+     * Show empty state based on context
+     */
+    showEmptyState() {
+        const { isFavorites, categoryType, searchTerm } = this.currentContext;
+
+        if (isFavorites) {
+            this.contractorsGrid.innerHTML = this.createFavoritesEmptyState();
+        } else if (searchTerm) {
+            this.contractorsGrid.innerHTML = createEmptyState(
+                'No contractors found',
+                'Try adjusting your search criteria or filters',
+                'search_off'
+            ).html;
+        } else if (categoryType) {
+            this.contractorsGrid.innerHTML = createEmptyState(
+                `No ${categoryType} contractors found`,
+                'Be the first to add a contractor in this category',
+                'category'
+            ).html;
+        } else {
+            this.contractorsGrid.innerHTML = createEmptyState(
+                'No contractors available',
+                'Contractors will appear here once added to the directory',
+                'handyman'
+            ).html;
         }
     }
 
@@ -148,21 +205,16 @@ export class ContractorListView extends BaseView {
      * Create individual contractor card
      */
     createContractorCard(contractor) {
-        // UPDATED: Use trust metrics instead of reviews
         const trustMetrics = contractor.trustMetrics || this.dataModule.getContractorTrustMetrics(contractor.id);
-        const displayRating = trustMetrics?.trustScore ? (trustMetrics.trustScore / 20).toFixed(1) : '0.0'; // Convert 0-100 to 0-5 scale
+        const displayRating = trustMetrics?.trustScore ? (trustMetrics.trustScore / 20).toFixed(1) : '0.0';
         const recommendationCount = trustMetrics?.totalRecommendations || 0;
         const isFavorite = this.dataModule.isFavorite(contractor.id);
-        const serviceAreasDisplay = this.formatServiceAreas(contractor.serviceAreas);
 
         return `
             <div class="card contractor-card material-card" 
-                 data-contractor-id="${sanitizeHtml(contractor.id)}"
-                 onclick="document.dispatchEvent(new CustomEvent('navigationViewChange', { detail: { view: 'contractor', context: { contractorId: '${sanitizeHtml(contractor.id)}' } } }))">
+                 data-contractor-id="${contractor.id}">
                 <div class="card-content">
                     <button class="favorite-btn ${isFavorite ? 'favorited' : ''}" 
-                            data-contractor-id="${sanitizeHtml(contractor.id)}"
-                            onclick="document.dispatchEvent(new CustomEvent('toggleFavorite', { detail: { contractorId: '${sanitizeHtml(contractor.id)}' } })); event.stopPropagation();"
                             title="${isFavorite ? 'Remove from favorites' : 'Add to favorites'}">
                         <i class="material-icons">${isFavorite ? 'favorite' : 'favorite_border'}</i>
                     </button>
@@ -200,7 +252,7 @@ export class ContractorListView extends BaseView {
                     <div class="contractor-details">
                         <p class="service-areas">
                             <i class="material-icons">map</i>
-                            ${serviceAreasDisplay}
+                            ${this.formatServiceAreas(contractor.serviceAreas)}
                         </p>
                     </div>
                 </div>
@@ -220,44 +272,20 @@ export class ContractorListView extends BaseView {
             return `Serves: ${serviceAreas.join(', ')}`;
         }
         
-        // For more than 2 areas, show first 2 + count of others
         const primaryAreas = serviceAreas.slice(0, 2).join(', ');
         const additionalCount = serviceAreas.length - 2;
         return `Serves: ${primaryAreas} +${additionalCount} more`;
     }
 
     /**
-     * Create empty state for no results
-     */
-    createEmptyState(message = 'No contractors found') {
-        return `
-            <div class="no-results">
-                <i class="material-icons">search_off</i>
-                <h3>${sanitizeHtml(message)}</h3>
-                <p>Try adjusting your search criteria or filters</p>
-            </div>
-        `;
-    }
-
-    /**
      * Create favorites empty state
      */
     createFavoritesEmptyState() {
-        return `
-            <div class="no-favorites">
-                <i class="material-icons">favorite_border</i>
-                <h3>No favorites yet</h3>
-                <p>Click the heart icon on contractor cards to add them to your favorites!</p>
-            </div>
-        `;
-    }
-
-    /**
-     * Bind card events (if needed for additional functionality)
-     */
-    bindCardEvents() {
-        // Event binding is handled via inline onclick handlers in the card HTML
-        // This method can be used for any additional event binding needed
+        return createEmptyState(
+            'No favorites yet',
+            'Click the heart icon on contractor cards to add them to your favorites!',
+            'favorite_border'
+        ).html;
     }
 
     /**
@@ -267,18 +295,14 @@ export class ContractorListView extends BaseView {
         const favoriteButtons = this.container?.querySelectorAll('.favorite-btn');
         
         favoriteButtons?.forEach(button => {
-            const contractorId = button.getAttribute('data-contractor-id');
+            const card = button.closest('.contractor-card');
+            const contractorId = card?.getAttribute('data-contractor-id');
             if (contractorId) {
                 const isFav = this.dataModule.isFavorite(contractorId);
                 const icon = button.querySelector('.material-icons');
                 
-                if (isFav) {
-                    button.classList.add('favorited');
-                    if (icon) icon.textContent = 'favorite';
-                } else {
-                    button.classList.remove('favorited');
-                    if (icon) icon.textContent = 'favorite_border';
-                }
+                button.classList.toggle('favorited', isFav);
+                if (icon) icon.textContent = isFav ? 'favorite' : 'favorite_border';
             }
         });
     }
@@ -287,32 +311,25 @@ export class ContractorListView extends BaseView {
      * Show favorites only
      */
     showFavorites() {
-        const allContractors = this.dataModule.getContractors();
-        const favoriteContractors = allContractors.filter(contractor => 
+        const favoriteContractors = this.dataModule.getContractors().filter(contractor => 
             this.dataModule.isFavorite(contractor.id)
         );
 
         this.currentContext = { isFavorites: true };
-        this.updateHeader(this.currentContext);
-
-        if (favoriteContractors.length === 0) {
-            this.contractorsGrid.innerHTML = this.createFavoritesEmptyState();
-        } else {
-            this.renderContractors(favoriteContractors);
-        }
+        this.updateHeader();
+        this.renderContractors(favoriteContractors);
     }
 
     /**
      * Show contractors by category
      */
     showContractorsByCategory(category) {
-        const allContractors = this.dataModule.getContractors();
-        const filteredContractors = allContractors.filter(contractor => 
+        const filteredContractors = this.dataModule.getContractors().filter(contractor => 
             contractor.category === category
         );
         
         this.currentContext = { categoryType: category };
-        this.updateHeader(this.currentContext);
+        this.updateHeader();
         this.renderContractors(filteredContractors);
     }
 
@@ -320,15 +337,33 @@ export class ContractorListView extends BaseView {
      * Show contractors by search term
      */
     showContractorsBySearch(searchTerm) {
-        const allContractors = this.dataModule.getContractors();
-        const filteredContractors = allContractors.filter(contractor => 
-            contractor.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            contractor.category.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            (contractor.description && contractor.description.toLowerCase().includes(searchTerm.toLowerCase()))
+        const searchTermLower = searchTerm.toLowerCase();
+        const filteredContractors = this.dataModule.getContractors().filter(contractor => 
+            contractor.name.toLowerCase().includes(searchTermLower) ||
+            contractor.category.toLowerCase().includes(searchTermLower) ||
+            (contractor.description && contractor.description.toLowerCase().includes(searchTermLower))
         );
         
         this.currentContext = { searchTerm: searchTerm };
-        this.updateHeader(this.currentContext);
+        this.updateHeader();
         this.renderContractors(filteredContractors);
+    }
+
+    /**
+     * Navigate to contractor details
+     */
+    navigateToContractor(contractorId) {
+        document.dispatchEvent(new CustomEvent('navigationViewChange', { 
+            detail: { view: 'contractor', context: { contractorId } } 
+        }));
+    }
+
+    /**
+     * Toggle favorite status
+     */
+    toggleFavorite(contractorId) {
+        document.dispatchEvent(new CustomEvent('toggleFavorite', { 
+            detail: { contractorId } 
+        }));
     }
 }
