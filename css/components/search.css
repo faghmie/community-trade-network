@@ -1,0 +1,371 @@
+/* Search View Styles */
+.search-view {
+    background: var(--surface-container);
+    min-height: 100vh;
+    padding-bottom: 80px; /* Space for bottom navigation */
+}
+
+/* Hidden state for search view */
+.search-view.hidden {
+    display: none !important;
+}
+
+/* Search Header - Using existing modal header styles */
+.search-view-header {
+    background: var(--surface);
+    padding: var(--space-lg) var(--space-lg) var(--space-md);
+    border-bottom: 1px solid var(--outline-variant);
+}
+
+.search-header-top {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--space-md);
+    margin-bottom: var(--space-lg);
+}
+
+/* Using existing back button styles from modals.css */
+.search-header-top .back-btn {
+    flex-shrink: 0;
+    margin-top: var(--space-xs);
+}
+
+.search-header-content {
+    flex: 1;
+}
+
+.search-title {
+    font-size: var(--font-size-xl);
+    font-weight: var(--font-weight-medium);
+    color: var(--on-surface);
+    margin: 0 0 var(--space-xs) 0;
+    line-height: var(--line-height-tight);
+}
+
+.search-subtitle {
+    font-size: var(--font-size-base);
+    color: var(--on-surface-variant);
+    margin: 0;
+    line-height: var(--line-height-normal);
+}
+
+/* Search Bar in Search View - Using existing form styles */
+.search-view-search {
+    margin-bottom: 0;
+}
+
+.search-view-search .material-search {
+    height: 48px;
+    border-radius: var(--shape-medium);
+    box-shadow: var(--elevation-1);
+    border: 1px solid var(--outline-variant);
+}
+
+.search-view-search .material-search:focus-within {
+    box-shadow: var(--elevation-2);
+    border-color: var(--primary-color);
+}
+
+.search-view-search .material-search i {
+    font-size: 20px;
+    left: var(--space-md);
+}
+
+.search-view-search .material-search-input {
+    padding: var(--space-md) var(--space-md) var(--space-md) 3rem;
+    font-size: var(--font-size-base);
+    height: 100%;
+}
+
+/* Filters Panel */
+.search-filters-panel {
+    background: var(--surface);
+    padding: var(--space-lg);
+    border-bottom: 1px solid var(--outline-variant);
+}
+
+.filters-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: var(--space-md);
+}
+
+.filters-title {
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+    font-size: var(--font-size-lg);
+    font-weight: var(--font-weight-medium);
+    color: var(--on-surface);
+    margin: 0;
+}
+
+.filters-title .material-icons {
+    font-size: 1.5rem;
+    color: var(--primary-color);
+}
+
+.clear-filters-btn {
+    display: flex;
+    align-items: center;
+    gap: var(--space-xs);
+    font-size: var(--font-size-sm);
+    color: var(--primary-color);
+}
+
+/* Filters Grid - Using existing form group styles */
+.filters-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: var(--space-lg);
+    margin-bottom: var(--space-md);
+}
+
+/* Using existing form group styles from forms.css */
+.filters-grid .filter-group {
+    margin-bottom: 0;
+}
+
+.favorites-filter {
+    grid-column: 1 / -1;
+    padding-top: var(--space-sm);
+}
+
+.favorites-filter .material-checkbox-label {
+    padding: var(--space-sm) 0;
+}
+
+.favorites-filter .material-checkbox-text {
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+    font-weight: var(--font-weight-medium);
+}
+
+.favorites-filter .material-checkbox-text .material-icons {
+    font-size: 1.25rem;
+    color: var(--primary-color);
+}
+
+/* Active Filters Badge */
+.active-filters-badge {
+    background: var(--primary-container);
+    color: var(--on-primary-container);
+    padding: var(--space-xs) var(--space-sm);
+    border-radius: var(--shape-small);
+    font-size: var(--font-size-sm);
+    font-weight: var(--font-weight-medium);
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-xs);
+}
+
+.active-filters-badge .badge-count {
+    background: var(--primary-color);
+    color: var(--text-on-primary);
+    width: 20px;
+    height: 20px;
+    border-radius: var(--shape-full);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: var(--font-size-xs);
+    font-weight: var(--font-weight-bold);
+}
+
+/* Show Results Button - Using existing button styles */
+.search-actions {
+    margin-top: var(--space-lg);
+    padding-top: var(--space-md);
+    border-top: 1px solid var(--outline-variant);
+}
+
+.show-results-btn {
+    width: 100%;
+    padding: var(--space-md) var(--space-lg);
+    font-size: var(--font-size-base);
+    font-weight: var(--font-weight-medium);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-sm);
+}
+
+.show-results-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.show-results-btn .material-icons {
+    font-size: 1.25rem;
+}
+
+/* ===== RESPONSIVE DESIGN ===== */
+
+/* Tablets */
+@media (max-width: 1024px) {
+    .filters-grid {
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: var(--space-md);
+    }
+}
+
+/* Mobile */
+@media (max-width: 768px) {
+    .search-view-header {
+        padding: var(--space-md) var(--space-md) var(--space-sm);
+    }
+    
+    .search-header-top {
+        gap: var(--space-sm);
+        margin-bottom: var(--space-md);
+    }
+    
+    .search-title {
+        font-size: var(--font-size-lg);
+    }
+    
+    .search-subtitle {
+        font-size: var(--font-size-sm);
+    }
+    
+    .search-view-search .material-search {
+        height: 44px;
+    }
+    
+    .search-view-search .material-search i {
+        font-size: 18px;
+        left: var(--space-sm);
+    }
+    
+    .search-view-search .material-search-input {
+        padding: var(--space-sm) var(--space-sm) var(--space-sm) 2.5rem;
+        font-size: var(--font-size-sm);
+    }
+    
+    .search-filters-panel {
+        padding: var(--space-md);
+    }
+    
+    .filters-grid {
+        grid-template-columns: 1fr;
+        gap: var(--space-md);
+    }
+    
+    .filters-header {
+        margin-bottom: var(--space-sm);
+    }
+    
+    .filters-title {
+        font-size: var(--font-size-base);
+    }
+    
+    .search-actions {
+        margin-top: var(--space-md);
+        padding-top: var(--space-sm);
+    }
+    
+    .show-results-btn {
+        padding: var(--space-sm) var(--space-md);
+        font-size: var(--font-size-sm);
+    }
+}
+
+/* Small mobile devices */
+@media (max-width: 480px) {
+    .search-view-header {
+        padding: var(--space-sm) var(--space-sm) var(--space-xs);
+    }
+    
+    .search-header-top {
+        gap: var(--space-xs);
+        margin-bottom: var(--space-sm);
+    }
+    
+    .search-title {
+        font-size: var(--font-size-base);
+    }
+    
+    .search-subtitle {
+        font-size: var(--font-size-xs);
+    }
+    
+    .search-view-search .material-search {
+        height: 40px;
+    }
+    
+    .search-view-search .material-search i {
+        font-size: 16px;
+        left: var(--space-xs);
+    }
+    
+    .search-view-search .material-search-input {
+        padding: var(--space-xs) var(--space-xs) var(--space-xs) 2rem;
+        font-size: var(--font-size-xs);
+    }
+    
+    .search-filters-panel {
+        padding: var(--space-sm);
+    }
+    
+    .clear-filters-btn {
+        font-size: var(--font-size-xs);
+    }
+    
+    .active-filters-badge {
+        font-size: var(--font-size-xs);
+        padding: var(--space-xxs) var(--space-xs);
+    }
+    
+    .show-results-btn {
+        padding: var(--space-xs) var(--space-sm);
+        font-size: var(--font-size-xs);
+    }
+}
+
+/* ===== THEME SUPPORT ===== */
+@media (prefers-color-scheme: dark) {
+    .search-view {
+        background: var(--surface-container);
+    }
+    
+    .search-view-header,
+    .search-filters-panel {
+        background: var(--surface);
+        border-bottom-color: var(--outline);
+    }
+    
+    .search-view-search .material-search {
+        background: var(--surface-container-high);
+        border-color: var(--outline);
+    }
+    
+    .search-actions {
+        border-top-color: var(--outline);
+    }
+}
+
+@media (prefers-contrast: high) {
+    .search-view-header,
+    .search-filters-panel {
+        border-bottom-width: 2px;
+        border-bottom-color: currentColor;
+    }
+    
+    .search-view-search .material-search {
+        border-width: 2px;
+        border-color: currentColor;
+    }
+    
+    .search-actions {
+        border-top-width: 2px;
+        border-top-color: currentColor;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .search-view-search .material-search {
+        transition: none;
+    }
+}

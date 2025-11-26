@@ -1,4 +1,4 @@
-// js/app/views/CategoriesView.js - Updated with contractor edit integration (no headers)
+// js/app/views/CategoriesView.js - Updated with proper contractor data updates
 import { BaseView } from './BaseView.js';
 
 export class CategoriesView extends BaseView {
@@ -6,6 +6,12 @@ export class CategoriesView extends BaseView {
         super('categories-view');
         this.dataModule = dataModule;
         this.categoriesGrid = null;
+        this.searchInput = null;
+        this.isVisible = false;
+        this.currentSearchTerm = '';
+        
+        // Bind methods
+        this.handleContractorsUpdated = this.handleContractorsUpdated.bind(this);
     }
 
     /**
@@ -23,7 +29,243 @@ export class CategoriesView extends BaseView {
             mainContainer.appendChild(this.container);
         }
 
+        // Clear container and render fresh
+        this.container.innerHTML = '';
+
+        // Render hero banner and search
+        this.renderHeader();
+
         // Render categories list
+        this.renderCategories();
+        
+        // Setup event listeners for data updates
+        this.setupDataUpdateListeners();
+    }
+
+    /**
+     * Setup event listeners for data updates
+     */
+    setupDataUpdateListeners() {
+        // Listen for contractor data updates
+        document.addEventListener('contractorsUpdated', this.handleContractorsUpdated);
+        document.addEventListener('contractorCreated', this.handleContractorsUpdated);
+        document.addEventListener('contractorUpdated', this.handleContractorsUpdated);
+        document.addEventListener('contractorDeleted', this.handleContractorsUpdated);
+    }
+
+    /**
+     * Remove event listeners when view is not active
+     */
+    removeDataUpdateListeners() {
+        document.removeEventListener('contractorsUpdated', this.handleContractorsUpdated);
+        document.removeEventListener('contractorCreated', this.handleContractorsUpdated);
+        document.removeEventListener('contractorUpdated', this.handleContractorsUpdated);
+        document.removeEventListener('contractorDeleted', this.handleContractorsUpdated);
+    }
+
+    /**
+     * Handle contractor data updates
+     */
+    handleContractorsUpdated() {
+        console.log('🔄 CategoriesView: Contractor data updated, refreshing categories');
+        if (this.isVisible) {
+            this.forceRefreshCategories();
+        }
+    }
+
+    /**
+     * Force refresh categories with current data
+     */
+    forceRefreshCategories() {
+        console.log('🔄 CategoriesView: Force refreshing categories');
+        this.renderCategories();
+    }
+
+    /**
+     * Render hero banner and search header
+     */
+    renderHeader() {
+        const headerHTML = `
+            <!-- Combined Header with Hero and Search -->
+            <header class="main-header">
+                <div class="header-content">
+                    <!-- Hero Content - Left Side -->
+                    <div class="header-hero">
+                        <h1 class="hero-title">Community Trade Network</h1>
+                        <p class="hero-subtitle">Your Community's Directory of Trusted Local Services</p>
+                    </div>
+
+                    <!-- Search Bar - Right Side -->
+                    <div class="header-search">
+                        <div class="material-search">
+                            <i class="material-icons" data-icon="search">search</i>
+                            <input type="text" id="categoriesSearchInput" 
+                                   placeholder="Search service providers..."
+                                   class="material-search-input" 
+                                   data-action="search-keypress"
+                                   aria-label="Search service providers"
+                                   value="${this.currentSearchTerm}">
+                        </div>
+                    </div>
+                </div>
+            </header>
+        `;
+
+        // Insert header at the beginning of the container
+        this.container.innerHTML = headerHTML;
+
+        // Setup search functionality
+        this.setupSearch();
+    }
+
+    /**
+     * Setup search input functionality
+     */
+    setupSearch() {
+        this.searchInput = document.getElementById('categoriesSearchInput');
+
+        if (this.searchInput) {
+            // Clear any existing event listeners to prevent duplicates
+            const newSearchInput = this.searchInput.cloneNode(true);
+            this.searchInput.parentNode.replaceChild(newSearchInput, this.searchInput);
+            this.searchInput = newSearchInput;
+
+            // Add input event listener for real-time search
+            this.searchInput.addEventListener('input', (e) => {
+                this.currentSearchTerm = e.target.value;
+                this.handleSearch(e.target.value);
+            });
+
+            // Add keydown listener for Enter key
+            this.searchInput.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') {
+                    this.currentSearchTerm = e.target.value;
+                    this.handleSearch(e.target.value);
+                }
+            });
+
+            // Add focus/blur for better UX
+            this.searchInput.addEventListener('focus', () => {
+                this.searchInput.parentElement.classList.add('focused');
+            });
+
+            this.searchInput.addEventListener('blur', () => {
+                this.searchInput.parentElement.classList.remove('focused');
+            });
+        }
+    }
+
+    /**
+     * Handle search functionality
+     */
+    handleSearch(searchTerm) {
+        this.currentSearchTerm = searchTerm;
+        
+        if (!searchTerm || searchTerm.trim() === '') {
+            // If search is empty, show all categories
+            this.renderCategories();
+            return;
+        }
+
+        const categories = this.dataModule.getCategories();
+        const searchTermLower = searchTerm.toLowerCase().trim();
+
+        if (!categories || categories.length === 0) {
+            this.showEmptyState();
+            return;
+        }
+
+        // Filter categories based on search term with null safety
+        const filteredCategories = categories.filter(category => {
+            // Safely check each property with null/undefined protection
+            const name = category?.name || '';
+            const type = category?.type || '';
+            const description = category?.description || '';
+
+            return name.toLowerCase().includes(searchTermLower) ||
+                type.toLowerCase().includes(searchTermLower) ||
+                description.toLowerCase().includes(searchTermLower);
+        });
+
+        // Separate filtered categories by contractor availability
+        const { categoriesWithContractors } = this.separateCategoriesByAvailability(filteredCategories);
+
+        // Update categories section while preserving header
+        const categoriesContent = this.container.querySelector('.categories-content') ||
+            this.createCategoriesContentContainer();
+
+        // Only show categories with contractors in search results
+        categoriesContent.innerHTML = `
+            ${categoriesWithContractors.length > 0 ? `
+                <div class="categories-section available-services">
+                    <h3 class="section-title">
+                        <i class="material-icons">check_circle</i>
+                        Available Services
+                        <span class="section-count">${categoriesWithContractors.length}</span>
+                    </h3>
+                    <div class="categories-list" id="categories-with-contractors">
+                        ${categoriesWithContractors.map(([type, typeData]) => this.createCategoryListItem(type, typeData, true)).join('')}
+                    </div>
+                </div>
+
+                ${this.createCommunityCallToAction()}
+            ` : `
+                <div class="no-search-results">
+                    <i class="material-icons">search_off</i>
+                    <h3>No matching services found</h3>
+                    <p>Try adjusting your search terms or browse all categories</p>
+                    <button class="btn btn-text" id="clear-search-btn">
+                        <i class="material-icons">clear</i>
+                        Clear Search
+                    </button>
+                </div>
+
+                ${this.createCommunityCallToAction()}
+            `}
+        `;
+
+        this.setupClickHandlers();
+
+        // Setup clear search button if it exists
+        const clearSearchBtn = categoriesContent.querySelector('#clear-search-btn');
+        if (clearSearchBtn) {
+            clearSearchBtn.addEventListener('click', () => {
+                this.clearSearch();
+            });
+        }
+    }
+
+    /**
+     * Create categories content container
+     */
+    createCategoriesContentContainer() {
+        const existingContent = this.container.querySelector('.categories-content');
+        if (existingContent) {
+            return existingContent;
+        }
+
+        const contentDiv = document.createElement('div');
+        contentDiv.className = 'categories-content';
+
+        // Find header and insert content after it
+        const header = this.container.querySelector('.main-header');
+        if (header) {
+            header.insertAdjacentElement('afterend', contentDiv);
+        } else {
+            this.container.appendChild(contentDiv);
+        }
+
+        return contentDiv;
+    }
+
+    /**
+     * Clear search and show all categories
+     */
+    clearSearch() {
+        this.currentSearchTerm = '';
+        if (this.searchInput) {
+            this.searchInput.value = '';
+        }
         this.renderCategories();
     }
 
@@ -32,37 +274,37 @@ export class CategoriesView extends BaseView {
      */
     renderCategories() {
         const categories = this.dataModule.getCategories();
-        
+
+        // Create or get categories content container
+        const categoriesContent = this.createCategoriesContentContainer();
+
         if (!categories || categories.length === 0) {
-            this.container.innerHTML = this.createEmptyState();
+            this.showEmptyState();
             return;
         }
 
         // Separate categories into with and without contractors
-        const { categoriesWithContractors, categoriesWithoutContractors } = this.separateCategoriesByAvailability(categories);
-        
-        this.container.innerHTML = `
+        const { categoriesWithContractors } = this.separateCategoriesByAvailability(categories);
+
+        categoriesContent.innerHTML = `
             ${categoriesWithContractors.length > 0 ? `
                 <div class="categories-section available-services">
+                    <h3 class="section-title">
+                        <i class="material-icons">check_circle</i>
+                        Available Services
+                        <span class="section-count">${categoriesWithContractors.length}</span>
+                    </h3>
                     <div class="categories-list" id="categories-with-contractors">
                         ${categoriesWithContractors.map(([type, typeData]) => this.createCategoryListItem(type, typeData, true)).join('')}
                     </div>
                 </div>
-            ` : ''}
-
-            ${categoriesWithoutContractors.length > 0 ? `
-                <div class="categories-section needed-services">
-                    <h3 class="section-title">
-                        <i class="material-icons">add_circle</i>
-                        Services Needed
-                        <span class="section-count">${categoriesWithoutContractors.length}</span>
-                    </h3>
-                    <p class="section-description">Be the first to add suppliers for these services</p>
-                    <div class="categories-list" id="categories-without-contractors">
-                        ${categoriesWithoutContractors.map(([type, typeData]) => this.createCategoryListItem(type, typeData, false)).join('')}
-                    </div>
+            ` : `
+                <div class="no-categories-available">
+                    <i class="material-icons">category</i>
+                    <h3>No services available yet</h3>
+                    <p>Be the first to add suppliers to your community</p>
                 </div>
-            ` : ''}
+            `}
 
             ${this.createCommunityCallToAction()}
         `;
@@ -71,7 +313,7 @@ export class CategoriesView extends BaseView {
     }
 
     /**
-     * Separate categories by contractor availability
+     * Separate categories by contractor availability - ALWAYS recalculate counts
      */
     separateCategoriesByAvailability(categories) {
         const categoriesByType = this.groupCategoriesByType(categories);
@@ -79,16 +321,19 @@ export class CategoriesView extends BaseView {
         const categoriesWithoutContractors = [];
 
         Object.entries(categoriesByType).forEach(([type, typeData]) => {
-            if (typeData.contractorCount > 0) {
-                categoriesWithContractors.push([type, typeData]);
+            // ALWAYS recalculate contractor count fresh from current data
+            const currentContractorCount = this.calculateCurrentContractorCount(typeData.categories);
+            
+            if (currentContractorCount > 0) {
+                categoriesWithContractors.push([type, { ...typeData, contractorCount: currentContractorCount }]);
             } else {
-                categoriesWithoutContractors.push([type, typeData]);
+                categoriesWithoutContractors.push([type, { ...typeData, contractorCount: 0 }]);
             }
         });
 
         // Sort available categories by contractor count (most first)
         categoriesWithContractors.sort((a, b) => b[1].contractorCount - a[1].contractorCount);
-        
+
         // Sort needed categories alphabetically
         categoriesWithoutContractors.sort((a, b) => a[0].localeCompare(b[0]));
 
@@ -96,35 +341,53 @@ export class CategoriesView extends BaseView {
     }
 
     /**
+     * Calculate current contractor count for categories - FRESH calculation
+     */
+    calculateCurrentContractorCount(categories) {
+        let totalCount = 0;
+        const contractors = this.dataModule.getContractors();
+        
+        if (!contractors || !Array.isArray(contractors)) {
+            return 0;
+        }
+
+        categories.forEach(category => {
+            const count = contractors.filter(contractor => contractor.category === category.name).length;
+            totalCount += count;
+        });
+        
+        return totalCount;
+    }
+
+    /**
      * Group categories by type
      */
     groupCategoriesByType(categories) {
         const grouped = {};
-        
+
         categories.forEach(category => {
             const type = category.type || 'General Services';
-            
+
             if (!grouped[type]) {
                 grouped[type] = {
                     categories: [],
-                    contractorCount: 0
+                    contractorCount: 0 // This will be recalculated in separateCategoriesByAvailability
                 };
             }
-            
+
             grouped[type].categories.push(category);
-            grouped[type].contractorCount += this.getContractorCount(category.name);
         });
-        
+
         return grouped;
     }
 
     /**
-     * Create category list item HTML
+     * Create category list item HTML - Updated to remove services information
      */
     createCategoryListItem(type, typeData, hasContractors) {
         const icon = typeData.categories[0]?.icon || 'category';
         const contractorCount = typeData.contractorCount;
-        
+
         return `
             <div class="category-list-item ${hasContractors ? 'available' : 'needed'}" 
                  data-category-type="${type}"
@@ -138,25 +401,21 @@ export class CategoriesView extends BaseView {
                         <h3 class="category-name">${type}</h3>
                         
                         <div class="category-meta">
-                            <p class="category-service-count">
-                                <i class="material-icons">category</i>
-                                ${typeData.categories.length} service${typeData.categories.length !== 1 ? 's' : ''}
-                            </p>
                             <p class="category-contractor-count ${hasContractors ? 'available' : 'needed'}">
                                 <i class="material-icons">${hasContractors ? 'groups' : 'person_add'}</i>
-                                ${hasContractors ? 
-                                    `${contractorCount} professional${contractorCount !== 1 ? 's' : ''}` : 
-                                    'No professionals yet'
-                                }
+                                ${hasContractors ?
+                `${contractorCount} professional${contractorCount !== 1 ? 's' : ''}` :
+                'No professionals yet'
+            }
                             </p>
                         </div>
                     </div>
 
                     <div class="contractors-badge-list ${hasContractors ? 'available' : 'needed'}">
-                        ${hasContractors ? 
-                            contractorCount : 
-                            '<i class="material-icons">add</i>'
-                        }
+                        ${hasContractors ?
+                contractorCount :
+                '<i class="material-icons">add</i>'
+            }
                     </div>
 
                     ${!hasContractors ? `
@@ -192,6 +451,31 @@ export class CategoriesView extends BaseView {
     }
 
     /**
+     * Show empty state
+     */
+    showEmptyState() {
+        const categoriesContent = this.createCategoriesContentContainer();
+        categoriesContent.innerHTML = this.createEmptyState();
+    }
+
+    /**
+     * Enhanced empty state
+     */
+    createEmptyState() {
+        return `
+            <div class="no-results">
+                <i class="material-icons">category</i>
+                <h3>No categories available yet</h3>
+                <p>Categories will be available once the app is fully loaded</p>
+                <button class="btn-primary" id="refresh-categories">
+                    <i class="material-icons">refresh</i>
+                    Refresh Categories
+                </button>
+            </div>
+        `;
+    }
+
+    /**
      * Setup enhanced click handlers
      */
     setupClickHandlers() {
@@ -201,7 +485,7 @@ export class CategoriesView extends BaseView {
             card.addEventListener('click', (e) => {
                 // Don't trigger if clicking the add supplier button
                 if (e.target.closest('.add-supplier-btn-list')) return;
-                
+
                 const type = card.getAttribute('data-category-type');
                 this.handleCategoryClick(type);
             });
@@ -232,7 +516,7 @@ export class CategoriesView extends BaseView {
     handleCategoryClick(type) {
         const categories = this.dataModule.getCategories().filter(cat => cat.type === type);
         const categoryNames = categories.map(cat => cat.name);
-        
+
         document.dispatchEvent(new CustomEvent('categorySelected', {
             detail: { type, categories, categoryNames }
         }));
@@ -251,7 +535,7 @@ export class CategoriesView extends BaseView {
 
         // Dispatch navigation event to show contractor edit view
         document.dispatchEvent(new CustomEvent('navigationViewChange', {
-            detail: { 
+            detail: {
                 view: 'contractorEdit',
                 context: context
             }
@@ -259,33 +543,59 @@ export class CategoriesView extends BaseView {
     }
 
     /**
-     * Get contractor count for category
+     * Get contractor count for category - always fresh calculation
      */
     getContractorCount(categoryName) {
-        return this.dataModule.getContractors().filter(contractor => contractor.category === categoryName).length;
-    }
-
-    /**
-     * Enhanced empty state
-     */
-    createEmptyState() {
-        return `
-            <div class="no-results">
-                <i class="material-icons">category</i>
-                <h3>No categories available yet</h3>
-                <p>Categories will be available once the app is fully loaded</p>
-                <button class="btn-primary" id="refresh-categories">
-                    <i class="material-icons">refresh</i>
-                    Refresh Categories
-                </button>
-            </div>
-        `;
+        const contractors = this.dataModule.getContractors();
+        if (!contractors || !Array.isArray(contractors)) {
+            return 0;
+        }
+        return contractors.filter(contractor => contractor.category === categoryName).length;
     }
 
     /**
      * Refresh categories data
      */
     refresh() {
+        console.log('🔄 CategoriesView: Refresh called');
         this.renderCategories();
+    }
+
+    /**
+     * Show the view - ensure data is refreshed
+     */
+    show() {
+        super.show();
+        this.isVisible = true;
+        
+        // Ensure search is cleared when showing categories view
+        if (this.searchInput) {
+            this.searchInput.value = '';
+            this.currentSearchTerm = '';
+        }
+        
+        // Force refresh to ensure contractor counts are current
+        this.forceRefreshCategories();
+        
+        // Setup data update listeners
+        this.setupDataUpdateListeners();
+    }
+
+    /**
+     * Hide the view
+     */
+    hide() {
+        super.hide();
+        this.isVisible = false;
+        
+        // Remove data update listeners to prevent memory leaks
+        this.removeDataUpdateListeners();
+    }
+
+    /**
+     * Force refresh the view with current data
+     */
+    forceRefresh() {
+        this.forceRefreshCategories();
     }
 }

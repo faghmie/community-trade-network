@@ -3,7 +3,6 @@ export class ConfirmationModal {
     constructor() {
         this.modal = null;
         this.resolvePromise = null;
-        this.rejectPromise = null;
         this.init();
     }
 
@@ -70,9 +69,8 @@ export class ConfirmationModal {
 
     show(options = {}) {
         console.log('🎯 ConfirmationModal.show called');
-        return new Promise((resolve, reject) => {
+        return new Promise((resolve) => {
             this.resolvePromise = resolve;
-            this.rejectPromise = reject;
 
             const {
                 title = 'Confirm Action',
@@ -165,15 +163,15 @@ export class ConfirmationModal {
         console.log('❌ ConfirmationModal: User cancelled');
         
         // Store references BEFORE hiding
-        const reject = this.rejectPromise;
+        const resolve = this.resolvePromise;
         
         this.hide();
         
-        if (reject) {
-            reject(false);
-            console.log('🎯 Promise rejected with: false');
+        if (resolve) {
+            resolve(false); // FIXED: Resolve with false instead of rejecting
+            console.log('🎯 Promise resolved with: false');
         } else {
-            console.log('❌ No rejectPromise found');
+            console.log('❌ No resolvePromise found');
         }
     }
 
@@ -182,11 +180,9 @@ export class ConfirmationModal {
         this.modal.style.display = 'none';
         document.body.style.overflow = '';
         
-        // Don't clear the promises here - they're cleared after resolution
-        console.log('📋 Current promise state:', { 
-            hasResolve: !!this.resolvePromise, 
-            hasReject: !!this.rejectPromise 
-        });
+        // Clear the promise reference
+        this.resolvePromise = null;
+        console.log('📋 Promise reference cleared');
     }
 }
 

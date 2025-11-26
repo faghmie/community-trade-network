@@ -70,154 +70,44 @@
         </div>
     </div>
 
-    <!-- Combined Header with Hero and Search -->
-    <header class="main-header">
-        <div class="header-content">
-            <!-- Hero Content - Left Side -->
-            <div class="header-hero">
-                <h1 class="hero-title">Community Trade Network</h1>
-                <p class="hero-subtitle">Your Community's Directory of Trusted Local Services</p>
-            </div>
-
-            <!-- Search Bar - Right Side -->
-            <div class="header-search">
-                <div class="material-search">
-                    <i class="material-icons" data-icon="search">search</i>
-                    <input type="text" id="searchInput" 
-                           placeholder="Search service providers..."
-                           class="material-search-input" 
-                           data-action="search-keypress"
-                           aria-label="Search service providers">
-                </div>
-            </div>
-        </div>
-    </header>
-
     <!-- Main View Container -->
     <main id="mainViewContainer" class="main-view-container">
         <!-- Views will be dynamically loaded here by view modules -->
     </main>
 
-    <!-- Material Design Modal Bottom Sheet for Filters -->
-    <div class="bottom-sheet modal-bottom-sheet hidden" id="filtersSheet" role="dialog" aria-modal="true"
-        aria-labelledby="filtersSheetTitle">
-        <div class="bottom-sheet-scrim" data-action="hide-filters"></div>
-        <div class="bottom-sheet-container">
-            <div class="bottom-sheet-surface">
-                <!-- Header -->
-                <div class="bottom-sheet-header">
-                    <div class="bottom-sheet-handle"></div>
-                    <div class="bottom-sheet-title">
-                        <h3 id="filtersSheetTitle">Filters</h3>
-                    </div>
-                    <button class="btn btn-icon bottom-sheet-close" data-action="hide-filters"
-                        aria-label="Close filters">
-                        <i class="material-icons" data-icon="close">close</i>
-                    </button>
-                </div>
-
-                <!-- Content -->
-                <div class="bottom-sheet-content">
-                    <!-- Filter Grid -->
-                    <div class="filter-grid">
-                        <!-- Location Filter -->
-                        <div class="material-form-group">
-                            <label for="locationFilter" class="material-input-label">
-                                <i class="material-icons" data-icon="location_on">location_on</i>
-                                Location
-                            </label>
-                            <select id="locationFilter" class="material-select" data-action="filter">
-                                <option value="">All Locations</option>
-                                <!-- Locations will be populated dynamically -->
-                            </select>
-                        </div>
-
-                        <!-- Category Filter -->
-                        <div class="material-form-group">
-                            <label for="categoryFilter" class="material-input-label">
-                                <i class="material-icons" data-icon="category">category</i>
-                                Category
-                            </label>
-                            <select id="categoryFilter" class="material-select" data-action="filter">
-                                <option value="">All Categories</option>
-                                <!-- Categories will be populated dynamically -->
-                            </select>
-                        </div>
-
-                        <!-- Rating Filter -->
-                        <div class="material-form-group">
-                            <label for="ratingFilter" class="material-input-label">
-                                <i class="material-icons" data-icon="star">star</i>
-                                Minimum Rating
-                            </label>
-                            <select id="ratingFilter" class="material-select" data-action="filter">
-                                <option value="">All Ratings</option>
-                                <option value="4.5">4.5+ Stars</option>
-                                <option value="4.0">4.0+ Stars</option>
-                                <option value="3.5">3.5+ Stars</option>
-                                <option value="3.0">3.0+ Stars</option>
-                            </select>
-                        </div>
-
-                        <!-- Sort By -->
-                        <div class="material-form-group">
-                            <label for="sortBy" class="material-input-label">
-                                <i class="material-icons" data-icon="sort">sort</i>
-                                Sort By
-                            </label>
-                            <select id="sortBy" class="material-select" data-action="sort">
-                                <option value="name">Name (A-Z)</option>
-                                <option value="rating">Highest Rated</option>
-                                <option value="reviews">Most Reviews</option>
-                                <option value="location">Location</option>
-                            </select>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Actions -->
-                <div class="bottom-sheet-actions">
-                    <button class="btn btn-text" data-action="clear-filters">
-                        <i class="material-icons" data-icon="clear_all">clear_all</i>
-                        <span>Clear All</span>
-                    </button>
-                    <button class="btn btn-primary" data-action="apply-filters">
-                        <span>Show Results</span>
-                    </button>
-                </div>
-            </div>
-        </div>
-    </div>
-
     <!-- Bottom Navigation Bar - Mobile -->
-    <nav class="bottom-nav mobile-only">
+    <nav class="bottom-nav mobile-only" aria-label="Main navigation">
         <div class="bottom-nav-content">
-            <a href="#" class="bottom-nav-item" data-view="home">
-                <i class="material-icons" data-icon="home">home</i>
-                <span class="bottom-nav-label">Home</span>
+            <!-- Browse - Replaces Home -->
+            <a href="#" class="bottom-nav-item" data-view="categories" aria-label="Browse categories">
+                <i class="material-icons" data-icon="category">category</i>
+                <span class="bottom-nav-label">Browse</span>
             </a>
-            <a href="#" class="bottom-nav-item" data-view="favorites">
-                <i class="material-icons" data-icon="favorite">favorite</i>
-                <span class="bottom-nav-label">Favorites</span>
-                <span class="bottom-nav-badge" id="mobileFavBadge">0</span>
-            </a>
-            <a href="#" class="bottom-nav-item" data-view="search">
+            
+            <!-- Search - Central discovery tool -->
+            <a href="#" class="bottom-nav-item" data-view="search" aria-label="Search contractors">
                 <i class="material-icons" data-icon="search">search</i>
                 <span class="bottom-nav-label">Search</span>
                 <span class="bottom-nav-badge filter-badge hidden">0</span>
             </a>
-            <a href="#" class="bottom-nav-item" data-view="map">
+            
+            <!-- Add+ - Primary action for adding contractors -->
+            <a href="#" class="bottom-nav-item bottom-nav-item-primary" data-view="add" aria-label="Add contractor">
+                <i class="material-icons" data-icon="add">add</i>
+                <span class="bottom-nav-label">Add</span>
+            </a>
+            
+            <!-- Map - Geographic interface -->
+            <a href="#" class="bottom-nav-item" data-view="map" aria-label="View map">
                 <i class="material-icons" data-icon="map">map</i>
                 <span class="bottom-nav-label">Map</span>
             </a>
-            <!-- NEW: Feedback Button -->
-            <a href="#" class="bottom-nav-item" id="feedbackNavItem" data-view="feedback">
-                <i class="material-icons" data-icon="feedback">feedback</i>
-                <span class="bottom-nav-label">Feedback</span>
-            </a>
-            <a href="#" class="bottom-nav-item" id="installNavItem" style="display: none;">
-                <i class="material-icons" data-icon="download">download</i>
-                <span class="bottom-nav-label">Install</span>
+            
+            <!-- Profile - User settings and favorites -->
+            <a href="#" class="bottom-nav-item" data-view="profile" aria-label="User profile">
+                <i class="material-icons" data-icon="person">person</i>
+                <span class="bottom-nav-label">Profile</span>
+                <span class="bottom-nav-badge" id="mobileFavBadge">0</span>
             </a>
         </div>
     </nav>

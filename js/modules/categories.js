@@ -41,30 +41,47 @@ export class CategoriesModule {
         return this.categories;
     }
 
-    getCategories() {
+    // ========== CONSISTENT CONTRACTOR-LIKE METHODS ==========
+
+    /**
+     * Get all categories (consistent with contractorManager.getAll())
+     */
+    getAll() {
         return this.categories;
     }
 
-    getCategoryByName(name) {
-        return this.categories.find(cat => cat.name === name);
+    /**
+     * Get category by ID (consistent with contractorManager.get())
+     */
+    get(categoryId) {
+        return this.categories.find(cat => cat.id === categoryId);
     }
 
-    async addCategory(name) {
-        if (!name || name.trim() === '') {
+    /**
+     * Create new category (consistent with contractorManager.create())
+     */
+    async create(categoryData) {
+        if (!categoryData.name || categoryData.name.trim() === '') {
             throw new Error('Category name cannot be empty');
         }
 
-        // Check if category already exists
-        const existingCategory = this.getCategoryByName(name);
+        // Check if category already exists by name
+        const existingCategory = this.categories.find(cat => 
+            cat.name.toLowerCase() === categoryData.name.toLowerCase()
+        );
         if (existingCategory) {
-            throw new Error(`Category "${name}" already exists`);
+            throw new Error(`Category "${categoryData.name}" already exists`);
         }
 
         // Create new category with UUID
         const newCategory = {
             id: generateUUID(),
-            name: name.trim(),
-            created_at: new Date().toISOString()
+            name: categoryData.name.trim(),
+            type: categoryData.type || '',
+            subtype: categoryData.subtype || '',
+            description: categoryData.description || '',
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString()
         };
 
         // Add to local array
@@ -82,27 +99,35 @@ export class CategoriesModule {
         }
     }
 
-    async updateCategory(oldName, newName) {
-        if (!newName || newName.trim() === '') {
+    /**
+     * Update category by ID (consistent with contractorManager.update())
+     */
+    async update(categoryId, categoryData) {
+        const categoryIndex = this.categories.findIndex(cat => cat.id === categoryId);
+        if (categoryIndex === -1) {
+            throw new Error(`Category with ID "${categoryId}" not found`);
+        }
+
+        if (!categoryData.name || categoryData.name.trim() === '') {
             throw new Error('Category name cannot be empty');
         }
 
-        const categoryIndex = this.categories.findIndex(cat => cat.name === oldName);
-        if (categoryIndex === -1) {
-            throw new Error(`Category "${oldName}" not found`);
-        }
-
-        // Check if new name already exists (and it's not the same category)
-        const existingCategory = this.getCategoryByName(newName);
-        if (existingCategory && existingCategory.name !== oldName) {
-            throw new Error(`Category "${newName}" already exists`);
+        // Check if new name already exists (excluding current category)
+        const existingCategory = this.categories.find(cat => 
+            cat.name.toLowerCase() === categoryData.name.toLowerCase() && 
+            cat.id !== categoryId
+        );
+        if (existingCategory) {
+            throw new Error(`Category "${categoryData.name}" already exists`);
         }
 
         // Update the category
         const oldCategory = { ...this.categories[categoryIndex] };
         this.categories[categoryIndex] = {
             ...oldCategory,
-            name: newName.trim()
+            ...categoryData,
+            name: categoryData.name.trim(),
+            updated_at: new Date().toISOString()
         };
 
         // Save to storage
@@ -117,20 +142,25 @@ export class CategoriesModule {
         }
     }
 
-    async deleteCategory(name) {
-        const categoryIndex = this.categories.findIndex(cat => cat.name === name);
+    /**
+     * Delete category by ID (consistent with contractorManager.delete())
+     */
+    async delete(categoryId) {
+        const categoryIndex = this.categories.findIndex(cat => cat.id === categoryId);
         if (categoryIndex === -1) {
-            throw new Error(`Category "${name}" not found`);
+            throw new Error(`Category with ID "${categoryId}" not found`);
         }
+
+        const category = this.categories[categoryIndex];
 
         // Check if category is used by any contractors
         const contractors = this.dataModule.getContractors();
         const contractorsUsingCategory = contractors.filter(contractor => 
-            contractor.category === name
+            contractor.category === category.name
         );
 
         if (contractorsUsingCategory.length > 0) {
-            throw new Error(`Cannot delete category "${name}" - it is used by ${contractorsUsingCategory.length} contractor(s)`);
+            throw new Error(`Cannot delete category "${category.name}" - it is used by ${contractorsUsingCategory.length} contractor(s)`);
         }
 
         // Remove category
@@ -147,6 +177,30 @@ export class CategoriesModule {
             throw new Error('Failed to delete category');
         }
     }
+
+    // ========== COMPATIBILITY METHODS (keep existing API) ==========
+
+    getCategories() {
+        return this.getAll();
+    }
+
+    getCategoryByName(name) {
+        return this.categories.find(cat => cat.name === name);
+    }
+
+    async addCategory(categoryData) {
+        return this.create(categoryData);
+    }
+
+    async updateCategory(categoryId, categoryData) {
+        return this.update(categoryId, categoryData);
+    }
+
+    async deleteCategory(categoryId) {
+        return this.delete(categoryId);
+    }
+
+    // ========== UTILITY METHODS ==========
 
     // Check if category exists
     categoryExists(name) {
@@ -196,5 +250,16 @@ export class CategoriesModule {
         });
         
         return stats;
+    }
+
+    // Search categories by term
+    search(searchTerm) {
+        const term = searchTerm.toLowerCase();
+        return this.categories.filter(category => 
+            category.name.toLowerCase().includes(term) ||
+            (category.type && category.type.toLowerCase().includes(term)) ||
+            (category.subtype && category.subtype.toLowerCase().includes(term)) ||
+            (category.description && category.description.toLowerCase().includes(term))
+        );
     }
 }

@@ -5,7 +5,6 @@
 @import url('components/buttons.css');
 @import url('components/cards.css');
 @import url('components/modals.css');
-@import url('components/review-modal.css'); /* MOVED: Before other modal-related imports */
 @import url('components/notifications.css');
 @import url('components/forms.css');
 @import url('components/tables.css');
@@ -21,6 +20,9 @@
 @import url('./components/bottom-sheet.css');
 @import url('components/feedback.css');
 @import url('components/confirmation-modal.css');
+@import url('components/categories.css');
+@import url('components/search.css');
+@import url('components/profile.css');
 @import url('layout.css');
 
 /* ===== GLOBAL BASE STYLES ===== */
@@ -40,83 +42,6 @@ body {
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     min-height: 100vh;
-}
-
-/* ===== COMBINED HEADER WITH HERO AND SEARCH ===== */
-.main-header {
-    background: var(--surface);
-    border-bottom: 1px solid var(--outline-variant);
-    padding: var(--space-md) var(--space-lg);
-    position: sticky;
-    top: 0;
-    z-index: var(--z-app-bar);
-    box-shadow: var(--elevation-1);
-}
-
-.header-content {
-    max-width: var(--container-max-width);
-    margin: 0 auto;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: var(--space-xl);
-    min-height: 60px;
-}
-
-/* Hero Content - Left Side */
-.header-hero {
-    flex: 1;
-    min-width: 0; /* Allow text truncation */
-}
-
-.header-hero .hero-title {
-    font-size: var(--font-size-xl);
-    font-weight: var(--font-weight-medium);
-    color: var(--on-surface);
-    margin: 0 0 var(--space-xs) 0;
-    line-height: var(--line-height-tight);
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-}
-
-.header-hero .hero-subtitle {
-    font-size: var(--font-size-sm);
-    color: var(--on-surface-variant);
-    margin: 0;
-    line-height: var(--line-height-normal);
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-}
-
-/* Search Bar - Right Side */
-.header-search {
-    flex: 0 0 320px; /* Fixed width for search */
-}
-
-.header-search .material-search {
-    height: 44px;
-    border-radius: var(--shape-medium);
-    box-shadow: var(--elevation-1);
-    border: 1px solid var(--outline-variant);
-    margin: 0;
-}
-
-.header-search .material-search:focus-within {
-    box-shadow: var(--elevation-2);
-    border-color: var(--primary-color);
-}
-
-.header-search .material-search i {
-    font-size: 20px;
-    left: var(--space-md);
-}
-
-.header-search .material-search-input {
-    padding: var(--space-md) var(--space-md) var(--space-md) 3rem;
-    font-size: var(--font-size-base);
-    height: 100%;
 }
 
 /* ===== LAYOUT CONTAINERS ===== */
@@ -139,168 +64,21 @@ body {
     margin: 0 auto;
 }
 
-/* ===== UTILITY SECTIONS ===== */
-.section-panel,
-.content-panel,
-.main-panel {
-    background-color: var(--surface);
-    border-radius: var(--border-radius);
-    padding: var(--space-xl);
-    margin-bottom: var(--space-xl);
-    border: 1px solid var(--border-light);
+/* ===== UTILITY CLASSES ===== */
+.hidden {
+    display: none !important;
 }
 
-.filter-section,
-.search-section,
-.controls-section {
-    background-color: var(--surface);
-    border-radius: var(--border-radius);
-    padding: var(--space-lg);
-    margin-bottom: var(--space-lg);
-    border: 1px solid var(--border-light);
-}
-
-/* ===== STATE CLASSES ===== */
-.empty-state,
-.loading-state,
-.no-results {
-    background-color: var(--surface);
-    border-radius: var(--border-radius);
-    padding: var(--space-xxl);
-    text-align: center;
-    color: var(--text-secondary);
-    border: 1px solid var(--border-light);
-}
-
-.error-state {
-    background-color: var(--surface);
-    border: 1px solid var(--error-100);
-    border-radius: var(--border-radius);
-    padding: var(--space-xl);
-    text-align: center;
-    color: var(--error-color);
-}
-
-.success-state {
-    background-color: var(--success-50);
-    border: 1px solid var(--success-200);
-    border-radius: var(--border-radius);
-    padding: var(--space-xl);
-    text-align: center;
-    color: var(--success-700);
-}
-
-.warning-state {
-    background-color: var(--warning-50);
-    border: 1px solid var(--warning-200);
-    border-radius: var(--border-radius);
-    padding: var(--space-xl);
-    text-align: center;
-    color: var(--warning-700);
-}
-
-.info-state {
-    background-color: var(--primary-50);
-    border: 1px solid var(--primary-200);
-    border-radius: var(--border-radius);
-    padding: var(--space-xl);
-    text-align: center;
-    color: var(--primary-700);
-}
-
-.loading-overlay {
-    background-color: var(--background);
+.sr-only {
     position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    z-index: var(--z-modal);
-}
-
-/* ===== REVIEW MODAL MOBILE OVERRIDES ===== */
-/* Ensure review modal footer is always visible on mobile */
-@media (max-width: 768px) {
-    .modal.review-modal.material-modal .material-dialog.large {
-        display: flex !important;
-        flex-direction: column !important;
-        height: 100vh !important;
-        max-height: 100vh !important;
-        width: 100vw !important;
-        margin: 0 !important;
-        border-radius: 0 !important;
-    }
-    
-    .modal.review-modal.material-modal .material-dialog-header {
-        flex-shrink: 0 !important;
-        padding: calc(var(--space-lg) + env(safe-area-inset-top, 0px)) var(--space-lg) var(--space-md) var(--space-lg) !important;
-    }
-    
-    .modal.review-modal.material-modal .material-dialog-body {
-        flex: 1 !important;
-        min-height: 0 !important;
-        overflow-y: auto !important;
-        padding: 0 !important;
-        max-height: none !important;
-    }
-    
-    .modal.review-modal.material-modal .material-dialog-actions {
-        flex-shrink: 0 !important;
-        margin-top: auto !important;
-        padding: var(--space-lg) var(--space-lg) calc(var(--space-lg) + env(safe-area-inset-bottom, 0px)) var(--space-lg) !important;
-        background: var(--surface) !important;
-        border-top: 1px solid var(--border-light) !important;
-        position: relative !important;
-        z-index: 10 !important;
-    }
-    
-    .modal.review-modal.material-modal .review-form.material-form {
-        flex: 1 !important;
-        min-height: 0 !important;
-        overflow-y: auto !important;
-        padding: var(--space-lg) !important;
-    }
-    
-    /* Ensure buttons are always visible and properly sized */
-    .modal.review-modal.material-modal .material-dialog-actions .material-button {
-        width: 100% !important;
-        min-height: 48px !important;
-        margin: 0 !important;
-        flex: 1 !important;
-    }
-}
-
-/* Small mobile devices */
-@media (max-width: 480px) {
-    .modal.review-modal.material-modal .material-dialog-actions {
-        padding: var(--space-md) var(--space-md) calc(var(--space-md) + env(safe-area-inset-bottom, 0px)) var(--space-md) !important;
-    }
-    
-    .modal.review-modal.material-modal .review-form.material-form {
-        padding: var(--space-md) !important;
-    }
-    
-    .modal.review-modal.material-modal .material-dialog-actions .material-button {
-        min-height: 44px !important;
-    }
-}
-
-/* Ultra-compact mobile devices */
-@media (max-width: 360px) {
-    .modal.review-modal.material-modal .material-dialog-actions {
-        padding: var(--space-sm) var(--space-sm) calc(var(--space-sm) + env(safe-area-inset-bottom, 0px)) var(--space-sm) !important;
-    }
-    
-    .modal.review-modal.material-modal .review-form.material-form {
-        padding: var(--space-sm) !important;
-    }
-    
-    .modal.review-modal.material-modal .material-dialog-actions .material-button {
-        min-height: 40px !important;
-    }
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
 }
 
 /* ===== MOBILE LIST VIEW FIXES - OVERRIDE ALL CONTAINER PADDING ===== */
@@ -349,178 +127,6 @@ body {
     }
 }
 
-/* ===== RESPONSIVE DESIGN ===== */
-
-/* Tablets and smaller desktops */
-@media (max-width: 1024px) {
-    .header-content {
-        gap: var(--space-lg);
-    }
-    
-    .header-search {
-        flex: 0 0 280px;
-    }
-    
-    .header-hero .hero-title {
-        font-size: var(--font-size-lg);
-    }
-    
-    .header-hero .hero-subtitle {
-        font-size: var(--font-size-xs);
-    }
-}
-
-/* Mobile - Stack layout */
-@media (max-width: 768px) {
-    .main-header {
-        padding: var(--space-sm) var(--space-md);
-        position: relative;
-        top: auto;
-    }
-    
-    .header-content {
-        flex-direction: column;
-        align-items: stretch;
-        gap: var(--space-md);
-        min-height: auto;
-    }
-    
-    .header-hero {
-        text-align: center;
-        flex: none;
-    }
-    
-    .header-hero .hero-title {
-        font-size: var(--font-size-lg);
-        white-space: normal;
-        overflow: visible;
-        margin-bottom: var(--space-xxs);
-    }
-    
-    .header-hero .hero-subtitle {
-        font-size: var(--font-size-xs);
-        white-space: normal;
-        overflow: visible;
-    }
-    
-    .header-search {
-        flex: none;
-        width: 100%;
-    }
-    
-    .header-search .material-search {
-        height: 40px;
-        border-radius: var(--shape-small);
-    }
-    
-    .header-search .material-search i {
-        font-size: 18px;
-        left: var(--space-sm);
-    }
-    
-    .header-search .material-search-input {
-        padding: var(--space-sm) var(--space-sm) var(--space-sm) 2.5rem;
-        font-size: var(--font-size-sm);
-    }
-    
-    /* General mobile adjustments */
-    .section-panel,
-    .content-panel,
-    .main-panel {
-        padding: var(--space-lg);
-        margin-bottom: var(--space-lg);
-    }
-    
-    .filter-section,
-    .search-section,
-    .controls-section {
-        padding: var(--space-md);
-        margin-bottom: var(--space-md);
-    }
-    
-    .empty-state,
-    .loading-state,
-    .no-results {
-        padding: var(--space-xl);
-    }
-    
-    .error-state,
-    .success-state,
-    .warning-state,
-    .info-state {
-        padding: var(--space-lg);
-    }
-}
-
-/* Small mobile devices */
-@media (max-width: 480px) {
-    .main-header {
-        padding: var(--space-xs) var(--space-sm);
-    }
-    
-    .header-content {
-        gap: var(--space-sm);
-    }
-    
-    .header-hero .hero-title {
-        font-size: var(--font-size-base);
-    }
-    
-    .header-search .material-search {
-        height: 36px;
-    }
-    
-    .header-search .material-search i {
-        font-size: 16px;
-        left: var(--space-xs);
-    }
-    
-    .header-search .material-search-input {
-        padding: var(--space-xs) var(--space-xs) var(--space-xs) 2rem;
-        font-size: var(--font-size-xs);
-    }
-    
-    /* General small mobile adjustments */
-    .section-panel,
-    .content-panel,
-    .main-panel {
-        padding: var(--space-md);
-        margin-bottom: var(--space-md);
-    }
-    
-    .filter-section,
-    .search-section,
-    .controls-section {
-        padding: var(--space-sm);
-        margin-bottom: var(--space-sm);
-    }
-    
-    .empty-state,
-    .loading-state,
-    .no-results {
-        padding: var(--space-lg);
-    }
-    
-    .error-state,
-    .success-state,
-    .warning-state,
-    .info-state {
-        padding: var(--space-md);
-    }
-}
-
-/* Very small screens - further optimize hero text */
-@media (max-width: 360px) {
-    .header-hero .hero-title {
-        font-size: var(--font-size-sm);
-    }
-    
-    .header-hero .hero-subtitle {
-        font-size: var(--font-size-xs);
-        line-height: 1.2;
-    }
-}
-
 /* ===== THEME SUPPORT ===== */
 @media (prefers-color-scheme: dark) {
     body {
@@ -531,69 +137,17 @@ body {
     .container {
         background-color: var(--background);
     }
-    
-    .empty-state,
-    .loading-state,
-    .no-results {
-        background-color: var(--surface);
-        border-color: var(--border-color);
-    }
-    
-    .filter-section,
-    .search-section,
-    .controls-section {
-        background-color: var(--surface);
-        border-color: var(--border-color);
-    }
-    
-    .section-panel,
-    .content-panel,
-    .main-panel {
-        background-color: var(--surface);
-        border-color: var(--border-color);
-    }
-    
-    /* Header dark theme */
-    .main-header {
-        background: var(--surface);
-        border-bottom-color: var(--outline-variant);
-    }
-    
-    .header-search .material-search {
-        background: var(--surface);
-        border-color: var(--outline-variant);
-    }
 }
 
 @media (prefers-contrast: high) {
-    .filter-section,
-    .search-section,
-    .controls-section {
-        border: 1px solid var(--border-dark);
-    }
-    
-    .section-panel,
-    .content-panel,
-    .main-panel {
-        border: 1px solid var(--border-dark);
-    }
-    
-    /* Header high contrast */
-    .main-header {
-        border-bottom-width: 2px;
-        border-bottom-color: currentColor;
-    }
-    
-    .header-search .material-search {
-        border-width: 2px;
-        border-color: currentColor;
-    }
+    /* High contrast overrides can be added here if needed */
 }
 
 @media (prefers-reduced-motion: reduce) {
-    .main-header {
-        position: relative;
-        top: auto;
+    * {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
     }
 }
 
@@ -608,26 +162,7 @@ body {
         background-color: var(--bg-white) !important;
     }
     
-    .section-panel,
-    .content-panel,
-    .main-panel {
-        background-color: var(--bg-white) !important;
-        border: 1px solid var(--border-color) !important;
-    }
-    
-    .filter-section,
-    .search-section,
-    .controls-section {
-        background-color: var(--bg-white) !important;
-        border: 1px solid var(--border-color) !important;
-    }
-    
     .no-print {
-        display: none !important;
-    }
-    
-    /* Hide header in print */
-    .main-header {
         display: none !important;
     }
 }

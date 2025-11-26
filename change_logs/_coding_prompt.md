@@ -29,6 +29,10 @@ summarise the following in a project-status report. It contains the project stru
 
 remember to provide complete file where changes are needed and do them one at a time, if you have have recently generated the file then do not prompt for the file I have otherwise prompt me for my current file and then providing the updated file. then asking for the next file
 
+### Refactor individual files
+refactor the code to be simpler, cleaner and maintainable without over enginnering it and ensure that long
+html template are broken into small functions. Also remove all duplications and make sure no functionality is lost or broken
+
 ## START OF SESSION 
 
 remember to provide complete file where changes are needed and do them one at a time, if you have have recently generated the file then do not prompt for the file I have otherwise prompt me for my current file and then providing the updated file. then asking for the next file

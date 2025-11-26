@@ -19,17 +19,17 @@
  * @typedef {Object} Contractor
  * @property {string} name - Contractor's full name or business name
  * @property {string} [email] - Optional email address
- * @property {string} [phone] - Optional phone number
+ * @property {string} phone - Phone number (required for community contact)
  * @property {number} rating - Current average rating (0-5)
  * @property {string} [website] - Optional website URL
  * @property {string} category - Primary service category
- * @property {string} location - General location description
+ * @property {string} [location] - Optional general location description
  * @property {Coordinates} [coordinates] - Optional precise coordinates
  * @property {number} reviewCount - Total number of reviews
  * @property {string[]} serviceAreas - Array of areas where services are offered
  * @property {number} overallRating - Overall rating (may be same as rating)
  * @property {UUID} [id] - Optional unique identifier (UUID)
- * @property {string} [description] - Optional business description
+ * @property {string} description - Business/service description (required for community context)
  * @property {string[]} [services] - Optional array of specific services offered
  * @property {string} [yearsInBusiness] - Optional years of experience
  * @property {boolean} [isVerified] - Optional verification status
@@ -61,19 +61,7 @@
  *     "Western Cape"
  *   ],
  *   overallRating: 4.2,
- *   ratingStats: {
- *     overall: 4.2,
- *     value: 5.0,
- *     quality: 3.0,
- *     timeliness: 5.0,
- *     communication: 4.0,
- *     totalReviews: 1,
- *     ratingDistribution: [0, 0, 0, 1, 0],
- *     projectTypeDistribution: {
- *       "Other": 1
- *     }
- *   },
- *   description: "Professional garage door and gate services",
+ *   description: "Professional garage door and gate installation, repair and maintenance services with 5+ years experience",
  *   services: ["Gate Repair", "Garage Door Installation", "Maintenance"],
  *   yearsInBusiness: "5+ years",
  *   isVerified: true,
@@ -88,10 +76,10 @@
  * @property {number} rating - Average rating
  * @property {number} reviewCount - Number of reviews
  * @property {string} category - Service category
- * @property {string} location - Location description
- * @property {string} [phone] - Phone number
+ * @property {string} [location] - Optional location description
+ * @property {string} phone - Phone number
  * @property {boolean} [isVerified] - Verification status
- * @property {string} [description] - Short description
+ * @property {string} description - Service description for community context
  * @property {Coordinates} [coordinates] - Optional coordinates for mapping
  * @property {string[]} [serviceAreas] - Optional service areas
  * @example
@@ -104,7 +92,7 @@
  *   location: "Bonteheuwel, Western Cape",
  *   phone: "0733627226",
  *   isVerified: true,
- *   description: "Professional garage door services",
+ *   description: "Professional garage door installation and repair services",
  *   coordinates: {
  *     lat: -33.9249,
  *     lng: 18.4241
@@ -139,12 +127,12 @@
  * @typedef {Object} ContractorCreateData
  * @property {string} name - Contractor name (required)
  * @property {string} [email] - Optional email
- * @property {string} [phone] - Optional phone
+ * @property {string} phone - Phone number (required for community contact)
  * @property {string} category - Service category (required)
- * @property {string} location - Location (required)
+ * @property {string} [location] - Optional location
  * @property {Coordinates} [coordinates] - Optional coordinates
  * @property {string[]} [serviceAreas] - Optional service areas
- * @property {string} [description] - Optional description
+ * @property {string} description - Service description (required for community context)
  * @property {string[]} [services] - Optional services list
  * @property {string} [yearsInBusiness] - Optional years in business
  * @property {string} [website] - Optional website
@@ -153,13 +141,30 @@
  *   name: "Shafiek Anthony",
  *   phone: "0733627226",
  *   category: "Garage Doors & Gates",
+ *   description: "Professional garage door installation and repair with 5+ years experience",
+ *   // Optional fields:
  *   location: "Bonteheuwel, Western Cape",
  *   coordinates: {
  *     lat: -33.9249,
  *     lng: 18.4241
  *   },
  *   serviceAreas: ["Bonteheuwel", "Western Cape"],
- *   description: "Professional garage door services"
+ *   website: "https://example.com"
+ * }
+ */
+
+/**
+ * @typedef {Object} ContractorQuickAddData
+ * @property {string} name - Contractor name (required)
+ * @property {string} phone - Phone number (required)
+ * @property {string} category - Service category (required)
+ * @property {string} description - Service description (required)
+ * @example
+ * {
+ *   name: "Shafiek Anthony",
+ *   phone: "0733627226",
+ *   category: "Garage Doors & Gates",
+ *   description: "Professional garage door installation and repair services"
  * }
  */
 
@@ -181,6 +186,7 @@
  * @example
  * {
  *   phone: "0733627227",
+ *   description: "Professional garage door services with emergency repair available",
  *   serviceAreas: ["Bonteheuwel", "Western Cape", "Cape Town"],
  *   isVerified: true
  * }
@@ -196,11 +202,8 @@
  *     name: "Shafiek Anthony",
  *     phone: "0733627226",
  *     category: "Garage Doors & Gates",
- *     // ... full contractor data (without reviews array)
- *   },
- *   "a1b2c3d4-1234-5678-9012-abcdef123456": {
- *     name: "Another Contractor",
- *     // ... full contractor data (without reviews array)
+ *     description: "Professional garage door services",
+ *     // ... full contractor data
  *   }
  * }
  */
@@ -214,6 +217,7 @@
  *   contractor: {
  *     id: "f47ac10b-58cc-4372-a567-0e02b2c3d479",
  *     name: "Shafiek Anthony",
+ *     description: "Professional garage door services",
  *     // ... contractor data
  *   },
  *   reviews: [
@@ -222,7 +226,7 @@
  *       contractor_id: "f47ac10b-58cc-4372-a567-0e02b2c3d479",
  *       date: "2025-11-21T14:11:02.357Z",
  *       rating: 4,
- *       comment: "Great mechanic.",
+ *       comment: "Great service, fixed my garage door quickly.",
  *       // ... review data
  *     }
  *   ]
@@ -246,6 +250,7 @@
  *       rating: 4.5,
  *       reviewCount: 12,
  *       category: "Garage Doors & Gates",
+ *       description: "Professional garage door installation and repair",
  *       location: "Bonteheuwel, Western Cape"
  *     }
  *   ],

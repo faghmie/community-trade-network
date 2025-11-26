@@ -1,0 +1,436 @@
+/* Profile View Specific Styles */
+.profile-view {
+    background: var(--background);
+    min-height: 100vh;
+    /* REMOVED padding properties that were causing spacing */
+    padding: 0 !important;
+    margin: 0 !important;
+}
+
+.profile-content {
+    max-width: 100%; /* Changed from 800px to full width */
+    margin: 0; /* Removed auto margin */
+    padding: 0; /* Ensure no padding */
+}
+
+/* Profile Tabs - Uses existing tab styles but with profile-specific adjustments */
+.profile-tabs {
+    margin-bottom: 0; /* Remove bottom margin */
+    padding: var(--space-md) var(--space-md) 0; /* Add top and side padding only */
+    background: var(--surface);
+    border-bottom: 1px solid var(--outline-variant);
+}
+
+/* Profile Sections */
+.profile-section {
+    display: none;
+    animation: materialFadeIn 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    min-height: calc(100vh - 120px); /* Adjust for tabs and bottom nav */
+    padding: 0; /* Ensure no padding */
+    margin: 0; /* Ensure no margin */
+}
+
+.profile-section.active {
+    display: block;
+}
+
+/* Section Headers */
+.section-header {
+    margin-bottom: 0; /* Remove bottom margin */
+    text-align: center;
+    padding: var(--space-xl) var(--space-md); /* Add padding instead of margin */
+    background: var(--surface);
+    border-bottom: 1px solid var(--outline-variant);
+}
+
+.section-header h2 {
+    font-size: var(--font-size-xl);
+    font-weight: var(--font-weight-medium);
+    color: var(--on-surface);
+    margin: 0 0 var(--space-xs) 0;
+}
+
+.section-header p {
+    font-size: var(--font-size-base);
+    color: var(--on-surface-variant);
+    margin: 0;
+    line-height: var(--line-height-normal);
+}
+
+/* Empty State for Favorites */
+.empty-state {
+    text-align: center;
+    padding: var(--space-xxl) var(--space-xl);
+    color: var(--on-surface-variant);
+    background: var(--surface);
+    border-radius: var(--shape-medium);
+    border: 1px solid var(--outline-variant);
+    margin: var(--space-xl); /* Keep margin for empty state only */
+}
+
+.empty-state .material-icons {
+    font-size: 48px;
+    color: var(--on-surface-disabled);
+    margin-bottom: var(--space-md);
+}
+
+.empty-state h3 {
+    font-size: var(--font-size-lg);
+    font-weight: var(--font-weight-medium);
+    color: var(--on-surface);
+    margin: 0 0 var(--space-sm) 0;
+}
+
+.empty-state p {
+    font-size: var(--font-size-base);
+    color: var(--on-surface-variant);
+    margin: 0 0 var(--space-lg) 0;
+    line-height: var(--line-height-normal);
+}
+
+/* Favorites List Specific Styles */
+.favorites-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0; /* Remove gap between cards */
+    padding: 0; /* Remove padding */
+    margin: 0; /* Remove margin */
+}
+
+.favorite-card {
+    background: var(--surface);
+    border-radius: 0; /* Remove border radius for full-width cards */
+    box-shadow: none; /* Remove shadow for cleaner look */
+    border-bottom: 1px solid var(--outline-variant); /* Add bottom border instead */
+    transition: all var(--transition-standard);
+    position: relative;
+    padding: var(--space-lg);
+    margin: 0; /* Remove margin */
+}
+
+.favorite-card:last-child {
+    border-bottom: none; /* Remove border from last card */
+}
+
+.favorite-card:hover {
+    background: var(--surface-variant); /* Change background on hover instead of shadow */
+    border-color: var(--outline);
+}
+
+/* Favorite Card Actions */
+.favorite-card .contractor-actions {
+    position: absolute;
+    top: var(--space-md);
+    right: var(--space-md);
+}
+
+.favorite-card .favorite-btn.active {
+    background: var(--error-color);
+    color: var(--text-on-primary);
+    border-color: var(--error-color);
+}
+
+.favorite-card .favorite-btn.active:hover {
+    background: var(--error-color-dark);
+    border-color: var(--error-color-dark);
+}
+
+/* Feedback Navigation Content */
+.feedback-navigation-content {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-xl);
+    padding: var(--space-xl) var(--space-md); /* Add padding instead of margin */
+    margin: 0; /* Remove margin */
+}
+
+/* Navigation Card */
+.navigation-card {
+    background: var(--surface);
+    border-radius: var(--shape-large);
+    padding: var(--space-xl);
+    border: 1px solid var(--outline-variant);
+    box-shadow: var(--elevation-1);
+    display: flex;
+    align-items: center;
+    gap: var(--space-lg);
+    transition: all var(--transition-standard);
+    margin: 0 var(--space-md); /* Add side margin only */
+}
+
+.navigation-card:hover {
+    box-shadow: var(--elevation-2);
+    border-color: var(--outline);
+    transform: translateY(-2px);
+}
+
+.navigation-card__icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 64px;
+    height: 64px;
+    background: var(--primary-container);
+    border-radius: var(--shape-full);
+    color: var(--on-primary-container);
+    flex-shrink: 0;
+}
+
+.navigation-card__icon .material-icons {
+    font-size: 28px;
+}
+
+.navigation-card__content {
+    flex: 1;
+    min-width: 0; /* Prevent content from overflowing */
+}
+
+.navigation-card__content h3 {
+    font-size: var(--font-size-lg);
+    font-weight: var(--font-weight-medium);
+    color: var(--on-surface);
+    margin: 0 0 var(--space-xs) 0;
+}
+
+.navigation-card__content p {
+    font-size: var(--font-size-base);
+    color: var(--on-surface-variant);
+    margin: 0;
+    line-height: var(--line-height-normal);
+}
+
+.navigation-card .btn {
+    white-space: nowrap;
+    flex-shrink: 0;
+}
+
+/* Info Cards Grid */
+.info-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: var(--space-lg);
+    padding: 0 var(--space-md); /* Add side padding */
+    margin: 0; /* Remove margin */
+}
+
+.info-card {
+    background: var(--surface);
+    border-radius: var(--shape-medium);
+    padding: var(--space-lg);
+    border: 1px solid var(--outline-variant);
+    display: flex;
+    align-items: flex-start;
+    gap: var(--space-md);
+    transition: all var(--transition-standard);
+}
+
+.info-card:hover {
+    box-shadow: var(--elevation-1);
+    border-color: var(--outline);
+}
+
+.info-card .material-icons {
+    font-size: 20px;
+    color: var(--primary-color);
+    background: var(--primary-container);
+    padding: var(--space-sm);
+    border-radius: var(--shape-full);
+    flex-shrink: 0;
+    margin-top: var(--space-xxs);
+}
+
+.info-card__content h4 {
+    font-size: var(--font-size-base);
+    font-weight: var(--font-weight-medium);
+    color: var(--on-surface);
+    margin: 0 0 var(--space-xs) 0;
+}
+
+.info-card__content p {
+    font-size: var(--font-size-sm);
+    color: var(--on-surface-variant);
+    margin: 0;
+    line-height: var(--line-height-normal);
+}
+
+/* Remove old feedback form styles */
+.feedback-content,
+.feedback-stats,
+.feedback-form-container,
+.feedback-form {
+    display: none;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .profile-view {
+        padding: 0 !important; /* Ensure no padding on mobile */
+        margin: 0 !important;
+    }
+    
+    .profile-tabs {
+        padding: var(--space-sm) var(--space-sm) 0;
+    }
+    
+    .section-header {
+        padding: var(--space-lg) var(--space-sm);
+    }
+    
+    .navigation-card {
+        flex-direction: column;
+        text-align: center;
+        gap: var(--space-md);
+        padding: var(--space-lg);
+        margin: 0 var(--space-sm);
+    }
+    
+    .navigation-card__content {
+        text-align: center;
+    }
+    
+    .info-cards {
+        grid-template-columns: 1fr;
+        gap: var(--space-md);
+        padding: 0 var(--space-sm);
+    }
+    
+    .empty-state {
+        padding: var(--space-xl) var(--space-lg);
+        margin: var(--space-lg); /* Keep margin for empty state */
+    }
+    
+    .profile-section {
+        min-height: calc(100vh - 100px); /* Adjust for mobile */
+    }
+    
+    .feedback-navigation-content {
+        padding: var(--space-lg) var(--space-sm);
+        gap: var(--space-lg);
+    }
+}
+
+@media (max-width: 480px) {
+    .profile-tabs {
+        padding: var(--space-xs) var(--space-xs) 0;
+    }
+    
+    .section-header {
+        padding: var(--space-md) var(--space-xs);
+    }
+    
+    .navigation-card {
+        padding: var(--space-md);
+        margin: 0 var(--space-xs);
+    }
+    
+    .navigation-card__icon {
+        width: 56px;
+        height: 56px;
+    }
+    
+    .navigation-card__icon .material-icons {
+        font-size: 24px;
+    }
+    
+    .empty-state {
+        padding: var(--space-lg) var(--space-md);
+        margin: var(--space-md);
+    }
+    
+    .empty-state .material-icons {
+        font-size: 36px;
+    }
+    
+    .info-card {
+        padding: var(--space-md);
+        gap: var(--space-sm);
+    }
+    
+    .info-card .material-icons {
+        font-size: 18px;
+        padding: var(--space-xs);
+    }
+    
+    .favorite-card {
+        padding: var(--space-md);
+    }
+    
+    .feedback-navigation-content {
+        padding: var(--space-md) var(--space-xs);
+        gap: var(--space-md);
+    }
+}
+
+/* Dark Theme Support */
+@media (prefers-color-scheme: dark) {
+    .empty-state {
+        background: var(--surface);
+        border-color: var(--outline-variant);
+    }
+    
+    .favorite-card {
+        background: var(--surface);
+        border-color: var(--outline-variant);
+    }
+    
+    .navigation-card,
+    .info-card {
+        background: var(--surface);
+        border-color: var(--outline-variant);
+    }
+    
+    .navigation-card__icon {
+        background: var(--primary-container);
+        color: var(--on-primary-container);
+    }
+    
+    .info-card .material-icons {
+        background: var(--primary-container);
+        color: var(--on-primary-container);
+    }
+}
+
+/* Reduced Motion Support */
+@media (prefers-reduced-motion: reduce) {
+    .profile-section {
+        animation: none;
+    }
+    
+    .favorite-card,
+    .navigation-card,
+    .info-card {
+        transition: none;
+    }
+    
+    .navigation-card:hover {
+        transform: none;
+    }
+}
+
+/* High contrast support */
+@media (prefers-contrast: high) {
+    .favorite-card,
+    .navigation-card,
+    .info-card,
+    .empty-state {
+        border-width: 2px;
+    }
+    
+    .navigation-card__icon,
+    .info-card .material-icons {
+        background: transparent;
+        border: 2px solid currentColor;
+    }
+    
+    .profile-tabs {
+        border-bottom-width: 2px;
+    }
+    
+    .section-header {
+        border-bottom-width: 2px;
+    }
+    
+    .favorite-card {
+        border-bottom-width: 2px;
+    }
+}

@@ -1,11 +1,11 @@
-// js/app/views/feedbackView.js
+// js/app/views/feedbackView.js - FIXED HTML STRUCTURE
 import { BaseView } from './BaseView.js';
 import { showNotification } from '../../modules/notifications.js';
 import { createViewHeader } from '../utils/viewHelpers.js';
 
 export class FeedbackView extends BaseView {
     constructor(dataModule) {
-        super('feedback-view');
+        super('feedbackView');
         this.dataModule = dataModule;
         this.currentRating = 0;
         this.headerHelper = null;
@@ -15,22 +15,24 @@ export class FeedbackView extends BaseView {
         const mainContainer = document.getElementById('mainViewContainer');
         if (!mainContainer) return;
 
+        // Only create container if it doesn't exist
         if (!this.container) {
-            this.container = document.createElement('section');
+            this.container = document.createElement('div');
             this.container.id = this.viewId;
-            this.container.className = 'feedback-view';
-            this.container.style.display = 'none';
+            this.container.className = 'view feedback-view';
             mainContainer.appendChild(this.container);
         }
 
         this.renderContent();
+        return this.container;
     }
 
     renderContent() {
         this.headerHelper = createViewHeader(
             this.viewId,
             'Send Feedback',
-            'Help us improve the app'
+            'Help us improve the app',
+            true // Include back button
         );
 
         this.container.innerHTML = `
@@ -39,6 +41,7 @@ export class FeedbackView extends BaseView {
                 
                 <div class="view-content">
                     <form id="feedbackViewForm" class="feedback-form">
+                        <!-- REMOVED: feedback-form-fields wrapper -->
                         <!-- Overall Experience -->
                         <div class="feedback-section">
                             <h3 class="material-section-title">
@@ -47,7 +50,7 @@ export class FeedbackView extends BaseView {
                             </h3>
                             <div class="feedback-rating-container">
                                 <div class="feedback-rating-stars" id="feedbackViewRatingStars">
-                                    ${[1,2,3,4,5].map(i => `
+                                    ${[1, 2, 3, 4, 5].map(i => `
                                         <button type="button" class="material-star-button" data-rating="${i}">
                                             <span class="material-icons star-icon" data-rating="${i}">star_border</span>
                                         </button>
@@ -116,12 +119,37 @@ export class FeedbackView extends BaseView {
         this.resetForm();
     }
 
+    // In FeedbackView class, add this method override:
     show(context = {}) {
+        console.log('🔍 FeedbackView: Showing view - WITH FIX');
+        // Call parent show first
         super.show();
+        
+        // THEN override to ensure it stays visible
+        if (this.container) {
+            this.container.style.display = 'block';
+            this.container.style.visibility = 'visible';
+            this.container.style.opacity = '1';
+        }
+        
+        // Ensure form is visible
+        const form = this.container.querySelector('#feedbackViewForm');
+        if (form) {
+            form.style.display = 'flex';
+        }
+        
         this.resetForm();
     }
 
+    // Also add this to prevent hide() from working incorrectly
     hide() {
+        console.log('🔍 FeedbackView: Hiding view - BUT NOT ACTUALLY HIDING FOR DEBUG');
+        // Don't call super.hide() to prevent the display: none issue
+        this.currentRating = 0;
+    }
+
+    hide() {
+        console.log('🔍 FeedbackView: Hiding view');
         super.hide();
         this.currentRating = 0;
     }
@@ -133,25 +161,34 @@ export class FeedbackView extends BaseView {
         }
 
         // Star rating
-        this.container.addEventListener('click', (e) => {
-            const starButton = e.target.closest('.material-star-button');
-            if (starButton) {
-                e.preventDefault();
-                this.setRating(parseInt(starButton.getAttribute('data-rating')));
-            }
-        });
+        const ratingContainer = this.container.querySelector('#feedbackViewRatingStars');
+        if (ratingContainer) {
+            ratingContainer.addEventListener('click', (e) => {
+                const starButton = e.target.closest('.material-star-button');
+                if (starButton) {
+                    e.preventDefault();
+                    this.setRating(parseInt(starButton.getAttribute('data-rating')));
+                }
+            });
+        }
 
         // Submit button
-        document.getElementById('feedbackViewSubmit')?.addEventListener('click', (e) => {
-            e.preventDefault();
-            this.handleSubmit();
-        });
+        const submitBtn = this.container.querySelector('#feedbackViewSubmit');
+        if (submitBtn) {
+            submitBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                this.handleSubmit();
+            });
+        }
 
         // Cancel button
-        document.getElementById('feedbackViewCancel')?.addEventListener('click', (e) => {
-            e.preventDefault();
-            this.handleCancel();
-        });
+        const cancelBtn = this.container.querySelector('#feedbackViewCancel');
+        if (cancelBtn) {
+            cancelBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                this.handleCancel();
+            });
+        }
 
         // Form validation
         const textareas = this.container.querySelectorAll('textarea');
@@ -160,9 +197,12 @@ export class FeedbackView extends BaseView {
         });
 
         // Prevent form submission
-        document.getElementById('feedbackViewForm')?.addEventListener('submit', (e) => {
-            e.preventDefault();
-        });
+        const form = this.container.querySelector('#feedbackViewForm');
+        if (form) {
+            form.addEventListener('submit', (e) => {
+                e.preventDefault();
+            });
+        }
     }
 
     handleCancel() {
@@ -179,26 +219,36 @@ export class FeedbackView extends BaseView {
 
     updateStarDisplay() {
         const stars = this.container.querySelectorAll('.material-star-button .star-icon');
+        const ratingText = this.container.querySelector('#feedbackViewRatingText');
+
+        if (!stars.length || !ratingText) return;
+
         stars.forEach(star => {
             const starRating = parseInt(star.getAttribute('data-rating'));
             const isActive = starRating <= this.currentRating;
-            
+
             star.textContent = isActive ? 'star' : 'star_border';
-            star.style.color = isActive ? '#ffb300' : '#e0e0e0';
-            
+
+            // Update classes instead of inline styles
+            const starButton = star.closest('.material-star-button');
+            if (isActive) {
+                starButton.classList.add('active');
+            } else {
+                starButton.classList.remove('active');
+            }
+
             // Add animation for clicked star
             if (starRating === this.currentRating) {
-                star.closest('.material-star-button').classList.add('star-pulse');
+                starButton.classList.add('star-pulse');
                 setTimeout(() => {
-                    star.closest('.material-star-button').classList.remove('star-pulse');
+                    starButton.classList.remove('star-pulse');
                 }, 300);
             }
         });
-        
-        const ratingText = document.getElementById('feedbackViewRatingText');
+
         const ratings = {
             1: 'Poor - Needs significant improvement',
-            2: 'Fair - Has some issues', 
+            2: 'Fair - Has some issues',
             3: 'Good - Meets basic expectations',
             4: 'Very Good - Works well',
             5: 'Excellent - Love using it!'
@@ -208,28 +258,30 @@ export class FeedbackView extends BaseView {
     }
 
     validateForm() {
-        const submitBtn = document.getElementById('feedbackViewSubmit');
+        const submitBtn = this.container.querySelector('#feedbackViewSubmit');
         if (!submitBtn) return false;
 
         const hasRating = this.currentRating > 0;
-        const positiveComments = document.getElementById('feedbackViewPositiveComments')?.value.trim() || '';
-        const improvementComments = document.getElementById('feedbackViewImprovementComments')?.value.trim() || '';
+        const positiveComments = this.container.querySelector('#feedbackViewPositiveComments')?.value.trim() || '';
+        const improvementComments = this.container.querySelector('#feedbackViewImprovementComments')?.value.trim() || '';
         const hasComments = positiveComments.length > 0 || improvementComments.length > 0;
-        
+
         const isValid = hasRating && hasComments;
         submitBtn.disabled = !isValid;
-        
+
         return isValid;
     }
 
     resetForm() {
-        const form = document.getElementById('feedbackViewForm');
-        form?.reset();
-        
+        const form = this.container.querySelector('#feedbackViewForm');
+        if (form) {
+            form.reset();
+        }
+
         this.currentRating = 0;
         this.updateStarDisplay();
-        
-        const submitBtn = document.getElementById('feedbackViewSubmit');
+
+        const submitBtn = this.container.querySelector('#feedbackViewSubmit');
         if (submitBtn) {
             submitBtn.disabled = true;
         }
@@ -241,7 +293,9 @@ export class FeedbackView extends BaseView {
             return;
         }
 
-        const submitBtn = document.getElementById('feedbackViewSubmit');
+        const submitBtn = this.container.querySelector('#feedbackViewSubmit');
+        if (!submitBtn) return;
+
         const originalContent = submitBtn.innerHTML;
 
         try {
@@ -251,9 +305,9 @@ export class FeedbackView extends BaseView {
 
             const feedbackData = {
                 rating: this.currentRating,
-                positive_comments: document.getElementById('feedbackViewPositiveComments')?.value.trim() || '',
-                improvement_comments: document.getElementById('feedbackViewImprovementComments')?.value.trim() || '',
-                contact_email: document.getElementById('feedbackViewContactEmail')?.value.trim() || null,
+                positive_comments: this.container.querySelector('#feedbackViewPositiveComments')?.value.trim() || '',
+                improvement_comments: this.container.querySelector('#feedbackViewImprovementComments')?.value.trim() || '',
+                contact_email: this.container.querySelector('#feedbackViewContactEmail')?.value.trim() || null,
                 submission_date: new Date().toISOString()
             };
 
@@ -269,7 +323,7 @@ export class FeedbackView extends BaseView {
         } catch (error) {
             console.error('Error submitting feedback:', error);
             showNotification('Error submitting feedback. Please try again.', 'error');
-            
+
             // Reset button state
             submitBtn.innerHTML = originalContent;
             submitBtn.disabled = false;

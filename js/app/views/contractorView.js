@@ -158,6 +158,8 @@ export class ContractorView extends BaseView {
         const hasCategoryRatings = Object.values(categoryAverages).some(rating => rating > 0);
 
         return `
+            ${contractor.description ? this.renderDescriptionSection(contractor.description) : ''}
+
             <div class="contact-section">
                 <h3 class="material-section-title">
                     <i class="material-icons">contact_page</i>Contact Information
@@ -170,11 +172,71 @@ export class ContractorView extends BaseView {
                 </div>
             </div>
 
+            ${contractor.services && contractor.services.length > 0 ? this.renderServicesSection(contractor.services) : ''}
+
+            ${contractor.yearsInBusiness ? this.renderExperienceSection(contractor.yearsInBusiness) : ''}
+
             ${this.currentTrustMetrics ? this.renderTrustMetricsSection() : ''}
 
             ${hasCategoryRatings ? this.renderRatingsSection(categoryAverages) : ''}
 
             ${this.renderRecommendationsSection(recommendations)}
+        `;
+    }
+
+    // NEW: Description section - placed at the top for prominence
+    renderDescriptionSection(description) {
+        return `
+            <div class="description-section">
+                <h3 class="material-section-title">
+                    <i class="material-icons">description</i>About This Provider
+                </h3>
+                <div class="material-card description-card">
+                    <div class="description-content">
+                        <p class="description-text">${sanitizeHtml(description)}</p>
+                    </div>
+                </div>
+            </div>
+        `;
+    }
+
+    // NEW: Services section
+    renderServicesSection(services) {
+        const servicesList = services.map(service => 
+            `<span class="service-chip material-chip">${sanitizeHtml(service)}</span>`
+        ).join('');
+
+        return `
+            <div class="services-section">
+                <h3 class="material-section-title">
+                    <i class="material-icons">build</i>Services Offered
+                </h3>
+                <div class="material-card services-card">
+                    <div class="services-chips">
+                        ${servicesList}
+                    </div>
+                </div>
+            </div>
+        `;
+    }
+
+    // NEW: Experience section
+    renderExperienceSection(yearsInBusiness) {
+        return `
+            <div class="experience-section">
+                <h3 class="material-section-title">
+                    <i class="material-icons">business</i>Experience
+                </h3>
+                <div class="material-card experience-card">
+                    <div class="experience-content">
+                        <i class="material-icons experience-icon">history</i>
+                        <div class="experience-details">
+                            <div class="experience-label">Years in Business</div>
+                            <div class="experience-value">${sanitizeHtml(yearsInBusiness)}</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
         `;
     }
 

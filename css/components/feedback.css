@@ -1,12 +1,40 @@
-/* Feedback System Styles - MINIMAL ADDITIONS ONLY */
-/* Leverages existing modal, material, ratings, and forms styles */
+/* Feedback System Styles - UPDATED WITH CONTRACTOR-DETAILS PATTERNS */
+/* Uses exact same patterns as working contractor-details.css */
 
-/* Feedback form specific layout */
+/* ===== FEEDBACK VIEW CONTAINER STYLES ===== */
+/* Using the exact same pattern as contractor-details.css */
+
+.feedback-view {
+    position: relative;
+    height: 100vh;
+    background: var(--surface-container);
+    overflow-y: auto;
+}
+
+.feedback-view-content {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    padding-bottom: 80px; /* Space for bottom navigation */
+}
+
+/* View content area for the form - EXACT SAME AS CONTRACTOR-DETAILS */
+.feedback-view .view-content {
+    flex: 1;
+    overflow-y: auto;
+    padding: var(--space-lg);
+    background: var(--surface-container);
+}
+
+/* ===== FEEDBACK FORM STYLES - USING CONTRACTOR-DETAILS PATTERNS ===== */
+
 .feedback-form {
     display: flex;
     flex-direction: column;
     gap: var(--space-xl);
-    padding: 0; /* Ensure no additional padding conflicts */
+    width: 100%;
+    max-width: none; /* CHANGED: Remove max-width constraint */
+    margin: 0; /* CHANGED: Remove auto margin */
 }
 
 .feedback-section {
@@ -15,237 +43,261 @@
     gap: var(--space-md);
 }
 
-/* Validation states for required fields */
-.feedback-section.validation-required .material-input-label::after {
-    content: " *";
-    color: var(--error-color);
+/* Section titles - USING CONTRACTOR-DETAILS PATTERN */
+.material-section-title {
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+    margin: 0;
+    padding: var(--space-xl) var(--space-xl) var(--space-lg); /* CHANGED: Add padding like contractor-details */
+    font-size: var(--font-size-lg);
+    font-weight: var(--font-weight-medium);
+    color: var(--text-primary); /* CHANGED: Use text-primary instead of on-surface */
+    background: var(--surface); /* CHANGED: Add background like contractor-details */
+    border-bottom: 1px solid var(--border-light); /* CHANGED: Add border like contractor-details */
 }
 
-.feedback-section.validation-required {
-    border-left: 3px solid var(--error-color);
-    padding-left: var(--space-sm);
-    margin-left: calc(-1 * var(--space-sm));
+.material-section-title .material-icons {
+    color: var(--primary-500); /* CHANGED: Use primary-500 instead of primary-color */
+    font-size: var(--font-size-lg); /* CHANGED: Use consistent size */
 }
 
-/* Feedback-specific rating stars (different from contractor ratings) */
+/* Form Content - USING CONTRACTOR-DETAILS PATTERN */
+.feedback-form-fields {
+    padding: var(--space-xl); /* NEW: Add padding container like contractor-details */
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-lg); /* CHANGED: Use same gap as contractor-details */
+}
+
+/* Material Form Groups - USING CONTRACTOR-DETAILS PATTERN */
+.feedback-form .material-form-group {
+    margin-bottom: 0; /* CHANGED: Ensure no margin bottom */
+}
+
+.feedback-form .material-input-label {
+    display: block; /* CHANGED: Use block instead of flex */
+    margin-bottom: var(--space-sm);
+    font-size: var(--font-size-sm);
+    font-weight: var(--font-weight-medium);
+    color: var(--text-primary); /* CHANGED: Use text-primary */
+    line-height: var(--line-height-tight);
+}
+
+.feedback-form .material-input-container,
+.feedback-form .material-textarea-container {
+    position: relative;
+    width: 100%;
+}
+
+.feedback-form .material-input,
+.feedback-form .material-textarea {
+    width: 100%;
+    padding: var(--space-md) 0; /* CHANGED: Use same padding as contractor-details */
+    border: none;
+    border-bottom: 1px solid var(--border-color); /* CHANGED: Use border-color */
+    background: transparent;
+    font-size: var(--font-size-base);
+    color: var(--text-primary);
+    transition: var(--material-transition);
+    outline: none;
+    font-family: inherit;
+}
+
+.feedback-form .material-input:focus,
+.feedback-form .material-textarea:focus {
+    border-bottom-color: var(--primary-500); /* CHANGED: Use primary-500 */
+}
+
+.feedback-form .material-textarea {
+    resize: vertical;
+    min-height: 100px;
+    line-height: var(--line-height-normal);
+}
+
+/* Input Help Text - USING CONTRACTOR-DETAILS PATTERN */
+.feedback-form .material-input-helper {
+    margin-top: var(--space-xs);
+    font-size: var(--font-size-xs);
+    color: var(--text-secondary);
+    line-height: var(--line-height-tight);
+}
+
+/* Rating container - UPDATED TO MATCH STYLE */
+.feedback-rating-container {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-md);
+    align-items: center;
+    padding: var(--space-lg);
+    background: var(--surface-container-low);
+    border-radius: var(--border-radius-md); /* CHANGED: Use consistent border radius */
+    border: 1px solid var(--border-light); /* CHANGED: Use border-light */
+}
+
+/* Feedback-specific rating stars */
 .feedback-rating-stars {
     display: flex;
     gap: var(--space-sm);
     justify-content: center;
-    padding: var(--space-md) 0;
+    padding: var(--space-sm) 0;
 }
 
-.star-rating-btn {
+.material-star-button {
     background: none;
     border: none;
-    padding: var(--space-xs);
+    padding: var(--space-xxs); /* CHANGED: Use same padding as contractor-details */
     cursor: pointer;
-    border-radius: 50%;
+    border-radius: var(--border-radius-full); /* CHANGED: Use consistent border radius */
     transition: var(--material-transition);
     display: flex;
     align-items: center;
     justify-content: center;
 }
 
-.star-rating-btn:hover {
-    background-color: var(--surface-container-highest);
+.material-star-button:hover {
+    background: var(--surface-container-hover); /* CHANGED: Use consistent hover color */
 }
 
-.star-rating-btn:focus {
-    outline: 2px solid var(--primary-color);
-    outline-offset: 2px;
-}
-
-.star-icon {
-    font-size: 2.25rem;
-    color: var(--surface-400);
+.material-star-button .star-icon {
+    font-size: 24px; /* CHANGED: Use consistent size */
+    width: 24px;
+    height: 24px;
+    color: var(--text-disabled); /* CHANGED: Use text-disabled */
     transition: var(--material-transition);
-    line-height: 1;
 }
 
-.star-rating-btn:hover .star-icon {
-    color: var(--primary-container);
+.material-star-button.active .star-icon,
+.material-star-button:hover .star-icon {
+    color: var(--warning-500); /* CHANGED: Use warning-500 */
+}
+
+.material-star-button.star-pulse .star-icon {
+    animation: star-pulse 0.3s ease-in-out;
+}
+
+@keyframes star-pulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.2); }
+    100% { transform: scale(1); }
 }
 
 /* Rating text display */
 .rating-text {
     text-align: center;
-    font-size: var(--font-size-sm);
-    color: var(--on-surface-variant);
+    font-size: var(--font-size-base);
+    color: var(--text-secondary); /* CHANGED: Use text-secondary */
     font-weight: var(--font-weight-medium);
     min-height: 1.5em;
-}
-
-/* EMPTY STATE STYLES - For "Add Supplier" functionality */
-.empty-state {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    padding: var(--space-3xl) var(--space-lg);
-    text-align: center;
-    max-width: 400px;
-    margin: 0 auto;
-}
-
-.empty-state-content {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: var(--space-lg);
-    width: 100%;
-}
-
-.empty-state-icon {
-    font-size: 4rem;
-    color: var(--surface-400);
-    margin-bottom: var(--space-md);
-}
-
-.empty-state-title {
-    font-size: var(--font-size-xl);
-    font-weight: var(--font-weight-bold);
-    color: var(--on-surface);
-    margin: 0;
-    line-height: var(--line-height-tight);
-}
-
-.empty-state-description {
-    font-size: var(--font-size-md);
-    color: var(--on-surface-variant);
-    margin: 0;
-    line-height: var(--line-height-normal);
-}
-
-.empty-state-hint {
-    font-size: var(--font-size-sm);
-    color: var(--surface-600);
-    margin: 0;
-    line-height: var(--line-height-normal);
-    font-style: italic;
-}
-
-.add-supplier-btn {
-    display: flex;
-    align-items: center;
-    gap: var(--space-sm);
-    padding: var(--space-md) var(--space-xl);
-    font-size: var(--font-size-md);
-    font-weight: var(--font-weight-medium);
-    border-radius: var(--border-radius-xl);
     transition: var(--material-transition);
-    min-width: 200px;
-    justify-content: center;
 }
 
-.add-supplier-btn .btn-icon {
-    font-size: 1.25em;
-    line-height: 1;
+.rating-text.has-rating {
+    color: var(--primary-600); /* CHANGED: Use primary-600 */
+    font-weight: var(--font-weight-medium);
 }
 
-.add-supplier-btn:hover {
-    transform: translateY(-2px);
-    box-shadow: var(--shadow-medium);
+/* Form actions - USING CONTRACTOR-DETAILS PATTERN */
+.form-actions {
+    position: sticky;
+    bottom: 0;
+    background: var(--surface);
+    border-top: 1px solid var(--border-light);
+    padding: var(--space-lg);
+    display: flex;
+    justify-content: flex-end;
+    gap: var(--space-md);
 }
 
-.add-supplier-btn:active {
-    transform: translateY(0);
+/* ===== RESPONSIVE DESIGN - USING CONTRACTOR-DETAILS PATTERNS ===== */
+
+@media (max-width: 768px) {
+    .feedback-view .view-content {
+        padding: var(--space-md);
+    }
+    
+    .feedback-form {
+        gap: var(--space-lg);
+    }
+    
+    .feedback-form-fields {
+        padding: var(--space-lg);
+        gap: var(--space-md);
+    }
+    
+    .material-section-title {
+        padding: var(--space-lg) var(--space-lg) var(--space-md);
+    }
+    
+    .feedback-rating-container {
+        padding: var(--space-md);
+    }
+    
+    .form-actions {
+        padding: var(--space-md);
+    }
 }
 
-/* Responsive design for feedback modal */
-@media (max-width: 600px) {
-    .feedback-modal .modal-content {
-        margin: 0;
-        max-height: 100vh;
-        height: 100vh;
-        max-width: none;
-        border-radius: 0;
+@media (max-width: 480px) {
+    .feedback-view .view-content {
+        padding: var(--space-sm);
     }
-
-    .star-icon {
-        font-size: 1.875rem;
+    
+    .feedback-form-fields {
+        padding: var(--space-lg);
+        gap: var(--space-md);
     }
-
-    /* Mobile empty state adjustments */
-    .empty-state {
-        padding: var(--space-2xl) var(--space-md);
-        min-height: 60vh;
-        justify-content: center;
+    
+    .material-section-title {
+        padding: var(--space-md) var(--space-lg) var(--space-sm);
     }
-
-    .empty-state-icon {
-        font-size: 3rem;
+    
+    .form-actions {
+        flex-direction: column;
+        gap: var(--space-sm);
     }
-
-    .empty-state-title {
-        font-size: var(--font-size-lg);
-    }
-
-    .empty-state-description {
-        font-size: var(--font-size-sm);
-    }
-
-    .add-supplier-btn {
+    
+    .form-actions .mdc-button {
         width: 100%;
-        max-width: 280px;
+        margin: 0;
     }
 }
 
-/* Tablet and desktop empty state adjustments */
-@media (min-width: 601px) and (max-width: 1024px) {
-    .empty-state {
-        padding: var(--space-3xl) var(--space-xl);
-    }
-}
+/* ===== REMOVE ALL THE OVERRIDE HACKS - NO LONGER NEEDED ===== */
+/* The proper contractor-details patterns should work without !important overrides */
+
+/* ===== ACCESSIBILITY & THEME SUPPORT ===== */
 
 /* High contrast mode support */
 @media (prefers-contrast: high) {
     .star-icon {
         text-stroke: 1px var(--on-surface);
     }
-    
-    .feedback-section.validation-required {
-        border-left: 3px solid var(--error-color);
-        background-color: var(--error-50);
-    }
-
-    .empty-state-icon {
-        filter: contrast(1.5);
-    }
-
-    .empty-state-hint {
-        color: var(--on-surface);
-    }
 }
 
 /* Reduced motion support */
 @media (prefers-reduced-motion: reduce) {
-    .star-rating-btn {
+    .material-star-button {
         transition: none;
     }
-
-    .add-supplier-btn {
-        transition: none;
-    }
-
-    .add-supplier-btn:hover {
-        transform: none;
+    
+    .star-pulse {
+        animation: none;
     }
 }
 
-/* Dark theme adjustments for empty state */
-@media (prefers-color-scheme: dark) {
-    .empty-state-icon {
-        color: var(--surface-500);
-    }
-
-    .empty-state-hint {
-        color: var(--surface-500);
-    }
+/* Button styling compatibility */
+.feedback-form .mdc-button {
+    min-height: 48px;
+    border-radius: var(--shape-medium);
 }
 
-/* Focus styles for accessibility */
-.add-supplier-btn:focus-visible {
-    outline: 2px solid var(--primary-color);
-    outline-offset: 2px;
+.feedback-form .mdc-button--raised {
+    background-color: var(--primary-color);
+    color: var(--on-primary);
+}
+
+.feedback-form .mdc-button--outlined {
+    border-color: var(--outline);
+    color: var(--primary-color);
 }

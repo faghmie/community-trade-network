@@ -1,6 +1,6 @@
 /**
  * Admin Authentication Module
- * Handles login, logout, session management, and authentication state
+ * Self-contained login, logout, session management, and authentication state
  */
 import AuthManager from './auth.js';
 
@@ -9,26 +9,30 @@ class AdminAuthModule {
         this.authManager = null;
         this.sessionInterval = null;
         this.adminModule = null;
+        this.initialized = false;
     }
 
-    init(adminModule) {
+    async init(adminModule) {
+        if (this.initialized) return;
+
         this.adminModule = adminModule;
-        return this.initializeAuthentication();
+        try {
+            await this.initializeAuthentication();
+            this.initialized = true;
+        } catch (error) {
+            console.error('Error initializing admin auth module:', error);
+            throw error;
+        }
     }
 
     async initializeAuthentication() {
         try {
-            // AuthManager is imported as ES6 module
             this.authManager = new AuthManager();
-
-            // Create login section if it doesn't exist
             this.createLoginSection();
 
-            // Check authentication status
             if (this.authManager.isLoggedIn()) {
                 await this.adminModule.showAdminContent();
                 this.startSessionMonitoring();
-                // FIXED: Bind logout event when user is logged in
                 this.bindLogoutEvent();
                 return true;
             } else {
@@ -46,10 +50,7 @@ class AdminAuthModule {
     }
 
     createLoginSection() {
-        // Check if login section already exists
-        if (document.getElementById('loginSection')) {
-            return;
-        }
+        if (document.getElementById('loginSection')) return;
 
         const loginHTML = `
             <div id="loginSection" class="auth-container">
@@ -74,7 +75,7 @@ class AdminAuthModule {
                                 autocomplete="current-password" required>
                         </div>
 
-                        <button type="submit" class="material-button contained" id="loginButton">
+                        <button type="submit" class="btn btn-contained" id="loginButton">
                             <span id="loginButtonText">Login</span>
                             <span id="loginSpinner" class="auth-loading" style="display: none;"></span>
                         </button>
@@ -83,7 +84,6 @@ class AdminAuthModule {
             </div>
         `;
 
-        // Insert login section at the beginning of the body
         document.body.insertAdjacentHTML('afterbegin', loginHTML);
     }
 
@@ -96,9 +96,7 @@ class AdminAuthModule {
 
     hideLoginForm() {
         const loginSection = document.getElementById('loginSection');
-        if (loginSection) {
-            loginSection.style.display = 'none';
-        }
+        if (loginSection) loginSection.style.display = 'none';
     }
 
     updateUserInfo() {
@@ -109,12 +107,9 @@ class AdminAuthModule {
             const usernameDisplay = document.getElementById('usernameDisplay');
             const userAvatar = document.getElementById('userAvatar');
             
-            if (usernameDisplay) {
-                usernameDisplay.textContent = user.username;
-            }
-            if (userAvatar) {
-                userAvatar.textContent = user.username.charAt(0).toUpperCase();
-            }
+            if (usernameDisplay) usernameDisplay.textContent = user.username;
+            if (userAvatar) userAvatar.textContent = user.username.charAt(0).toUpperCase();
+            
             this.updateSessionInfo();
         }
     }
@@ -123,51 +118,48 @@ class AdminAuthModule {
         if (!this.authManager) return;
         
         const expiry = this.authManager.getSessionExpiry();
-        if (expiry) {
-            const now = new Date().getTime();
-            const timeLeft = expiry - now;
-            
-            if (timeLeft <= 0) {
-                this.handleSessionExpired();
-                return;
+        if (!expiry) return;
+
+        const now = new Date().getTime();
+        const timeLeft = expiry - now;
+        
+        if (timeLeft <= 0) {
+            this.handleSessionExpired();
+            return;
+        }
+        
+        const hoursLeft = Math.floor(timeLeft / (1000 * 60 * 60));
+        const minutesLeft = Math.floor((timeLeft % (1000 * 60 * 60)) / (1000 * 60));
+        const secondsLeft = Math.floor((timeLeft % (1000 * 60)) / 1000);
+        
+        const sessionInfo = document.getElementById('sessionInfo');
+        if (sessionInfo) {
+            if (hoursLeft > 0) {
+                sessionInfo.textContent = `Session: ${hoursLeft}h ${minutesLeft}m ${secondsLeft}s`;
+            } else if (minutesLeft > 0) {
+                sessionInfo.textContent = `Session: ${minutesLeft}m ${secondsLeft}s`;
+            } else {
+                sessionInfo.textContent = `Session: ${secondsLeft}s`;
             }
-            
-            const hoursLeft = Math.floor(timeLeft / (1000 * 60 * 60));
-            const minutesLeft = Math.floor((timeLeft % (1000 * 60 * 60)) / (1000 * 60));
-            const secondsLeft = Math.floor((timeLeft % (1000 * 60)) / 1000);
-            
-            const sessionInfo = document.getElementById('sessionInfo');
-            if (sessionInfo) {
-                if (hoursLeft > 0) {
-                    sessionInfo.textContent = `Session: ${hoursLeft}h ${minutesLeft}m ${secondsLeft}s`;
-                } else if (minutesLeft > 0) {
-                    sessionInfo.textContent = `Session: ${minutesLeft}m ${secondsLeft}s`;
-                } else {
-                    sessionInfo.textContent = `Session: ${secondsLeft}s`;
+        }
+        
+        // Show warning if session expiring soon (less than 5 minutes)
+        const sessionWarning = document.getElementById('sessionWarning');
+        if (sessionWarning) {
+            if (timeLeft < 5 * 60 * 1000) {
+                sessionWarning.style.display = 'block';
+                if (timeLeft < 60 * 1000) {
+                    sessionWarning.style.animation = 'pulse 1s infinite';
                 }
-            }
-            
-            // Show warning if session expiring soon (less than 5 minutes)
-            const sessionWarning = document.getElementById('sessionWarning');
-            if (sessionWarning) {
-                if (timeLeft < 5 * 60 * 1000) {
-                    sessionWarning.style.display = 'block';
-                    if (timeLeft < 60 * 1000) {
-                        sessionWarning.style.animation = 'pulse 1s infinite';
-                    }
-                } else {
-                    sessionWarning.style.display = 'none';
-                }
+            } else {
+                sessionWarning.style.display = 'none';
             }
         }
     }
 
     startSessionMonitoring() {
         if (!this.authManager) return;
-        
-        this.sessionInterval = setInterval(() => {
-            this.updateSessionInfo();
-        }, 1000);
+        this.sessionInterval = setInterval(() => this.updateSessionInfo(), 1000);
     }
 
     stopSessionMonitoring() {
@@ -185,8 +177,6 @@ class AdminAuthModule {
 
     bindAuthEvents() {
         const loginForm = document.getElementById('loginForm');
-        const passwordField = document.getElementById('password');
-
         if (loginForm) {
             loginForm.addEventListener('submit', async (e) => {
                 e.preventDefault();
@@ -194,31 +184,22 @@ class AdminAuthModule {
             });
         }
 
+        const passwordField = document.getElementById('password');
         if (passwordField) {
             passwordField.addEventListener('keypress', async (e) => {
-                if (e.key === 'Enter') {
-                    await this.handleLogin();
-                }
+                if (e.key === 'Enter') await this.handleLogin();
             });
         }
     }
 
-    // FIXED: Separate method to bind logout event
     bindLogoutEvent() {
         const logoutButton = document.getElementById('logoutButton');
         if (logoutButton) {
-            // Remove any existing event listeners to prevent duplicates
+            // Replace button to remove existing listeners
             const newLogoutButton = logoutButton.cloneNode(true);
             logoutButton.parentNode.replaceChild(newLogoutButton, logoutButton);
             
-            // Add new event listener
-            newLogoutButton.addEventListener('click', () => {
-                this.handleLogout();
-            });
-            
-            console.log('✅ Logout button event listener bound');
-        } else {
-            console.error('❌ Logout button not found');
+            newLogoutButton.addEventListener('click', () => this.handleLogout());
         }
     }
 
@@ -239,6 +220,12 @@ class AdminAuthModule {
             return;
         }
 
+        // Validate inputs
+        if (!username.value.trim() || !password.value.trim()) {
+            this.showMessage('Please enter both username and password', 'error');
+            return;
+        }
+
         // Show loading state
         loginButton.disabled = true;
         loginButtonText.textContent = 'Logging in...';
@@ -253,7 +240,6 @@ class AdminAuthModule {
                     this.hideLoginForm();
                     this.adminModule.showAdminContent();
                     this.startSessionMonitoring();
-                    // FIXED: Bind logout event after successful login
                     this.bindLogoutEvent();
                 }, 1000);
             } else {
@@ -273,7 +259,6 @@ class AdminAuthModule {
     handleLogout() {
         if (!this.authManager) return;
         
-        console.log('🔐 Logging out user...');
         this.authManager.logout();
         this.stopSessionMonitoring();
         this.adminModule.modulesInitialized = false;
@@ -285,8 +270,6 @@ class AdminAuthModule {
         const password = document.getElementById('password');
         if (username) username.value = '';
         if (password) password.value = '';
-        
-        console.log('✅ User logged out successfully');
     }
 
     showMessage(message, type = 'info') {
@@ -305,14 +288,30 @@ class AdminAuthModule {
         }
     }
 
-    // Public method to check if user is authenticated
     isAuthenticated() {
         return this.authManager && this.authManager.isLoggedIn();
     }
 
-    // Public method to get current user
     getCurrentUser() {
         return this.authManager ? this.authManager.getCurrentUser() : null;
+    }
+
+    // Public method to check if user can access admin
+    canAccessAdmin() {
+        return this.isAuthenticated() && this.authManager.isSessionValid();
+    }
+
+    // Public method to refresh authentication state
+    async refreshAuthState() {
+        if (this.authManager && this.authManager.isLoggedIn()) {
+            if (!this.authManager.isSessionValid()) {
+                this.handleSessionExpired();
+                return false;
+            }
+            this.updateSessionInfo();
+            return true;
+        }
+        return false;
     }
 }
 

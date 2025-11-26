@@ -67,8 +67,8 @@
                 </div>
                 <div class="stat-card stat-card--accent">
                     <div class="stat-content">
-                        <span class="stat-number" id="totalReviews"></span>
-                        <span class="stat-label">Total Reviews</span>
+                        <span class="stat-number" id="totalRecommendations"></span>
+                        <span class="stat-label">Total Recommendations</span>
                     </div>
                 </div>
                 <div class="stat-card stat-card--success">
@@ -85,8 +85,8 @@
                 </div>
                 <div class="stat-card stat-card--primary">
                     <div class="stat-content">
-                        <span class="stat-number" id="pendingReviews"></span>
-                        <span class="stat-label">Pending Reviews</span>
+                        <span class="stat-number" id="pendingRecommendations"></span>
+                        <span class="stat-label">Pending Recommendations</span>
                     </div>
                 </div>
                 <div class="stat-card stat-card--accent">
@@ -107,9 +107,9 @@
                     <span class="material-icons">category</span>
                     <span class="tab-text">Categories</span>
                 </button>
-                <button class="tab-button" data-tab="reviews-tab">
-                    <span class="material-icons">reviews</span>
-                    <span class="tab-text">Reviews</span>
+                <button class="tab-button" data-tab="recommendations-tab">
+                    <span class="material-icons">recommend</span>
+                    <span class="tab-text">Recommendations</span>
                 </button>
                 <button class="tab-button" data-tab="feedback-tab">
                     <span class="material-icons">feedback</span>
@@ -127,28 +127,15 @@
                             <input type="text" id="searchInput" placeholder="Search service providers..."
                                 class="material-search-input">
                         </div>
-                        <button class="material-button contained" id="addContractorBtn">
+                        <button class="btn btn-primary" id="addContractorBtn">
                             <span class="material-icons">add</span>
                             Add Service Provider
                         </button>
                     </div>
 
                     <!-- Service Providers Table -->
-                    <div class="table-container">
-                        <table class="table">
-                            <thead>
-                                <tr>
-                                    <th>Name</th>
-                                    <th>Category</th>
-                                    <th>Rating</th>
-                                    <th>Reviews</th>
-                                    <th>Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody id="contractorsTableBody">
-                                <!-- Service providers will be loaded dynamically -->
-                            </tbody>
-                        </table>
+                    <div class="table-container" id="contractorsTableBody">
+
                     </div>
                 </div>
             </div>
@@ -162,7 +149,7 @@
                             <input type="text" id="categorySearch" placeholder="Search categories..."
                                 class="material-search-input">
                         </div>
-                        <button class="material-button contained" id="addCategoryBtn">
+                        <button class="btn btn-primary" id="addCategoryBtn">
                             <span class="material-icons">add</span>
                             Add Category
                         </button>
@@ -185,30 +172,30 @@
                     </div>
 
                     <!-- Categories List -->
-                    <div class="categories-list" id="categoriesList">
+                    <div id="categoriesList">
                         <!-- Categories will be loaded dynamically -->
                     </div>
                 </div>
             </div>
 
-            <!-- Reviews Tab -->
-            <div id="reviews-tab" class="tab-content">
+            <!-- Recommendations Tab -->
+            <div id="recommendations-tab" class="tab-content">
                 <div class="material-card">
                     <div class="search-filter-container">
                         <div class="material-search">
                             <span class="material-icons">search</span>
-                            <input type="text" id="reviewSearch" placeholder="Search reviews..."
+                            <input type="text" id="recommendationSearch" placeholder="Search recommendations..."
                                 class="material-search-input">
                         </div>
                         <div class="filter-group">
                             <div class="material-form-group" style="margin: 0;">
-                                <select id="reviewContractorFilter" class="material-select">
+                                <select id="recommendationContractorFilter" class="material-select">
                                     <option value="all">All Service Providers</option>
                                     <!-- Service providers will be populated dynamically -->
                                 </select>
                             </div>
                             <div class="material-form-group" style="margin: 0;">
-                                <select id="reviewStatusFilter" class="material-select">
+                                <select id="recommendationStatusFilter" class="material-select">
                                     <option value="all">All Status</option>
                                     <option value="approved">Approved</option>
                                     <option value="pending">Pending</option>
@@ -218,37 +205,37 @@
                         </div>
                     </div>
 
-                    <!-- Reviews Stats -->
+                    <!-- Recommendations Stats -->
                     <div class="admin-stats compact">
                         <div class="stat-card">
                             <div class="stat-content">
-                                <span class="stat-number" id="totalReviewsCount"></span>
-                                <span class="stat-label">Total Reviews</span>
+                                <span class="stat-number" id="totalRecommendationsCount"></span>
+                                <span class="stat-label">Total Recommendations</span>
                             </div>
                         </div>
                         <div class="stat-card stat-card--success">
                             <div class="stat-content">
-                                <span class="stat-number" id="approvedReviewsCount"></span>
+                                <span class="stat-number" id="approvedRecommendationsCount"></span>
                                 <span class="stat-label">Approved</span>
                             </div>
                         </div>
                         <div class="stat-card stat-card--warning">
                             <div class="stat-content">
-                                <span class="stat-number" id="pendingReviewsCount"></span>
+                                <span class="stat-number" id="pendingRecommendationsCount"></span>
                                 <span class="stat-label">Pending</span>
                             </div>
                         </div>
                         <div class="stat-card stat-card--accent">
                             <div class="stat-content">
-                                <span class="stat-number" id="rejectedReviewsCount"></span>
+                                <span class="stat-number" id="rejectedRecommendationsCount"></span>
                                 <span class="stat-label">Rejected</span>
                             </div>
                         </div>
                     </div>
 
-                    <!-- Reviews List -->
-                    <div class="reviews-list" id="reviewsList">
-                        <!-- Reviews will be loaded dynamically -->
+                    <!-- Recommendations List -->
+                    <div class="recommendation-list" id="recommendationsList">
+                        <!-- Recommendations will be loaded dynamically -->
                     </div>
                 </div>
             </div>
@@ -332,27 +319,12 @@
                 </div>
             </div>
         </section>
-
-        <!-- Review Details Modal - Updated with Material Design -->
-        <div class="modal" id="reviewDetailsModal">
-            <div class="modal-content material-card">
-                <div class="modal-header">
-                    <h2>Review Details</h2>
-                    <button class="material-icon-button" id="closeReviewDetailsModal">
-                        <span class="material-icons">close</span>
-                    </button>
-                </div>
-                <div class="modal-body" id="reviewDetailsContent">
-                    <!-- Review details will be loaded dynamically -->
-                </div>
-            </div>
-        </div>
     </div>
 
     <!-- ES6 Module Loading -->
     <script type="module">
         // Import and initialize the admin application
-        import './js/admin.js';
+        import './js/admin/admin-app.js';
     </script>
 </body>
 

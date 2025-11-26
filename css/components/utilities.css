@@ -503,3 +503,110 @@
 .focus-visible:focus:not(:focus-visible) {
     outline: none;
 }
+
+/* ===== STATE CLASSES ===== */
+.empty-state,
+.loading-state,
+.no-results {
+    background-color: var(--surface);
+    border-radius: var(--border-radius);
+    padding: var(--space-xxl);
+    text-align: center;
+    color: var(--text-secondary);
+    border: 1px solid var(--border-light);
+}
+
+.error-state {
+    background-color: var(--surface);
+    border: 1px solid var(--error-100);
+    border-radius: var(--border-radius);
+    padding: var(--space-xl);
+    text-align: center;
+    color: var(--error-color);
+}
+
+.success-state {
+    background-color: var(--success-50);
+    border: 1px solid var(--success-200);
+    border-radius: var(--border-radius);
+    padding: var(--space-xl);
+    text-align: center;
+    color: var(--success-700);
+}
+
+.warning-state {
+    background-color: var(--warning-50);
+    border: 1px solid var(--warning-200);
+    border-radius: var(--border-radius);
+    padding: var(--space-xl);
+    text-align: center;
+    color: var(--warning-700);
+}
+
+.info-state {
+    background-color: var(--primary-50);
+    border: 1px solid var(--primary-200);
+    border-radius: var(--border-radius);
+    padding: var(--space-xl);
+    text-align: center;
+    color: var(--primary-700);
+}
+
+.loading-overlay {
+    background-color: var(--background);
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: var(--z-modal);
+}
+
+/* Loading spinner utility */
+.loading-spinner {
+    width: 40px;
+    height: 40px;
+    border: 4px solid var(--surface-container);
+    border-top: 4px solid var(--primary-color);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Responsive state classes */
+@media (max-width: 768px) {
+    .empty-state,
+    .loading-state,
+    .no-results {
+        padding: var(--space-xl);
+    }
+    
+    .error-state,
+    .success-state,
+    .warning-state,
+    .info-state {
+        padding: var(--space-lg);
+    }
+}
+
+@media (max-width: 480px) {
+    .empty-state,
+    .loading-state,
+    .no-results {
+        padding: var(--space-lg);
+    }
+    
+    .error-state,
+    .success-state,
+    .warning-state,
+    .info-state {
+        padding: var(--space-md);
+    }
+}

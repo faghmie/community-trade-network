@@ -79,6 +79,7 @@
 |   |   |-- bottom-sheet.css
 |   |   |-- buttons.css
 |   |   |-- cards.css
+|   |   |-- categories.css
 |   |   |-- confirmation-modal.css
 |   |   |-- contractor-details.css
 |   |   |-- dashboard.css
@@ -88,8 +89,9 @@
 |   |   |-- material.css
 |   |   |-- modals.css
 |   |   |-- notifications.css
+|   |   |-- profile.css
 |   |   |-- ratings.css
-|   |   |-- review-modal.css
+|   |   |-- search.css
 |   |   |-- stats-cards.css
 |   |   |-- tables.css
 |   |   |-- tabs.css
@@ -114,11 +116,30 @@
 |   |-- icon-72x72.png
 |   `-- icon-96x96.png
 |-- js
+|   |-- admin
+|   |   |-- categories
+|   |   |   |-- admin-categories.js
+|   |   |   |-- categories-modal.js
+|   |   |   `-- categories-table-manager.js
+|   |   |-- contractors
+|   |   |   |-- admin-contractors.js
+|   |   |   |-- contractor-modal.js
+|   |   |   `-- contractors-table-manager.js
+|   |   |-- feedback
+|   |   |   |-- admin-feedback.js
+|   |   |   |-- feedback-modal.js
+|   |   |   `-- feedback-table-manager.js
+|   |   |-- recommendations
+|   |   |   |-- admin-recommendations.js
+|   |   |   |-- recommendation-modal.js
+|   |   |   `-- recommendations-table-manager.js
+|   |   |-- shared
+|   |   |   `-- base-modal.js
+|   |   |-- admin-app.js
+|   |   |-- admin-auth.js
+|   |   |-- admin-dashboard.js
+|   |   `-- auth.js
 |   |-- app
-|   |   |-- modals
-|   |   |   |-- adminFeedbackModalManager.js
-|   |   |   |-- contractorEditModalManager.js
-|   |   |   `-- contractorModalManager.js
 |   |   |-- utils
 |   |   |   `-- viewHelpers.js
 |   |   |-- views
@@ -129,8 +150,9 @@
 |   |   |   |-- contractorView.js
 |   |   |   |-- feedbackView.js
 |   |   |   |-- mapView.js
-|   |   |   `-- recommendationEditView.js
-|   |   |-- filterManager.js
+|   |   |   |-- profileView.js
+|   |   |   |-- recommendationEditView.js
+|   |   |   `-- searchView.js
 |   |   |-- lazyLoader.js
 |   |   |-- main.js
 |   |   `-- statsManager.js
@@ -152,13 +174,7 @@
 |   |   |-- defaultLocations.js
 |   |   `-- defaultReviews.js
 |   |-- modules
-|   |   |-- admin-auth.js
-|   |   |-- admin-categories.js
-|   |   |-- admin-contractors.js
-|   |   |-- admin-feedback.js
-|   |   |-- admin-reviews.js
 |   |   |-- areaAutocomplete.js
-|   |   |-- auth.js
 |   |   |-- backButtonManager.js
 |   |   |-- categories.js
 |   |   |-- confirmationModal.js
@@ -180,7 +196,6 @@
 |   |   |-- utilities.js
 |   |   |-- uuid.js
 |   |   `-- validation.js
-|   |-- admin.js
 |   `-- script.js
 |-- scripts
 |   |-- default_categories.sql
@@ -195,4 +210,4 @@
 |-- README
 `-- sw.js
 
-19 directories, 177 files
+24 directories, 187 files

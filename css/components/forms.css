@@ -111,6 +111,89 @@
     opacity: 0.5;
 }
 
+/* NEW: Material Design Autocomplete Styles */
+.autocomplete-container {
+    position: relative;
+}
+
+.autocomplete-suggestions {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background: var(--surface);
+    border: 1px solid var(--border-color);
+    border-top: none;
+    border-radius: 0 0 var(--border-radius-sm) var(--border-radius-sm);
+    max-height: 200px;
+    overflow-y: auto;
+    z-index: var(--z-dropdown);
+    box-shadow: var(--elevation-2);
+    display: none;
+    margin-top: -1px;
+}
+
+.autocomplete-suggestion {
+    padding: var(--space-sm) var(--space-md);
+    cursor: pointer;
+    border-bottom: 1px solid var(--border-light);
+    transition: all var(--transition-short);
+    font-size: var(--font-size-body1);
+    color: var(--text-primary);
+    line-height: var(--line-height-normal);
+}
+
+.autocomplete-suggestion:last-child {
+    border-bottom: none;
+}
+
+.autocomplete-suggestion:hover,
+.autocomplete-suggestion:focus {
+    background-color: var(--primary-container);
+    color: var(--on-primary-container);
+}
+
+.autocomplete-suggestion.selected {
+    background-color: var(--primary-100);
+    color: var(--primary-900);
+}
+
+.autocomplete-suggestion strong {
+    font-weight: var(--font-weight-medium);
+    color: var(--primary-color);
+}
+
+.autocomplete-suggestion:hover strong,
+.autocomplete-suggestion:focus strong,
+.autocomplete-suggestion.selected strong {
+    color: inherit;
+}
+
+/* Autocomplete states */
+.material-form-group:focus-within .autocomplete-suggestions,
+.autocomplete-container.focused .autocomplete-suggestions {
+    display: block;
+}
+
+.autocomplete-container.loading .autocomplete-suggestions::after {
+    content: 'Loading...';
+    display: block;
+    padding: var(--space-sm) var(--space-md);
+    color: var(--text-hint);
+    font-style: italic;
+    text-align: center;
+}
+
+/* Empty state */
+.autocomplete-suggestions:empty::after {
+    content: 'No suggestions found';
+    display: block;
+    padding: var(--space-sm) var(--space-md);
+    color: var(--text-hint);
+    font-style: italic;
+    text-align: center;
+}
+
 /* Professional Input Styles (Material Enhanced) */
 .input {
     width: 100%;
@@ -842,6 +925,32 @@ select:focus {
         background-color: var(--surface-800);
     }
     
+    /* NEW: Autocomplete dark theme */
+    .autocomplete-suggestions {
+        background: var(--surface);
+        border-color: var(--border-color);
+    }
+    
+    .autocomplete-suggestion {
+        color: var(--text-primary);
+        border-bottom-color: var(--border-light);
+    }
+    
+    .autocomplete-suggestion:hover,
+    .autocomplete-suggestion:focus {
+        background-color: var(--primary-900);
+        color: var(--primary-100);
+    }
+    
+    .autocomplete-suggestion.selected {
+        background-color: var(--primary-800);
+        color: var(--primary-50);
+    }
+    
+    .autocomplete-suggestion strong {
+        color: var(--primary-300);
+    }
+    
     /* FIXED: Dark theme dropdown options */
     select option,
     .material-select option {
@@ -923,6 +1032,21 @@ select:focus {
         text-shadow: 0 0 2px currentColor;
     }
     
+    /* NEW: Autocomplete high contrast */
+    .autocomplete-suggestions {
+        border-width: 2px;
+    }
+    
+    .autocomplete-suggestion {
+        border-bottom-width: 2px;
+    }
+    
+    .autocomplete-suggestion:hover,
+    .autocomplete-suggestion:focus,
+    .autocomplete-suggestion.selected {
+        outline: 2px solid var(--primary-color);
+    }
+    
     /* FIXED: High contrast dropdown */
     select option,
     .material-select option {
@@ -994,6 +1118,11 @@ select:focus {
         transform: none;
     }
     
+    /* NEW: Autocomplete reduced motion */
+    .autocomplete-suggestion {
+        transition: none;
+    }
+    
     /* Geocoding reduced motion */
     .geocoding-status-container {
         animation: none;
@@ -1017,56 +1146,4 @@ select:focus {
             transform: translateY(0);
         }
     }
-}
-
-/* Add to css/components/forms.css */
-
-/* Area Autocomplete Styles */
-.area-autocomplete-container {
-    position: relative;
-}
-
-.area-suggestions {
-    position: absolute;
-    top: 100%;
-    left: 0;
-    right: 0;
-    background: var(--surface);
-    border: 1px solid var(--border-color);
-    border-radius: var(--border-radius-sm);
-    box-shadow: var(--elevation-2);
-    max-height: 200px;
-    overflow-y: auto;
-    z-index: var(--z-dropdown);
-    margin-top: 4px;
-}
-
-.area-suggestion {
-    padding: var(--space-sm) var(--space-md);
-    cursor: pointer;
-    border-bottom: 1px solid var(--border-color);
-    transition: background-color var(--transition-short);
-}
-
-.area-suggestion:last-child {
-    border-bottom: none;
-}
-
-.area-suggestion:hover,
-.area-suggestion:focus {
-    background-color: var(--primary-50);
-    color: var(--primary-700);
-}
-
-.area-suggestion:active {
-    background-color: var(--primary-100);
-}
-
-/* Loading state */
-.area-autocomplete-container.loading .area-suggestions::after {
-    content: 'Loading...';
-    display: block;
-    padding: var(--space-sm) var(--space-md);
-    color: var(--text-hint);
-    font-style: italic;
 }
