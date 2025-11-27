@@ -1,6 +1,6 @@
 // sw.js - Service Worker for Community Trade Network
-const CACHE_NAME = 'community-trade-network-v1.5.2';
-const API_CACHE_NAME = 'community-trade-network-api-v1.5';
+const CACHE_NAME = 'community-trade-network-v1.6.0';
+const API_CACHE_NAME = 'community-trade-network-api-v1.6';
 
 // Cache configuration
 const CACHE_CONFIG = {
@@ -149,19 +149,20 @@ const CORE_ASSETS = [
 self.addEventListener('install', (event) => {
     console.log('🛠️ Service Worker installing...');
 
+    // ⚠️ DELETE ALL OLD CACHES FIRST
     event.waitUntil(
-        caches.open(CACHE_NAME)
-            .then((cache) => {
-                console.log('📦 Caching app shell');
-                return cache.addAll(CORE_ASSETS);
-            })
-            .then(() => {
-                console.log('✅ App shell cached successfully');
-                return self.skipWaiting();
-            })
-            .catch((error) => {
-                console.error('❌ Cache installation failed:', error);
-            })
+        caches.keys().then(cacheNames => {
+            return Promise.all(
+                cacheNames.map(cacheName => {
+                    console.log('💣 Deleting cache:', cacheName);
+                    return caches.delete(cacheName);
+                })
+            );
+        }).then(() => {
+            // Now cache new files
+            return caches.open(CACHE_NAME)
+                .then(cache => cache.addAll(CORE_ASSETS));
+        }).then(() => self.skipWaiting())
     );
 });
 
